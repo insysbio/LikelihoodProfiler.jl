@@ -1,12 +1,13 @@
 push!(LOAD_PATH,"../src/")
 
-using Documenter, parameters_identification
+using Documenter, ParametersIdentification
 
 makedocs(
     format = :html,
     sitename = "ParametersIdentification",
     pages = [
-        "index.md"
+        "index.md",
+        "basics.md"
     ]
 )
 
