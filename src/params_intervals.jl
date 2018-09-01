@@ -2,11 +2,11 @@
 
 using NLopt
 
-garmonize_bounds(x::Float64, logscale::Bool) = logscale ? log10(x) : x
-garmonize_bounds(b::Vector{Float64}, logscale::Bool) = logscale ? log10.(b) : b
+garmonize(x::Float64, logscale::Bool) = logscale ? log10(x) : x
+garmonize(b::Vector{Float64}, logscale::Bool) = logscale ? log10.(b) : b
 
-ungarmonize_bounds(x::Float64, logscale::Bool) = logscale ? exp10(x) : x
-ungarmonize_bounds(x::Vector{Float64}, logscale::Bool) = logscale ? exp10.(x) : x
+ungarmonize(x::Float64, logscale::Bool) = logscale ? exp10(x) : x
+ungarmonize(x::Vector{Float64}, logscale::Bool) = logscale ? exp10.(x) : x
 
 function params_intervals(
     init_params::Vector{Float64},
@@ -15,14 +15,14 @@ function params_intervals(
     loss_func::Function;
     logscale_all::Bool = false,
     logscale::Vector{Bool} = fill(logscale_all, length(init_params)),
-    scan_bound::Vector{Float64} = ungarmonize_bounds.(
+    scan_bound::Vector{Float64} = ungarmonize.(
         [-9., 9.],
         logscale[id]
     ),
 
     fit_alg::Symbol = :LN_AUGLAG,
     local_alg::Symbol = :LN_NELDERMEAD,
-    bounds::Vector{Vector{Float64}} = ungarmonize_bounds.(
+    bounds::Vector{Vector{Float64}} = ungarmonize.(
         fill([-Inf, Inf], length(init_params)),
         logscale
     ),
@@ -42,25 +42,28 @@ function params_intervals(
 
     # Checking arguments
     # init_params
-    (loss_func(init_params) >= loss_crit) &&
+    !(loss_func(init_params) < loss_crit) &&
         throw(ArgumentError("Check init_params and loss_crit: loss_func(init_params) should be < loss_crit"))
+    # scan bounds should be within bounds
+    !(bounds[id][1] < scan_bound[1] < scan_bound[2] < bounds[id][2]) &&
+        throw(ArgumentError("scan bounds are outside of the bounds $bound[id]"))
     # init_params should be within scan_bound
-    (init_params[id] <= minimum(scan_bound) || init_params[id] >= maximum(scan_bound)) &&
-        throw(ArgumentError("init values are outside of the bounds $scan_bound"))
+    !(scan_bound[1] < init_params[id] < scan_bound[2]) &&
+        throw(ArgumentError("init values are outside of the scan_bound $scan_bound"))
 
     # garmonize init_params
-    params = garmonize_bounds.(init_params, logscale)
+    params = garmonize.(init_params, logscale)
 
     # garmonize bounds
-    bounds_garm = garmonize_bounds.(bounds, logscale)
+    bounds_garm = garmonize.(bounds, logscale)
 
     # Objective function
-    # optim_func(x, g) = ungarmonize_bounds(x[id], logscale[id])
+    # optim_func(x, g) = ungarmonize(x[id], logscale[id])
     optim_func(x, g) = x[id]
 
     # Constraints function
     function constraints_func(x, g)
-        x_initial_scale = ungarmonize_bounds.(x, logscale) # potentiation
+        x_initial_scale = ungarmonize.(x, logscale) # potentiation
         loss = loss_func(x_initial_scale) - loss_crit
 
         # global counter # metelkin
@@ -97,11 +100,11 @@ function params_intervals(
             intervals[int_id] = minmax == :min ? minimum(scan_bound) : maximum(scan_bound)
             ret_codes[int_id] = :BOUNDS_REACHED
         else
-            intervals[int_id] = ungarmonize_bounds(optx[id], logscale[id])
+            intervals[int_id] = ungarmonize(optx[id], logscale[id])
             ret_codes[int_id] = ret
         end
 
-        loss_final[int_id] = loss_func(ungarmonize_bounds.(optx, logscale))
+        loss_final[int_id] = loss_func(ungarmonize.(optx, logscale))
         counter += 1
         count_evals[int_id] = counter
     end

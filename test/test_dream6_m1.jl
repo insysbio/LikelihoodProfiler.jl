@@ -1,10 +1,10 @@
-# include("../src/params_intervals.jl")
 include("./dream6_m1/dream6_m1_@macro.jl")
 
 # using JSON
 
 using NLopt
-using ParametersIdentification
+# using ParametersIdentification
+include("../src/params_intervals.jl")
 
 # Scale types
 mixed_scale = fill(true, length(p0))
@@ -49,7 +49,7 @@ for i = 1:length(p0)
         obj,
         logscale = mixed_scale,
         bounds = bounds_params,
-        scan_bound = scan_bounds[i]
+        scan_bound = scan_bounds[i],
         max_iter = max_iter
     )
     println(
