@@ -48,9 +48,8 @@ for i = 1:length(p0)
         obj_crit,
         obj,
         logscale = mixed_scale,
-        bounds_params = bounds_params,
-        bounds_id = scan_bounds[i],
-        tol_loc = 1e-3,
+        bounds = bounds_params,
+        scan_bound = scan_bounds[i]
         max_iter = max_iter
     )
     println(

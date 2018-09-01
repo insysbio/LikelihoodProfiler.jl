@@ -2,35 +2,37 @@
 
 using NLopt
 
-transform_log(x::Float64, logscale::Bool) = logscale ? log10(x) : x
+garmonize_bounds(x::Float64, logscale::Bool) = logscale ? log10(x) : x
+garmonize_bounds(b::Vector{Float64}, logscale::Bool) = logscale ? log10.(b) : b
 
-transform_exp(x::Float64, logscale::Bool) = logscale ? exp10(x) : x
-
-transform_log_bounds(b::Vector{Float64}, logscale::Bool) = logscale ? Tuple(log10.(b)) : Tuple(b)
+ungarmonize_bounds(x::Float64, logscale::Bool) = logscale ? exp10(x) : x
+ungarmonize_bounds(x::Vector{Float64}, logscale::Bool) = logscale ? exp10.(x) : x
 
 function params_intervals(
     init_params::Vector{Float64},
     id::Int64,
-    maxf::Float64,
+    loss_crit::Float64,
     loss_func::Function;
     logscale_all::Bool = false,
     logscale::Vector{Bool} = fill(logscale_all, length(init_params)),
-    bounds_id::Vector{Float64} = [-9, 9], # [1e-9, 1e9] for log
-    solver::Symbol = :NLOPT,  # currently NLOPT is the only option
+    scan_bound::Vector{Float64} = ungarmonize_bounds.(
+        [-9., 9.],
+        logscale[id]
+    ),
 
     fit_alg::Symbol = :LN_AUGLAG,
     local_alg::Symbol = :LN_NELDERMEAD,
-    bounds_params::Vector{Vector{Float64}} = fill(
-        [-Inf, Inf], # [0, Inf] for log
-        length(init_params)
+    bounds::Vector{Vector{Float64}} = ungarmonize_bounds.(
+        fill([-Inf, Inf], length(init_params)),
+        logscale
     ),
     max_iter::Int64 = 100000,
     ftol_loc::Float64 = 1e-3,
     # ftol_glob::Float64 = 0.,
     # tol_const::Float64 = 1e-3
 )
-    # Iterations count
-    global count = 0
+    # set counter scope
+    counter::Int64 = 0
 
     # Output
     intervals = Vector{Float64}(2)
@@ -38,33 +40,33 @@ function params_intervals(
     count_evals = Vector{Int64}(2)
     loss_final = Vector{Float64}(2)
 
-    # Checks
-    (loss_func(init_params) > maxf) && throw(ArgumentError("Check init_params and maxf: loss_func(init_params) should be <= maxf"))
-    (init_params[id] <= minimum(bounds_id) || init_params[id] >= maximum(bounds_id)) && throw(ArgumentError("init values are outside of the bounds $bounds_id"))
-    # count += 1 # because loss_func was calculated once
+    # Checking arguments
+    # init_params
+    (loss_func(init_params) >= loss_crit) &&
+        throw(ArgumentError("Check init_params and loss_crit: loss_func(init_params) should be < loss_crit"))
+    # init_params should be within scan_bound
+    (init_params[id] <= minimum(scan_bound) || init_params[id] >= maximum(scan_bound)) &&
+        throw(ArgumentError("init values are outside of the bounds $scan_bound"))
 
-    # Logscale cheks - parameters
-    params = transform_log.(init_params, logscale)
+    # garmonize init_params
+    params = garmonize_bounds.(init_params, logscale)
 
-    # Logscale cheks - bounds
-    # bounds_params[id] = bounds_id # metelkin
-    bounds = transform_log_bounds.(bounds_params, logscale)
+    # garmonize bounds
+    bounds_garm = garmonize_bounds.(bounds, logscale)
 
     # Objective function
-    # optim_func(x, g) = transform_exp(x[id], logscale[id]) # XXX:
+    # optim_func(x, g) = ungarmonize_bounds(x[id], logscale[id])
     optim_func(x, g) = x[id]
 
     # Constraints function
     function constraints_func(x, g)
-        x_initial_scale = transform_exp.(x, logscale) # potentiation
-        loss = loss_func(x_initial_scale) - maxf
+        x_initial_scale = ungarmonize_bounds.(x, logscale) # potentiation
+        loss = loss_func(x_initial_scale) - loss_crit
 
-        # global count # metelkin
-        count += 1
-        # print(loss, ": ")
-        # println(x_initial_scale)
+        # global counter # metelkin
+        counter += 1
 
-        if (x_initial_scale[id] <= bounds_id[1] || x_initial_scale[id] >= bounds_id[2]) && loss < 0.
+        if (x_initial_scale[id] <= scan_bound[1] || x_initial_scale[id] >= scan_bound[2]) && loss < 0.
             throw(ForcedStop())
         else
             return loss
@@ -74,13 +76,14 @@ function params_intervals(
     # Confidence interval search
     for minmax in (:min, :max)
         int_id = minmax == :min ? 1 : 2
+        counter = 0
 
         (optf, optx, ret) = params_intervals_one_side(
             params,
             optim_func,
             constraints_func,
             minmax;
-            bounds = bounds,
+            bounds = bounds_garm,
             fit_alg = fit_alg,
             local_alg = local_alg,
             ftol_loc = ftol_loc,
@@ -91,22 +94,18 @@ function params_intervals(
 
         # if bounds reached
         if ret == :FORCED_STOP
-            intervals[int_id] = minmax == :min ? minimum(bounds_id) : maximum(bounds_id)
+            intervals[int_id] = minmax == :min ? minimum(scan_bound) : maximum(scan_bound)
             ret_codes[int_id] = :BOUNDS_REACHED
         else
-            intervals[int_id] = transform_exp(optx[id], logscale[id])
+            intervals[int_id] = ungarmonize_bounds(optx[id], logscale[id])
             ret_codes[int_id] = ret
         end
 
-        loss_final[int_id] = loss_func(transform_exp.(optx, logscale))
-        count += 1
-        count_evals[int_id] = count
-
-        # println("id=$id, interval[$int_id] = $(intervals[int_id]), ret_codes=$(ret_codes[int_id]), counts=$(count_evals[int_id])")
-        global count = 0
+        loss_final[int_id] = loss_func(ungarmonize_bounds.(optx, logscale))
+        counter += 1
+        count_evals[int_id] = counter
     end
 
-    # println(intervals, ", ", ret_codes, ", ", count_evals, ", ", loss_final)
     intervals, ret_codes, count_evals, loss_final
 end # function params_intervals
 
@@ -119,7 +118,8 @@ function params_intervals_one_side(
 
     fit_alg::Symbol = :LN_AUGLAG,
     local_alg::Symbol = :LN_NELDERMEAD,
-    bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(params)),
+    # bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(params)),
+    bounds::Vector{Vector{Float64}} = fill([-Inf, Inf], length(params)),
     max_iter::Int64 = 100000,
     ftol_loc::Float64 = 1e-3,
     # ftol_glob::Float64 = 1e-3, # tolerance of global method
