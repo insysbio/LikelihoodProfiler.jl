@@ -16,9 +16,9 @@ using DiffEqBase, OrdinaryDiffEq, ParameterizedFunctions,
 #@printlog "DREAM6_identification.log"
 
 # Input data
-exp_data = CSV.read("Y:/ParametersIdentification/test/exp_data.csv", types=Dict("t"=>Float64), nullable=false)
-u_data = CSV.read("Y:/ParametersIdentification/test/u_data.csv", types=Dict("values"=>Float64), nullable=false)
-p_data = CSV.read("Y:/ParametersIdentification/test/p_data.csv", types=Dict("values"=>Float64), nullable=false)
+exp_data = CSV.read("Y:/ParametersIdentification/test/dream6_m1/exp_data.csv", types=Dict("t"=>Float64), nullable=false)
+u_data = CSV.read("Y:/ParametersIdentification/test/dream6_m1/u_data.csv", types=Dict("values"=>Float64), nullable=false)
+p_data = CSV.read("Y:/ParametersIdentification/test/dream6_m1/p_data.csv", types=Dict("values"=>Float64), nullable=false)
 
 # Variables and parameters names and data
 u_names = OrderedDict(Symbol(u_data[:names][i]) => i for i in eachindex(u_data[:names]))

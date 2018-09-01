@@ -1,14 +1,13 @@
-include("./test_func.jl")
-include("../src/params_intervals.jl")
+include("./cases_func.jl")
 
-# using Profiler
+using ParametersIdentification
 
 res1 = params_intervals(
     [3., 4, 1.1, 10.],
     3,
     9.,
-    testFunc.f_3p_1im,
-    tol_glob = 1e-3,
+    f_3p_1im,
+    #tol_glob = 1e-3,
     tol_loc = 1e-3,
     max_iter = 100000,
     bounds_params = fill([0., Inf], 4),

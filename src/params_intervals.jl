@@ -25,8 +25,8 @@ function params_intervals(
         length(init_params)
     ),
     max_iter::Int64 = 100000,
-    tol_loc::Float64 = 1e-3,
-    # tol_glob::Float64 = 0.,
+    ftol_loc::Float64 = 1e-3,
+    # ftol_glob::Float64 = 0.,
     # tol_const::Float64 = 1e-3
 )
     # Iterations count
@@ -83,8 +83,8 @@ function params_intervals(
             bounds = bounds,
             fit_alg = fit_alg,
             local_alg = local_alg,
-            tol_loc = tol_loc,
-            # tol_glob::Float64 = 1e-3, # tolerance of global method
+            ftol_loc = ftol_loc,
+            # ftol_glob::Float64 = 1e-3, # tolerance of global method
             # tol_const::Float64 = 1e-3 # tolerance of constraints
             max_iter = max_iter
         )
@@ -121,8 +121,8 @@ function params_intervals_one_side(
     local_alg::Symbol = :LN_NELDERMEAD,
     bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(params)),
     max_iter::Int64 = 100000,
-    tol_loc::Float64 = 1e-3,
-    # tol_glob::Float64 = 1e-3, # tolerance of global method
+    ftol_loc::Float64 = 1e-3,
+    # ftol_glob::Float64 = 1e-3, # tolerance of global method
     # tol_const::Float64 = 1e-3 # tolerance of constraints
 )
     # dim of the problem
@@ -147,8 +147,8 @@ function params_intervals_one_side(
         # local optimizer
         local_opt = Opt(local_alg, n_params)
         # tolerances
-        # ftol_abs!(opt, tol_glob)
-        ftol_abs!(local_opt, tol_loc)
+        # ftol_abs!(opt, ftol_glob)
+        ftol_abs!(local_opt, ftol_loc)
         # bound constraints
         lower_bounds!(opt, lb)
         upper_bounds!(opt, ub)
@@ -156,7 +156,7 @@ function params_intervals_one_side(
         local_optimizer!(opt, local_opt)
     else  # other Algorithm
         # tolerances
-        # ftol_abs!(opt, tol_glob)
+        # ftol_abs!(opt, ftol_glob)
         # bound constraints
         lower_bounds!(opt, lb)
         upper_bounds!(opt, ub)

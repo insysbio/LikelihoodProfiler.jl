@@ -1,5 +1,5 @@
 # include("../src/params_intervals.jl")
-include("./dream6_m1_@macro.jl")
+include("./dream6_m1/dream6_m1_@macro.jl")
 
 # using JSON
 
