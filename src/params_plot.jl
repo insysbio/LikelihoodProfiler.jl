@@ -1,5 +1,19 @@
 using Plots
 
+"""
+# Input:
+        params - initial parameters vector
+        id - id of the parameter for analysis
+        maxf - loss function maximum value, "identifiability level"
+        loss_func - loss function
+        interval - interval for plot
+        fit_alg - fitting algorithm (default - :LN_NELDERMEAD)
+        bounds_params - ???
+        tol - fitting tolerance (default - 1e-3)
+        max_recursions - ???
+# Return:
+        parameter profile plot
+"""
 function params_plot(
     params::Vector{Float64},
     id::Int64,
