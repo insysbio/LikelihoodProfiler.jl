@@ -31,14 +31,14 @@ function params_intervals(
     init_params::Vector{Float64},
     id::Int64,
     loss_crit::Float64,
-    loss_func::Function;
+    loss_func::Function; # (Array{Float64,1})
+
     logscale_all::Bool = false,
     logscale::Vector{Bool} = fill(logscale_all, length(init_params)),
     scan_bound::Vector{Float64} = ungarmonize.(
         [-9., 9.],
         logscale[id]
     ),
-
     fit_alg::Symbol = :LN_AUGLAG,
     local_alg::Symbol = :LN_NELDERMEAD,
     bounds::Vector{Vector{Float64}} = ungarmonize.(
@@ -85,10 +85,9 @@ function params_intervals(
         x_initial_scale = ungarmonize.(x, logscale) # potentiation
         loss = loss_func(x_initial_scale) - loss_crit
 
-        # global counter # metelkin
         counter += 1
 
-        if (x_initial_scale[id] <= scan_bound[1] || x_initial_scale[id] >= scan_bound[2]) && loss < 0.
+        if !(scan_bound[1] <= x_initial_scale[id] <= scan_bound[2]) && loss < 0.
             throw(ForcedStop())
         else
             return loss
@@ -116,7 +115,7 @@ function params_intervals(
 
         # if bounds reached
         if ret == :FORCED_STOP
-            intervals[int_id] = minmax == :min ? minimum(scan_bound) : maximum(scan_bound)
+            intervals[int_id] = minmax == :min ? scan_bound[1] : scan_bound[2]
             ret_codes[int_id] = :BOUNDS_REACHED
         else
             intervals[int_id] = ungarmonize(optx[id], logscale[id])
