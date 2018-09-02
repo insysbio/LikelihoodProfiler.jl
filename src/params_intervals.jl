@@ -8,6 +8,25 @@ garmonize(b::Vector{Float64}, logscale::Bool) = logscale ? log10.(b) : b
 ungarmonize(x::Float64, logscale::Bool) = logscale ? exp10(x) : x
 ungarmonize(x::Vector{Float64}, logscale::Bool) = logscale ? exp10.(x) : x
 
+"""
+# Input:
+    init_params - initial parameters vector
+    id - id of the parameter for analysis
+    loss_crit - loss function maximum value, "identifiability level"
+    loss_func - loss function
+    logscale_all - ???
+    logscale - bool vector length(init_params) where true - log scale / false - direct scale
+    scan_bound - search bounds for id parameter (default - [1e-9,1e9])
+    fit_alg - fitting algorithm (default - :LN_AUGLAG)
+    local_alg - local fitting algorithm (default - :LN_NELDERMEAD)
+    bounds - bound constraints for all parameters except id
+    max_iter - ???
+    ftol_loc - fitting tolerance for local optimizer (default - 1e3)
+
+# Return:
+    confidence intervals evaluation:
+    (interval, termination reason, numer of evaluations, loss value)
+"""
 function params_intervals(
     init_params::Vector{Float64},
     id::Int64,
@@ -110,26 +129,40 @@ function params_intervals(
     end
 
     intervals, ret_codes, count_evals, loss_final
-end # function params_intervals
+end # function
 
-# fitting function
+"""
+# Input:
+    init_params - initial parameters vector
+    optim_func - ???
+    constraints_func - ???
+    minmax - ???
+
+    fit_alg - fitting algorithm (default - :LN_AUGLAG)
+    local_alg - local fitting algorithm (default - :LN_NELDERMEAD)
+    bounds - bound constraints for all parameters except id
+    max_iter - ???
+    ftol_loc - fitting tolerance for local optimizer (default - 1e3)
+
+# Return:
+    parameter profile plot
+"""
 function params_intervals_one_side(
-    params::Vector{Float64},
+    init_params::Vector{Float64},
     optim_func::Function,
     constraints_func::Function,
     minmax::Symbol;
 
     fit_alg::Symbol = :LN_AUGLAG,
     local_alg::Symbol = :LN_NELDERMEAD,
-    # bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(params)),
-    bounds::Vector{Vector{Float64}} = fill([-Inf, Inf], length(params)),
+    bounds::Vector{Vector{Float64}} = fill([-Inf, Inf], length(init_params)),
     max_iter::Int64 = 100000,
-    ftol_loc::Float64 = 1e-3,
+    ftol_loc::Float64 = 1e-3
     # ftol_glob::Float64 = 1e-3, # tolerance of global method
     # tol_const::Float64 = 1e-3 # tolerance of constraints
 )
     # dim of the problem
-    n_params = length(params)
+    n_params = length(init_params)
 
     # optimization obj
     opt = Opt(fit_alg, n_params)
@@ -173,5 +206,5 @@ function params_intervals_one_side(
     inequality_constraint!(opt, constraints_func)
 
     # return
-    (optf, optx, ret) = optimize(opt, params)
-end # function params_intervals_one_side
+    (optf, optx, ret) = optimize(opt, init_params)
+end # function
