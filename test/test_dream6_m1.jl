@@ -54,14 +54,14 @@ for i = 1:length(p0)
     )
     println(
         "FINISH #$i, iteration count: ",
-        round(out_inq[3][1]/max_iter*100, 1), "%   ",
-        round(out_inq[3][2]/max_iter*100, 1), "%"
+        round(out_inq.count_evals[1]/max_iter*100, 1), "%   ",
+        round(out_inq.count_evals[2]/max_iter*100, 1), "%"
     )
     push!(result, out_inq)
 end
 
-#=
+result
+
 open("result.json", "w") do f
     write(f, JSON.json(result))
 end
-=#

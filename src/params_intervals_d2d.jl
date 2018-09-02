@@ -1,6 +1,6 @@
-using NLopt
+# Pkg.add("NLopt")
 
-logscale_check_bounds(b::Vector{Float64}, logscale::Bool) = logscale ? Tuple(log10.(b)) : Tuple(b)
+using NLopt
 
 function params_intervals_d2d(
     init_params::Vector{Float64},
@@ -21,7 +21,9 @@ function params_intervals_d2d(
         logscale
     ),
     max_iter::Int64 = 100000, # not used
-    ftol_loc::Float64 = 1e-3
+    ftol_loc::Float64 = 1e-3,
+
+    q::Float64 = ftol_loc # d2d parameter
 )
     # set counter scope
     counter::Int64 = 0
@@ -45,17 +47,14 @@ function params_intervals_d2d(
 
     function loss_func_upd(params::Vector{Float64})
         loss = loss_func(params)
-
         counter += 1
 
-        println("f_$counter($params), loss=$loss")
+        # println("f_$counter($params), loss=$loss")
         return loss
     end
 
     # Logscale
-    params = copy(init_params)
-    n_params = length(params)
-    @. params = garmonize(init_params, logscale)
+    params = garmonize.(init_params, logscale)
     scan_bound_garm = garmonize(scan_bound, logscale[id])
 
     function profile_func(id::Int64, params::Vector{Float64})
@@ -64,27 +63,26 @@ function params_intervals_d2d(
             return params, loss
         else
             function fit_params_func(p,g)
-                loss = loss_func_upd(insert!(copy(p),id,params[id]))
+                loss = loss_func_upd(insert!(copy(p), id, params[id]))
                 loss
              end
             opt = Opt(local_alg, length(params)-1)
             min_objective!(opt, fit_params_func)
             ftol_abs!(opt, ftol_loc)
-            (loss,minx,ret) = optimize(opt, deleteat!(copy(params), id))
+            (loss, minx, ret) = optimize(opt, deleteat!(copy(params), id))
             return insert!(minx,id,params[id]), loss
         end
     end
 
     # init d2d settings
-    q = ftol_loc # XXX: ???
     init_loss = loss_func_upd(params)
     delta_alpha = loss_crit - init_loss
-    q_delta_alpha = q*delta_alpha
+    q_delta_alpha = q * delta_alpha
     dps = zeros(length(params))
     minstepsize = 1e-6 # minumum size of a step
-    maxstepsize = 0.4*params[id]
-    init_step = maxstepsize/2.1
-    maxsteps = 1e3 # not implemented
+    maxstepsize = 0.4 * params[id] # XXX: magic number
+    init_step = maxstepsize / 2.1 # XXX: magic number
+    # maxsteps = 1e3 # not implemented
 
     for step in (-init_step, init_step)
         # Iterations counter
@@ -123,8 +121,9 @@ function params_intervals_d2d(
         loss_final[p_id] = loss
     end
     println("PLE intervals = $intervals")
-    return intervals, count_evals, ret_codes, loss_final
-end
+
+    return intervals, ret_codes, count_evals, loss_final
+end # function
 
 function getStepDirect(
     id::Int64,                # p[jk] id

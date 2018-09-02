@@ -8,6 +8,21 @@ garmonize(b::Vector{Float64}, logscale::Bool) = logscale ? log10.(b) : b
 ungarmonize(x::Float64, logscale::Bool) = logscale ? exp10(x) : x
 ungarmonize(x::Vector{Float64}, logscale::Bool) = logscale ? exp10.(x) : x
 
+"Structure storing result of parameter interval calculation"
+struct ParamInterval
+    intervals::Array{Float64}
+    ret_codes::Array{Symbol}
+    count_evals::Array{Int64}
+    loss_final::Array{Float64}
+
+	method::Symbol
+	loss_crit::Float64
+	scan_bound::Array{Float64}
+	alg_loc::Symbol
+	ftol_loc::Float64
+    ftol_actual::Array{Float64}
+end
+
 """
 # Input:
     init_params - initial parameters vector
@@ -54,10 +69,19 @@ function params_intervals(
     counter::Int64 = 0
 
     # Output
-    intervals = Vector{Float64}(2)
-    ret_codes = Vector{Symbol}(2)
-    count_evals = Vector{Int64}(2)
-    loss_final = Vector{Float64}(2)
+    result = ParamInterval(
+        Vector{Float64}(2),
+        Vector{Symbol}(2),
+        Vector{Int64}(2),
+        Vector{Float64}(2),
+
+		:one,
+		loss_crit,
+		scan_bound,
+		local_alg,
+		ftol_loc,
+        Vector{Float64}(2)
+    )
 
     # Checking arguments
     # init_params
@@ -83,9 +107,7 @@ function params_intervals(
     # Constraints function
     function constraints_func(x, g)
         x_initial_scale = ungarmonize.(x, logscale) # potentiation
-        loss = loss_func(x_initial_scale) - loss_crit
-
-        counter += 1
+        loss = loss_func(x_initial_scale) - loss_crit; counter += 1
 
         if !(scan_bound[1] <= x_initial_scale[id] <= scan_bound[2]) && loss < 0.
             throw(ForcedStop())
@@ -115,19 +137,20 @@ function params_intervals(
 
         # if bounds reached
         if ret == :FORCED_STOP
-            intervals[int_id] = minmax == :min ? scan_bound[1] : scan_bound[2]
-            ret_codes[int_id] = :BOUNDS_REACHED
+            result.intervals[int_id] = minmax == :min ? scan_bound[1] : scan_bound[2]
+            result.ret_codes[int_id] = :BOUNDS_REACHED
         else
-            intervals[int_id] = ungarmonize(optx[id], logscale[id])
-            ret_codes[int_id] = ret
+            result.intervals[int_id] = ungarmonize(optf, logscale[id])
+            result.ret_codes[int_id] = ret
         end
 
-        loss_final[int_id] = loss_func(ungarmonize.(optx, logscale))
-        counter += 1
-        count_evals[int_id] = counter
+        result.loss_final[int_id] = loss_func(ungarmonize.(optx, logscale)); counter += 1
+
+        result.ftol_actual[int_id] = abs(result.loss_final[int_id] - result.loss_crit)
+        result.count_evals[int_id] = counter
     end
 
-    intervals, ret_codes, count_evals, loss_final
+    result # return
 end # function
 
 """
