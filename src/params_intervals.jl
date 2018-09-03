@@ -21,6 +21,8 @@ struct ParamInterval
 	alg_loc::Symbol
 	ftol_loc::Float64
     ftol_actual::Array{Float64}
+
+    # profile_buffer::Array{Float64, 2}
 end
 
 """
@@ -75,7 +77,7 @@ function params_intervals(
         Vector{Int64}(2),
         Vector{Float64}(2),
 
-		:one,
+		:ONE_PASS,
 		loss_crit,
 		scan_bound,
 		local_alg,
