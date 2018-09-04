@@ -8,21 +8,26 @@ garmonize(b::Vector{Float64}, logscale::Bool) = logscale ? log10.(b) : b
 ungarmonize(x::Float64, logscale::Bool) = logscale ? exp10(x) : x
 ungarmonize(x::Vector{Float64}, logscale::Bool) = logscale ? exp10.(x) : x
 
+struct ProfilePoint
+    loss::Float64
+    params::Array{Float64, 1}
+end
+
 "Structure storing result of parameter interval calculation"
 struct ParamInterval
-    intervals::Array{Float64}
-    ret_codes::Array{Symbol}
-    count_evals::Array{Int64}
-    loss_final::Array{Float64}
+    intervals::Array{Float64, 1}
+    ret_codes::Array{Symbol, 1}
+    count_evals::Array{Int64, 1}
+    loss_final::Array{Float64, 1}
 
 	method::Symbol
 	loss_crit::Float64
-	scan_bound::Array{Float64}
+	scan_bound::Array{Float64,1}
 	alg_loc::Symbol
-	ftol_loc::Float64
-    ftol_actual::Array{Float64}
+	ptol::Float64
+    losstol::Float64
 
-    # profile_buffer::Array{Float64, 2}
+    profile_buffer::Array{ProfilePoint, 1}
 end
 
 """
@@ -38,7 +43,7 @@ end
     local_alg - local fitting algorithm (default - :LN_NELDERMEAD)
     bounds - bound constraints for all parameters except id
     max_iter - ???
-    ftol_loc - fitting tolerance for local optimizer (default - 1e3)
+    ptol - fitting tolerance for local optimizer (default - 1e-3)
 
 # Return:
     confidence intervals evaluation:
@@ -63,9 +68,9 @@ function params_intervals(
         logscale
     ),
     max_iter::Int64 = 100000,
-    ftol_loc::Float64 = 1e-3,
-    # ftol_glob::Float64 = 0.,
-    # tol_const::Float64 = 1e-3
+    ptol::Float64 = 1e-3,
+    losstol::Float64 = 1e-3, # tol_const::Float64 = 1e-3
+    # ftol_glob::Float64 = 0.
 )
     # set counter scope
     counter::Int64 = 0
@@ -81,8 +86,10 @@ function params_intervals(
 		loss_crit,
 		scan_bound,
 		local_alg,
-		ftol_loc,
-        Vector{Float64}(2)
+		ptol,
+        losstol,
+
+        []
     )
 
     # Checking arguments
@@ -119,36 +126,39 @@ function params_intervals(
     end
 
     # Confidence interval search
-    for minmax in (:min, :max)
-        int_id = minmax == :min ? 1 : 2
+    for min_max in (:min, :max)
+        int_id = min_max == :min ? 1 : 2
         counter = 0
 
         (optf, optx, ret) = params_intervals_one_side(
             params,
             optim_func,
             constraints_func,
-            minmax;
+            min_max;
             bounds = bounds_garm,
             fit_alg = fit_alg,
             local_alg = local_alg,
-            ftol_loc = ftol_loc,
-            # ftol_glob::Float64 = 1e-3, # tolerance of global method
-            # tol_const::Float64 = 1e-3 # tolerance of constraints
+            ftol_loc = ptol,
+            tol_const = losstol,
             max_iter = max_iter
         )
 
         # if bounds reached
         if ret == :FORCED_STOP
-            result.intervals[int_id] = minmax == :min ? scan_bound[1] : scan_bound[2]
+            # result.intervals[int_id] = min_max == :min ? scan_bound[1] : scan_bound[2]
             result.ret_codes[int_id] = :BOUNDS_REACHED
         else
             result.intervals[int_id] = ungarmonize(optf, logscale[id])
+            local params_final = ungarmonize.(optx, logscale)
+            local loss_final = loss_func(params_final); counter += 1
+            push!(
+                result.profile_buffer,
+                ProfilePoint(loss_final, params_final)
+            )
             result.ret_codes[int_id] = ret
         end
 
         result.loss_final[int_id] = loss_func(ungarmonize.(optx, logscale)); counter += 1
-
-        result.ftol_actual[int_id] = abs(result.loss_final[int_id] - result.loss_crit)
         result.count_evals[int_id] = counter
     end
 
@@ -160,7 +170,7 @@ end # function
     init_params - initial parameters vector
     optim_func - ???
     constraints_func - ???
-    minmax - ???
+    min_max - ???
 
     fit_alg - fitting algorithm (default - :LN_AUGLAG)
     local_alg - local fitting algorithm (default - :LN_NELDERMEAD)
@@ -175,15 +185,15 @@ function params_intervals_one_side(
     init_params::Vector{Float64},
     optim_func::Function,
     constraints_func::Function,
-    minmax::Symbol;
+    min_max::Symbol;
 
     fit_alg::Symbol = :LN_AUGLAG,
     local_alg::Symbol = :LN_NELDERMEAD,
     bounds::Vector{Vector{Float64}} = fill([-Inf, Inf], length(init_params)),
-    max_iter::Int64 = 100000,
-    ftol_loc::Float64 = 1e-3
+    ftol_loc::Float64 = 1e-3,
+    tol_const::Float64 = 1e-3, # tolerance of constraints
     # ftol_glob::Float64 = 1e-3, # tolerance of global method
-    # tol_const::Float64 = 1e-3 # tolerance of constraints
+    max_iter::Int64 = 100000
 )
     # dim of the problem
     n_params = length(init_params)
@@ -192,7 +202,7 @@ function params_intervals_one_side(
     opt = Opt(fit_alg, n_params)
 
     # min or max
-    if minmax == :min
+    if min_max == :min
         min_objective!(opt, optim_func)
     else
         max_objective!(opt, optim_func)
@@ -227,7 +237,7 @@ function params_intervals_one_side(
 
     # inequality constraints
     # inequality_constraint!(opt, constraints_func, )
-    inequality_constraint!(opt, constraints_func)
+    inequality_constraint!(opt, constraints_func, tol_const)
 
     # return
     (optf, optx, ret) = optimize(opt, init_params)

@@ -63,5 +63,5 @@ end
 result
 
 open("result.json", "w") do f
-    write(f, JSON.json(result))
+    JSON.print(f, result, 4)
 end
