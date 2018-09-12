@@ -1,30 +1,9 @@
-# Pkg.add("NLopt")
+# Calculate interval with D2D_PLE method
+function interval_calc(input::ParamInput, ::Val{:D2D_PLE}, result::ParamInterval)
+    # unpack parameters e.x input.init_params to init_params
+    @unpack init_params, id, loss_crit, loss_func, logscale, scan_bound,
+    bounds, local_alg, max_iter, ptol, losstol = input
 
-using NLopt
-
-function params_intervals_d2d(
-    init_params::Vector{Float64},
-    id::Int64,
-    loss_crit::Float64,
-    loss_func::Function;
-
-    logscale_all::Bool = false,
-    logscale::Vector{Bool} = fill(logscale_all, length(init_params)),
-    scan_bound::Vector{Float64} = ungarmonize.(
-        [-9., 9.],
-        logscale[id]
-    ),
-    fit_alg::Symbol = :LN_BOBYQA, # not used
-    local_alg::Symbol = :LN_NELDERMEAD,
-    bounds::Vector{Vector{Float64}} = ungarmonize.( # not used
-        fill([-Inf, Inf], length(init_params)),
-        logscale
-    ),
-    max_iter::Int64 = 100000, # not used
-    ftol_loc::Float64 = 1e-3,
-
-    q::Float64 = ftol_loc # d2d parameter
-)
     # set counter scope
     counter::Int64 = 0
 
@@ -57,24 +36,34 @@ function params_intervals_d2d(
     params = garmonize.(init_params, logscale)
     scan_bound_garm = garmonize(scan_bound, logscale[id])
 
+
+    lb = minimum.(bounds)
+    ub = maximum.(bounds)
+
     function profile_func(id::Int64, params::Vector{Float64})
         if length(params) == 1
             loss = loss_func_upd(params)
             return params, loss
         else
-            function fit_params_func(p,g)
-                loss = loss_func_upd(insert!(copy(p), id, params[id]))
-                loss
-             end
-            opt = Opt(local_alg, length(params)-1)
+            fit_params_func(p,g) = loss_func_upd(p)
+
+            opt = Opt(local_alg, length(params))
             min_objective!(opt, fit_params_func)
-            ftol_abs!(opt, ftol_loc)
-            (loss, minx, ret) = optimize(opt, deleteat!(copy(params), id))
-            return insert!(minx,id,params[id]), loss
+            ftol_abs!(opt, ptol)
+
+            # exclude params[id] from optimization
+            lb[id] = params[id]
+            ub[id] = params[id]
+            lower_bounds!(opt, lb)
+            upper_bounds!(opt, ub)
+
+            (loss,minx,ret) = optimize(opt, params)
+            return minx, loss
         end
     end
 
     # init d2d settings
+    q = losstol # ?? losstol
     init_loss = loss_func_upd(params)
     delta_alpha = loss_crit - init_loss
     q_delta_alpha = q * delta_alpha
@@ -105,24 +94,24 @@ function params_intervals_d2d(
                 maxstepsize
             )
             if isnan(step)
-                    ret_codes[p_id] = :BOUNDS_REACHED
+                    result.ret_codes[p_id] = :BOUNDS_REACHED
                     break
             end
             dps[id] = step
             p_trial = ps + dps
             ps, loss = profile_func(id, p_trial)
             if loss > init_loss + delta_alpha #*1.2
-                    ret_codes[p_id] = :FTOL_REACHED
+                    result.ret_codes[p_id] = :FTOL_REACHED
                     break
             end
         end
-        intervals[p_id] = ps[id]
-        count_evals[p_id] = counter
-        loss_final[p_id] = loss
+        result.intervals[p_id] = ps[id]
+        result.count_evals[p_id] = counter
+        result.loss_final[p_id] = loss
     end
-    println("PLE intervals = $intervals")
+    #println("PLE intervals = $intervals")
 
-    return intervals, ret_codes, count_evals, loss_final
+    result
 end # function
 
 function getStepDirect(
@@ -156,7 +145,7 @@ function getStepDirect(
                 lbub = "lower"
             end
         end
-        println("PLE_$id parameter hit boundary")
+        println("WARNING: PLE_$id parameter hit boundary")
         return NaN
     else
         ps[id] = ps[id] + step
@@ -176,7 +165,7 @@ function getStepDirect(
             end
         end
 
-        println("step=$step")
+        #println("step=$step")
         return step
     end
 end

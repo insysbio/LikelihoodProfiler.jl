@@ -12,7 +12,7 @@ using Plots
         tol - fitting tolerance (default - 1e-3)
         max_recursions - ???
 # Return:
-        parameter profile plot
+        parameter profile grid
 """
 function params_plot(
     params::Vector{Float64},
@@ -60,6 +60,7 @@ function params_plot(
         end
     end
     # adapted_grid
+    #=
     grid = adapted_grid(profile_func,interval; max_recursions = max_recursions)
     println("grid = $grid")
     gr = plot(grid[1], grid[2], label="param_$id");
@@ -68,4 +69,8 @@ function params_plot(
 
     # return plot
     return gr
+    =#
+
+    # adapted_grid
+    adapted_grid(profile_func,interval; max_recursions = max_recursions)
 end
