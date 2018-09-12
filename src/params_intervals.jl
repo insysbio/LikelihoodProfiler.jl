@@ -8,6 +8,7 @@ garmonize(b::Vector{Float64}, logscale::Bool) = logscale ? log10.(b) : b
 ungarmonize(x::Float64, logscale::Bool) = logscale ? exp10(x) : x
 ungarmonize(x::Vector{Float64}, logscale::Bool) = logscale ? exp10.(x) : x
 
+"Structure storing one point from profile"
 struct ProfilePoint
     loss::Float64
     params::Array{Float64, 1}
@@ -15,19 +16,19 @@ end
 
 "Structure storing result of parameter interval calculation"
 struct ParamInterval
-    intervals::Array{Float64, 1}
-    ret_codes::Array{Symbol, 1}
-    count_evals::Array{Int64, 1}
-    loss_final::Array{Float64, 1}
+    intervals::Array{Float64, 1} # result of interval calculation. If open intervals than undefined
+    ret_codes::Array{Symbol, 1} # returned result: :BOUNDS_REACHED if cannot calculate, :FTOL_REACHED if everything ok
+    count_evals::Array{Int64, 1} # count of loss_func calls
+    loss_final::Array{Float64, 1} # value of loss_func calculated on intervals or scan_bound
 
-	method::Symbol
-	loss_crit::Float64
-	scan_bound::Array{Float64,1}
-	alg_loc::Symbol
-	ptol::Float64
-    losstol::Float64
+	method::Symbol # method of interval calculation: :ONE_PASS (our method)
+	loss_crit::Float64 # critical level of loss function
+	scan_bound::Array{Float64,1} # parameteer bound for scan
+	alg_loc::Symbol # algorythm of fitting, now tested on :LN_NELDERMEAD
+	ptol::Float64 # required tolerance for interval estimation
+    losstol::Float64 # required tolerance for loss_function at intervals
 
-    profile_buffer::Array{ProfilePoint, 1}
+    profile_buffer::Array{ProfilePoint, 1} # storage for true points of loss_func profile
 end
 
 """
@@ -61,7 +62,7 @@ function params_intervals(
         [-9., 9.],
         logscale[id]
     ),
-    fit_alg::Symbol = :LN_AUGLAG,
+    # fit_alg::Symbol = :LN_AUGLAG,
     local_alg::Symbol = :LN_NELDERMEAD,
     bounds::Vector{Vector{Float64}} = ungarmonize.(
         fill([-Inf, Inf], length(init_params)),
@@ -128,7 +129,7 @@ function params_intervals(
     # Confidence interval search
     for min_max in (:min, :max)
         int_id = min_max == :min ? 1 : 2
-        counter = 0
+        counter = 0 # set zero counter
 
         (optf, optx, ret) = params_intervals_one_side(
             params,
@@ -136,7 +137,7 @@ function params_intervals(
             constraints_func,
             min_max;
             bounds = bounds_garm,
-            fit_alg = fit_alg,
+            # fit_alg = fit_alg,
             local_alg = local_alg,
             ftol_loc = ptol,
             tol_const = losstol,
@@ -145,7 +146,7 @@ function params_intervals(
 
         # if bounds reached
         if ret == :FORCED_STOP
-            # result.intervals[int_id] = min_max == :min ? scan_bound[1] : scan_bound[2]
+            # result.intervals[int_id] = ungarmonize(optf, logscale[id])
             result.ret_codes[int_id] = :BOUNDS_REACHED
         else
             result.intervals[int_id] = ungarmonize(optf, logscale[id])
