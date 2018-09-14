@@ -1,39 +1,35 @@
 using Plots
 
 """
-# Input:
-        params - initial parameters vector
-        id - id of the parameter for analysis
-        maxf - loss function maximum value, "identifiability level"
-        loss_func - loss function
-        interval - interval for plot
-        fit_alg - fitting algorithm (default - :LN_NELDERMEAD)
-        bounds_params - ???
-        tol - fitting tolerance (default - 1e-3)
-        max_recursions - ???
-# Return:
-        parameter profile grid
+    params_plot(params::Vector{Float64}, id::Int64, loss_func::Function,
+    interval::Tuple{Float64,Float64}; <keyword arguments>)
+
+Computes `adapted_grid` for `loss_func` and `id` parameter values from the `interval`.
+See also: `Plots.adapted_grid`
+
+# Arguments
+- `fit_alg::Symbol`: fitting algorithm (default `:LN_NELDERMEAD`).
+- `bounds::Vector{Vector{Float64}}`: bound constraints for all parameters (default `[-Inf,Inf]`).
+- `tol::Float64`: fitting tolerance (default `ftol_abs = 1e-3`).
+- `max_recursions::Int64`: how many times each interval is allowed to be refined (default `2`).
 """
 function params_plot(
     params::Vector{Float64},
     id::Int64,
-    maxf::Float64,
     loss_func::Function,
     interval::Tuple{Float64,Float64};
     fit_alg::Symbol = :LN_NELDERMEAD,
-    bounds_params::Vector{Vector{Float64}} = fill(
+    bounds::Vector{Vector{Float64}} = fill(
         [-Inf, Inf],
         length(params)
     ),
     tol::Float64 = 1e-3,
     max_recursions::Int64 = 2
 )
-    # cheking arguments
-    (loss_func(params) > maxf) && throw(ArgumentError("Check params and maxf: loss_func(params) should be <= maxf"))
 
     # bounds
-    lb = minimum.(bounds_params)
-    ub = maximum.(bounds_params)
+    lb = minimum.(bounds)
+    ub = maximum.(bounds)
 
     # function to be used in adapted_grid
     function profile_func(x::Float64)
@@ -64,7 +60,7 @@ function params_plot(
     grid = adapted_grid(profile_func,interval; max_recursions = max_recursions)
     println("grid = $grid")
     gr = plot(grid[1], grid[2], label="param_$id");
-    hline!([maxf], label="crit_level $maxf")
+    hline!([loss_crit], label="crit_level $loss_crit")
     scatter!(grid[1], grid[2], label="plot_grid")
 
     # return plot

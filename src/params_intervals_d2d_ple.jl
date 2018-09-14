@@ -1,5 +1,5 @@
 # Calculate interval with D2D_PLE method
-function interval_calc(input::ParamInput, ::Val{:D2D_PLE}, result::ParamInterval)
+function interval_calc(input::ParamInput, ::Val{:D2D_PLE})
     # unpack parameters e.x input.init_params to init_params
     @unpack init_params, id, loss_crit, loss_func, logscale, scan_bound,
     bounds, local_alg, max_iter, ptol, losstol = input
@@ -8,27 +8,20 @@ function interval_calc(input::ParamInput, ::Val{:D2D_PLE}, result::ParamInterval
     counter::Int64 = 0
 
     # Output
-    intervals = Vector{Float64}(2)
-    ret_codes = Vector{Symbol}(2)
-    count_evals = Vector{Int64}(2)
-    loss_final = Vector{Float64}(2)
+    result = ParamInterval(
+        input,
+        Vector{Float64}(2),
+        Vector{Symbol}(2),
+        Vector{Int64}(2),
+        Vector{Float64}(2),
 
-    # Checking arguments
-    # init_params
-    !(loss_func(init_params) < loss_crit) &&
-        throw(ArgumentError("Check init_params and loss_crit: loss_func(init_params) should be < loss_crit"))
-    # scan bounds should be within bounds
-    !(bounds[id][1] < scan_bound[1] < scan_bound[2] < bounds[id][2]) &&
-        throw(ArgumentError("scan bounds are outside of the bounds $bound[id]"))
-    # init_params should be within scan_bound
-    !(scan_bound[1] < init_params[id] < scan_bound[2]) &&
-        throw(ArgumentError("init values are outside of the scan_bound $scan_bound"))
+        []
+    )
 
     function loss_func_upd(params::Vector{Float64})
         loss = loss_func(params)
         counter += 1
 
-        # println("f_$counter($params), loss=$loss")
         return loss
     end
 

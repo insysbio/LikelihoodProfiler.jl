@@ -1,11 +1,22 @@
 # Calculate interval with ONE_PASS method
-function interval_calc(input::ParamInput, ::Val{:ONE_PASS}, result::ParamInterval)
-    # unpack parameters e.x input.init_params to init_params
+function interval_calc(input::ParamInput, ::Val{:ONE_PASS})
+
     @unpack init_params, id, loss_crit, loss_func, logscale, scan_bound,
     bounds, local_alg, max_iter, ptol, losstol = input
 
     # set counter scope
     counter::Int64 = 0
+
+    # Output
+    result = ParamInterval(
+        input,
+        Vector{Float64}(2),
+        Vector{Symbol}(2),
+        Vector{Int64}(2),
+        Vector{Float64}(2),
+
+        []
+    )
 
     # garmonize init_params
     params = garmonize.(init_params, logscale)

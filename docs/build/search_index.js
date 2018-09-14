@@ -61,7 +61,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Basics",
     "title": "ParametersIdentification.params_intervals",
     "category": "function",
-    "text": "params_intervals(init_params::Vector{Float64},\n        id::Int64,\n        maxf::Float64,\n        loss_func::Function,\n        logscale::Vector{Bool};\n        fit_alg::Symbol=:LN_AUGLAG,\n        local_alg::Symbol=:LN_SBPLX,\n        init_bounds::Vector{Float64} = [1e-9,1e9],\n        tol_val::Float64 = 1e-4,\n        solver::Symbol=:NLOPT)\n\nInput:\n\n    init_params - initial parameters vector\n    id - id of the parameter for analysis\n    maxf - loss function maximum value, \"identifiability level\"\n    loss_func - loss function\n    logscale - bool vector length(init_params) where true - log scale / false - direct scale\n    fit_alg - fitting algorithm (default - :LN_AUGLAG)\n    local_alg - local fitting algorithm (default - :LN_SBPLX)\n    init_bounds - search bounds (default - [1e-9,1e9])\n    tol_val - fitting tolerance (default - 1e-4)\n    solver - fitting solver (default - :NLOPT)\n\nReturn:\n\n    confidence intervals evaluation:\n    (interval, termination reason, numer of evaluations)\n\n\n\n"
+    "text": "Input:\n\ninit_params - initial parameters vector\nid - id of the parameter for analysis\nloss_crit - loss function maximum value, \"identifiability level\"\nloss_func - loss function\nlogscale_all - set logscale for all parameters to true / false\nlogscale - bool vector length(init_params) where true - log scale / false - direct scale\nscan_bound - search bounds for id parameter (default - [1e-9,1e9])\nfit_alg - fitting algorithm (default - :LN_AUGLAG)\nlocal_alg - local fitting algorithm (default - :LN_NELDERMEAD)\nbounds - bound constraints for all parameters except id\nmax_iter - maximum function evaluations\nptol - fitting tolerance for local optimizer (default - 1e-3)\nlosstol - constraints tolerance\n\nReturn:\n\nconfidence intervals evaluation:\n(interval, termination reason, numer of evaluations, loss value)\n\n\n\n\n\n"
 },
 
 {
@@ -69,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Basics",
     "title": "ParametersIdentification.params_plot",
     "category": "function",
-    "text": "params_plot(init_params::Vector{Float64},\n            id::Int64,\n            interval::Tuple{Float64,Float64},\n            loss_func::Function,\n            maxf::Float64;\n            fit_alg::Symbol=:LN_NELDERMEAD,\n            tol_val::Float64=1e-4)\n\nInput:\n\n    init_params - initial parameters vector\n    id - id of the parameter for analysis\n    interval - interval for plot\n    loss_func - loss function\n    maxf - loss function maximum value, \"identifiability level\"\n    fit_alg - fitting algorithm (default - :LN_NELDERMEAD)\n    tol_val - fitting tolerance (default - 1e-4)\n\nReturn:\n\n    parameter profile plot\n\n\n\n"
+    "text": "Input:\n\n    params - initial parameters vector\n    id - id of the parameter for analysis\n    maxf - loss function maximum value, \"identifiability level\"\n    loss_func - loss function\n    interval - interval for plot\n    fit_alg - fitting algorithm (default - :LN_NELDERMEAD)\n    bounds_params - ???\n    tol - fitting tolerance (default - 1e-3)\n    max_recursions - ???\n\nReturn:\n\n    parameter profile grid\n\n\n\n\n\n"
 },
 
 {

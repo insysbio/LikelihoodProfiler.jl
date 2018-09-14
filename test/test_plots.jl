@@ -1,4 +1,4 @@
-include("./test_func.jl")
+include("./cases_func.jl")
 
 using ParametersIdentification
 

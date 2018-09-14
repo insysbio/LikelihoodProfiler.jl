@@ -1,33 +1,23 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basics · ParametersIdentification</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>ParametersIdentification</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="index.html">Overview</a></li><li class="current"><a class="toctext" href="basics.html">Basics</a><ul class="internal"><li><a class="toctext" href="#Functions-1">Functions</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href="basics.html">Basics</a></li></ul><a class="edit-page" href="https://github.com//blob/master/docs/src/basics.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Basics</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Basics-1" href="#Basics-1">Basics</a></h1><p>The package exports the following functions for <strong>parameters identifiability analysis</strong>, <strong>confidence intervals evaluation</strong> and <strong>results visualization</strong>.</p><h2><a class="nav-anchor" id="Functions-1" href="#Functions-1">Functions</a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="ParametersIdentification.params_intervals" href="#ParametersIdentification.params_intervals"><code>ParametersIdentification.params_intervals</code></a> — <span class="docstring-category">Function</span>.</div><div><pre><code class="language-none">params_intervals(init_params::Vector{Float64},
-        id::Int64,
-        maxf::Float64,
-        loss_func::Function,
-        logscale::Vector{Bool};
-        fit_alg::Symbol=:LN_AUGLAG,
-        local_alg::Symbol=:LN_SBPLX,
-        init_bounds::Vector{Float64} = [1e-9,1e9],
-        tol_val::Float64 = 1e-4,
-        solver::Symbol=:NLOPT)</code></pre><p><strong>Input:</strong></p><pre><code class="language-none">    init_params - initial parameters vector
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basics · ParametersIdentification</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>ParametersIdentification</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="index.html">Overview</a></li><li class="current"><a class="toctext" href="basics.html">Basics</a><ul class="internal"><li><a class="toctext" href="#Functions-1">Functions</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href="basics.html">Basics</a></li></ul><a class="edit-page" href="https://github.com//blob/master/docs/src/basics.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Basics</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Basics-1" href="#Basics-1">Basics</a></h1><p>The package exports the following functions for <strong>parameters identifiability analysis</strong>, <strong>confidence intervals evaluation</strong> and <strong>results visualization</strong>.</p><h2><a class="nav-anchor" id="Functions-1" href="#Functions-1">Functions</a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="ParametersIdentification.params_intervals" href="#ParametersIdentification.params_intervals"><code>ParametersIdentification.params_intervals</code></a> — <span class="docstring-category">Function</span>.</div><div><div><p><strong>Input:</strong></p><pre><code class="language-none">init_params - initial parameters vector
+id - id of the parameter for analysis
+loss_crit - loss function maximum value, &quot;identifiability level&quot;
+loss_func - loss function
+logscale_all - set logscale for all parameters to true / false
+logscale - bool vector length(init_params) where true - log scale / false - direct scale
+scan_bound - search bounds for id parameter (default - [1e-9,1e9])
+fit_alg - fitting algorithm (default - :LN_AUGLAG)
+local_alg - local fitting algorithm (default - :LN_NELDERMEAD)
+bounds - bound constraints for all parameters except id
+max_iter - maximum function evaluations
+ptol - fitting tolerance for local optimizer (default - 1e-3)
+losstol - constraints tolerance</code></pre><p><strong>Return:</strong></p><pre><code class="language-none">confidence intervals evaluation:
+(interval, termination reason, numer of evaluations, loss value)</code></pre></div></div></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="ParametersIdentification.params_plot" href="#ParametersIdentification.params_plot"><code>ParametersIdentification.params_plot</code></a> — <span class="docstring-category">Function</span>.</div><div><div><p><strong>Input:</strong></p><pre><code class="language-none">    params - initial parameters vector
     id - id of the parameter for analysis
     maxf - loss function maximum value, &quot;identifiability level&quot;
     loss_func - loss function
-    logscale - bool vector length(init_params) where true - log scale / false - direct scale
-    fit_alg - fitting algorithm (default - :LN_AUGLAG)
-    local_alg - local fitting algorithm (default - :LN_SBPLX)
-    init_bounds - search bounds (default - [1e-9,1e9])
-    tol_val - fitting tolerance (default - 1e-4)
-    solver - fitting solver (default - :NLOPT)</code></pre><p><strong>Return:</strong></p><pre><code class="language-none">    confidence intervals evaluation:
-    (interval, termination reason, numer of evaluations)</code></pre></div></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="ParametersIdentification.params_plot" href="#ParametersIdentification.params_plot"><code>ParametersIdentification.params_plot</code></a> — <span class="docstring-category">Function</span>.</div><div><pre><code class="language-none">params_plot(init_params::Vector{Float64},
-            id::Int64,
-            interval::Tuple{Float64,Float64},
-            loss_func::Function,
-            maxf::Float64;
-            fit_alg::Symbol=:LN_NELDERMEAD,
-            tol_val::Float64=1e-4)</code></pre><p><strong>Input:</strong></p><pre><code class="language-none">    init_params - initial parameters vector
-    id - id of the parameter for analysis
     interval - interval for plot
-    loss_func - loss function
-    maxf - loss function maximum value, &quot;identifiability level&quot;
     fit_alg - fitting algorithm (default - :LN_NELDERMEAD)
-    tol_val - fitting tolerance (default - 1e-4)</code></pre><p><strong>Return:</strong></p><pre><code class="language-none">    parameter profile plot</code></pre></div></section><footer><hr/><a class="previous" href="index.html"><span class="direction">Previous</span><span class="title">Overview</span></a></footer></article></body></html>
+    bounds_params - ???
+    tol - fitting tolerance (default - 1e-3)
+    max_recursions - ???</code></pre><p><strong>Return:</strong></p><pre><code class="language-none">    parameter profile grid</code></pre></div></div></section><footer><hr/><a class="previous" href="index.html"><span class="direction">Previous</span><span class="title">Overview</span></a></footer></article></body></html>

@@ -20,7 +20,7 @@ struct ParamInput
     id::Int64 # id of the parameter for analysis
     loss_crit::Float64 # loss function maximum value, "identifiability level"
     loss_func::Function # loss function
-
+    method::Symbol # method ONE_PASS, D2D_PLE
     logscale::Vector{Bool} # bool vector length(init_params) where true - log scale / false - direct scale
     scan_bound::Vector{Float64} # search bounds for id parameter (default - [1e-9,1e9])
     bounds::Vector{Vector{Float64}} # bound constraints for all parameters except id
@@ -32,40 +32,34 @@ end
 
 "Structure storing result of parameter interval calculation"
 struct ParamInterval
+    input::ParamInput # input data
     intervals::Array{Float64, 1} # result of interval calculation. If open intervals than undefined
     ret_codes::Array{Symbol, 1} # returned result: :BOUNDS_REACHED if cannot calculate, :FTOL_REACHED if everything ok
     count_evals::Array{Int64, 1} # count of loss_func calls
     loss_final::Array{Float64, 1} # value of loss_func calculated on intervals or scan_bound
 
-	method::Symbol # method of interval calculation: :ONE_PASS (our method)
-	loss_crit::Float64 # critical level of loss function
-	scan_bound::Array{Float64,1} # parameteer bound for scan
-	local_alg::Symbol # algorythm of fitting, now tested on :LN_NELDERMEAD
-	ptol::Float64 # required tolerance for interval estimation
-    losstol::Float64 # required tolerance for loss_function at intervals
-
     profile_buffer::Array{ProfilePoint, 1} # storage for true points of loss_func profile
 end
 
 """
-# Input:
-    init_params - initial parameters vector
-    id - id of the parameter for analysis
-    loss_crit - loss function maximum value, "identifiability level"
-    loss_func - loss function
-    logscale_all - set logscale for all parameters to true / false
-    logscale - bool vector length(init_params) where true - log scale / false - direct scale
-    scan_bound - search bounds for id parameter (default - [1e-9,1e9])
-    fit_alg - fitting algorithm (default - :LN_AUGLAG)
-    local_alg - local fitting algorithm (default - :LN_NELDERMEAD)
-    bounds - bound constraints for all parameters except id
-    max_iter - maximum function evaluations
-    ptol - fitting tolerance for local optimizer (default - 1e-3)
-    losstol - constraints tolerance
+    params_intervals(init_params::Vector{Float64}, id::Int64,
+    loss_crit::Float64, loss_func::Function; <keyword arguments>)
 
-# Return:
-    confidence intervals evaluation:
-    (interval, termination reason, numer of evaluations, loss value)
+Computes confidence interval for `id` parameter of `init_params` vector and `loss_func`
+according to `loss_crit` confidence level.
+
+Returns `ParamInterval` structure storing all input data and estimated confidence interval.
+
+# Arguments:
+- `method::Symbol`: computational method (`:ONE_PASS`,`:D2D_PLE`).
+- `logscale_all::Bool`: set logscale for all parameters to `true` / `false` (default `false`).
+- `logscale::Vector{Bool}`: set logscale for each parameter (default `false` for all parameters).
+- `scan_bound::Vector{Float64}`: search bounds for id parameter (default `[-9.,9.]`).
+- `local_alg::Symbol`: fitting algorithm (default `:LN_NELDERMEAD`).
+- `bounds::Vector{Vector{Float64}}`: bound constraints for all parameters except `id` (default `[-Inf,Inf]`).
+- `max_iter::Int64`: maximum `loss_func` evaluations (default `10^5`).
+- `ptol::Float64`: fitting tolerance for optimizer (default `1e-3`).
+- `losstol::Float64`: constraints tolerance (default `1e-3`).
 """
 function params_intervals(
     init_params::Vector{Float64},
@@ -110,7 +104,7 @@ function params_intervals(
         id,
         loss_crit,
         loss_func,
-
+        method,
         logscale,
         scan_bound,
         bounds,
@@ -120,22 +114,5 @@ function params_intervals(
         losstol
     )
 
-    # Output
-    result = ParamInterval(
-        Vector{Float64}(2),
-        Vector{Symbol}(2),
-        Vector{Int64}(2),
-        Vector{Float64}(2),
-
-    	method,
-    	loss_crit,
-    	scan_bound,
-    	local_alg,
-    	ptol,
-        losstol,
-
-        []
-    )
-
-    interval_calc(input, Val(method), result)
+    interval_calc(input, Val(method))
 end
