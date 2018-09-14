@@ -50,13 +50,13 @@ according to `loss_crit` confidence level.
 
 Returns `ParamInterval` structure storing all input data and estimated confidence interval.
 
-# Arguments:
+# Arguments
 - `method::Symbol`: computational method (`:ONE_PASS`,`:D2D_PLE`).
 - `logscale_all::Bool`: set logscale for all parameters to `true` / `false` (default `false`).
 - `logscale::Vector{Bool}`: set logscale for each parameter (default `false` for all parameters).
 - `scan_bound::Vector{Float64}`: search bounds for id parameter (default `[-9.,9.]`).
 - `local_alg::Symbol`: fitting algorithm (default `:LN_NELDERMEAD`).
-- `bounds::Vector{Vector{Float64}}`: bound constraints for all parameters except `id` (default `[-Inf,Inf]`).
+- `bounds::Vector{Vector{Float64}}`: bound constraints for all parameters (default `[-Inf,Inf]`).
 - `max_iter::Int64`: maximum `loss_func` evaluations (default `10^5`).
 - `ptol::Float64`: fitting tolerance for optimizer (default `1e-3`).
 - `losstol::Float64`: constraints tolerance (default `1e-3`).
