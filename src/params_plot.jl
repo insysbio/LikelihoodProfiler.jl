@@ -1,4 +1,4 @@
-using Plots
+#using Plots
 
 """
     params_plot(params::Vector{Float64}, id::Int64, loss_func::Function,
@@ -68,5 +68,5 @@ function params_plot(
     =#
 
     # adapted_grid
-    adapted_grid(profile_func,interval; max_recursions = max_recursions)
+    adapted_grid2(profile_func,interval; max_recursions = max_recursions)
 end

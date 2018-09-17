@@ -42,7 +42,7 @@ function interval_calc(input::ParamInput, ::Val{:D2D_PLE})
 
             opt = Opt(local_alg, length(params))
             min_objective!(opt, fit_params_func)
-            ftol_abs!(opt, ptol)
+            ftol_abs!(opt, losstol)
 
             # exclude params[id] from optimization
             lb[id] = params[id]
