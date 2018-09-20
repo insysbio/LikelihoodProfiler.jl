@@ -60,10 +60,10 @@ function interval_calc(input::ParamInput, ::Val{:ONE_PASS})
 
         # if bounds reached
         if ret == :FORCED_STOP
-            # result.intervals[int_id] = ungarmonize(optf, logscale[id])
+            # result.interval[int_id] = ungarmonize(optf, logscale[id])
             result.ret_codes[int_id] = :BOUNDS_REACHED
         else
-            result.intervals[int_id] = ungarmonize(optf, logscale[id])
+            result.interval[int_id] = ungarmonize(optf, logscale[id])
             local params_final = ungarmonize.(optx, logscale)
             local loss_final = loss_func(params_final); counter += 1
             push!(

@@ -98,7 +98,7 @@ function interval_calc(input::ParamInput, ::Val{:D2D_PLE})
                     break
             end
         end
-        result.intervals[p_id] = ps[id]
+        result.interval[p_id] = ps[id]
         result.count_evals[p_id] = counter
         result.loss_final[p_id] = loss
     end

@@ -68,13 +68,13 @@ res_f_5p_3im = [params_intervals(
 
 # tests
 @testset "f_1p" begin
-    @test all(@. isapprox(res_f_1p.intervals, [1.0, 5.0], atol=res_f_1p.input.ptol))
+    @test all(@. isapprox(res_f_1p.interval, [1.0, 5.0], atol=res_f_1p.input.ptol))
     @test all(@. isapprox(res_f_1p.loss_final, [res_f_1p.input.loss_crit, res_f_1p.input.loss_crit], atol=res_f_1p.input.losstol))
     @test res_f_1p.ret_codes == [:FTOL_REACHED, :FTOL_REACHED]
 end
 
 @testset "f_2p_1im" begin
-    @test all(@. isapprox(res_f_2p_1im[1].intervals, [1.0, 5.0], atol=res_f_2p_1im[1].input.ptol))
+    @test all(@. isapprox(res_f_2p_1im[1].interval, [1.0, 5.0], atol=res_f_2p_1im[1].input.ptol))
     @test all(@. isapprox(res_f_2p_1im[1].loss_final, [res_f_2p_1im[1].input.loss_crit, res_f_2p_1im[1].input.loss_crit],
     atol=res_f_2p_1im[1].input.losstol))
     @test res_f_2p_1im[1].ret_codes == [:FTOL_REACHED, :FTOL_REACHED]
@@ -82,18 +82,18 @@ end
 end
 
 @testset "f_2p" begin
-    @test all(@. isapprox(res_f_2p[1].intervals, [1.0, 5.0], atol=res_f_2p[1].input.ptol))
+    @test all(@. isapprox(res_f_2p[1].interval, [1.0, 5.0], atol=res_f_2p[1].input.ptol))
     @test all(@. isapprox(res_f_2p[1].loss_final, [res_f_2p[1].input.loss_crit, res_f_2p[1].input.loss_crit],
     atol=res_f_2p[1].input.losstol))
     @test res_f_2p[1].ret_codes == [:FTOL_REACHED, :FTOL_REACHED]
-    @test all(@. isapprox(res_f_2p[2].intervals, [2.0, 6.0], atol=res_f_2p[2].input.ptol))
+    @test all(@. isapprox(res_f_2p[2].interval, [2.0, 6.0], atol=res_f_2p[2].input.ptol))
     @test all(@. isapprox(res_f_2p[2].loss_final, [res_f_2p[2].input.loss_crit, res_f_2p[2].input.loss_crit],
     atol=res_f_2p[2].input.losstol))
     @test res_f_2p[2].ret_codes == [:FTOL_REACHED, :FTOL_REACHED]
 end
 
 @testset "f_3p_1im" begin
-    @test all(@. isapprox(log10.(res_f_3p_1im[1].intervals), log10.([1.0, 5.0]), atol=res_f_3p_1im[1].input.ptol))
+    @test all(@. isapprox(log10.(res_f_3p_1im[1].interval), log10.([1.0, 5.0]), atol=res_f_3p_1im[1].input.ptol))
     @test all(@. isapprox(res_f_3p_1im[1].loss_final, [res_f_3p_1im[1].input.loss_crit, res_f_3p_1im[1].input.loss_crit],
     atol=res_f_3p_1im[1].input.losstol))
     @test res_f_3p_1im[1].ret_codes == [:FTOL_REACHED, :FTOL_REACHED]
@@ -102,11 +102,11 @@ end
 end
 
 @testset "f_4p_2im" begin
-    @test all(@. isapprox(log10.(res_f_4p_2im[1].intervals), log10.([1.0, 5.0]), atol=res_f_4p_2im[1].input.ptol))
+    @test all(@. isapprox(log10.(res_f_4p_2im[1].interval), log10.([1.0, 5.0]), atol=res_f_4p_2im[1].input.ptol))
     @test all(@. isapprox(res_f_4p_2im[1].loss_final, [res_f_4p_2im[1].input.loss_crit, res_f_4p_2im[1].input.loss_crit],
     atol=res_f_4p_2im[1].input.losstol))
     @test res_f_4p_2im[1].ret_codes == [:FTOL_REACHED, :FTOL_REACHED]
-    @test all(@. isapprox(log10.(res_f_4p_2im[2].intervals), log10.([2.0, 6.0]), atol=res_f_4p_2im[2].input.ptol))
+    @test all(@. isapprox(log10.(res_f_4p_2im[2].interval), log10.([2.0, 6.0]), atol=res_f_4p_2im[2].input.ptol))
     @test all(@. isapprox(res_f_4p_2im[2].loss_final, [res_f_4p_2im[2].input.loss_crit, res_f_4p_2im[2].input.loss_crit],
     atol=res_f_4p_2im[2].input.losstol))
     @test res_f_4p_2im[2].ret_codes == [:FTOL_REACHED, :FTOL_REACHED]
@@ -115,7 +115,7 @@ end
 end
 
 @testset "f_4p_3im" begin
-    @test all(@. isapprox(log10.(res_f_4p_3im[1].intervals), log10.([1.0, 5.0]), atol=res_f_4p_3im[1].input.ptol))
+    @test all(@. isapprox(log10.(res_f_4p_3im[1].interval), log10.([1.0, 5.0]), atol=res_f_4p_3im[1].input.ptol))
     @test all(@. isapprox(res_f_4p_3im[1].loss_final, [res_f_4p_3im[1].input.loss_crit, res_f_4p_3im[1].input.loss_crit],
     atol=res_f_4p_3im[1].input.losstol))
     @test res_f_4p_3im[1].ret_codes == [:FTOL_REACHED, :FTOL_REACHED]
@@ -125,11 +125,11 @@ end
 end
 
 @testset "f_5p_3im" begin
-    @test all(@. isapprox(log10.(res_f_5p_3im[1].intervals), log10.([1.0, 5.0]), atol=res_f_5p_3im[1].input.ptol))
+    @test all(@. isapprox(log10.(res_f_5p_3im[1].interval), log10.([1.0, 5.0]), atol=res_f_5p_3im[1].input.ptol))
     @test all(@. isapprox(res_f_5p_3im[1].loss_final, [res_f_5p_3im[1].input.loss_crit, res_f_5p_3im[1].input.loss_crit],
     atol=res_f_5p_3im[1].input.losstol))
     @test res_f_5p_3im[1].ret_codes == [:FTOL_REACHED, :FTOL_REACHED]
-    @test isapprox(log10(res_f_5p_3im[2].intervals[2]), log10(1.1), atol=res_f_5p_3im[2].input.ptol)
+    @test isapprox(log10(res_f_5p_3im[2].interval[2]), log10(1.1), atol=res_f_5p_3im[2].input.ptol)
     @test res_f_5p_3im[2].ret_codes == [:BOUNDS_REACHED, :FTOL_REACHED]
     @test res_f_5p_3im[3].ret_codes == [:BOUNDS_REACHED, :BOUNDS_REACHED]
     @test res_f_5p_3im[4].ret_codes == [:BOUNDS_REACHED, :BOUNDS_REACHED]

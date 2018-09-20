@@ -70,3 +70,53 @@ function params_plot(
     # adapted_grid
     adapted_grid2(profile_func,interval; max_recursions = max_recursions)
 end
+
+function params_plot(
+    params_interval::ParamInterval;
+    delta::Float64 = 0.2, # magic number
+    max_recursions::Int64 = 2
+)
+    params = params_interval.input.init_params
+    id = params_interval.input.id
+    loss_func = params_interval.input.loss_func
+    interval = (
+        params_interval.ret_codes[1] != :BOUNDS_REACHED ? params_interval.interval[1]-delta : 0.0,
+        params_interval.ret_codes[2] != :BOUNDS_REACHED ? params_interval.interval[2]+delta : params_interval.input.scan_bound[2]
+    )
+    fit_alg = params_interval.input.local_alg
+    bounds = params_interval.input.bounds
+    tol = params_interval.input.losstol
+
+
+    # bounds
+    lb = minimum.(bounds)
+    ub = maximum.(bounds)
+
+    # function to be used in adapted_grid
+    function profile_func(x::Float64)
+        if length(params) == 1
+            return loss_func([x])
+        else
+            # ! params_intervals_one_side can be used here
+            fit_params_func = (p,g) -> loss_func(p)
+            opt = Opt(fit_alg, length(params))
+
+            params[id] = x
+            min_objective!(opt, fit_params_func)
+
+            # excluding params[id] from optimization
+            lb[id] = x
+            ub[id] = x
+            lower_bounds!(opt,lb)
+            upper_bounds!(opt,ub)
+            ftol_abs!(opt,tol)
+
+            (loss,minx,ret) = optimize(opt,params)
+
+            return loss
+        end
+    end
+
+    # adapted_grid
+    adapted_grid2(profile_func,interval; max_recursions = max_recursions)
+end

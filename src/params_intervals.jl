@@ -33,7 +33,7 @@ end
 "Structure storing result of parameter interval calculation"
 struct ParamInterval
     input::ParamInput # input data
-    intervals::Array{Float64, 1} # result of interval calculation. If open intervals than undefined
+    interval::Array{Float64, 1} # result of interval calculation. If open intervals than undefined
     ret_codes::Array{Symbol, 1} # returned result: :BOUNDS_REACHED if cannot calculate, :FTOL_REACHED if everything ok
     count_evals::Array{Int64, 1} # count of loss_func calls
     loss_final::Array{Float64, 1} # value of loss_func calculated on intervals or scan_bound
