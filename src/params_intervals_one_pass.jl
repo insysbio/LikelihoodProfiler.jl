@@ -49,6 +49,7 @@ function interval_calc(input::ParamInput, ::Val{:ONE_PASS})
             params,
             optim_func,
             constraints_func,
+            #id,
             min_max;
             bounds = bounds_garm,
             # fit_alg = fit_alg,
@@ -100,6 +101,7 @@ function params_intervals_one_side(
     init_params::Vector{Float64},
     optim_func::Function,
     constraints_func::Function,
+    # id::Int64
     min_max::Symbol;
 
     fit_alg::Symbol = :LN_AUGLAG,
@@ -136,6 +138,11 @@ function params_intervals_one_side(
         # tolerances
         # ftol_abs!(opt, ftol_glob)
         ftol_abs!(local_opt, ftol_loc)
+        #=
+        xtol = fill(0., n_params)
+        xtol[id] = ftol_loc
+        xtol_abs!(local_opt,xtol)
+        =#
         # bound constraints
         lower_bounds!(opt, lb)
         upper_bounds!(opt, ub)

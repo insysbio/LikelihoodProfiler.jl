@@ -14,3 +14,5 @@ f_4p_3im(x::Vector{Float64}) = 5.0 + (x[1]-3.0)^2 + (x[2]/x[3]-4.0)^2 + 0.0*x[4]
 f_1p_ex(x::Vector{Float64}) = 5.0 + (x[1]-1e-8)^2 # [1e-8, missing, missing, missing]
 
 f_5p_3im(x::Vector{Float64}) = 5.0 + (x[1]-3.0)^2 + (exp(x[2])-1.0)^2 + (x[3]/x[4]-4.0)^2 + 0.0*x[5]
+
+f_3p_im(x::Vector{Float64}) = 5.0 + (x[1]-3.0)^2 + (exp(x[2])-1.0)^2 + 0.0*x[3]

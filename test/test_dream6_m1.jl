@@ -4,7 +4,7 @@ include("./dream6_m1/dream6_m1_@macro.jl")
 
 using NLopt
 # using ParametersIdentification
-include("../src/params_intervals.jl")
+# include("../src/params_intervals.jl")
 
 # Scale types
 mixed_scale = fill(true, length(p0))
@@ -65,3 +65,9 @@ result
 open("result.json", "w") do f
     JSON.print(f, result, 4)
 end
+
+open("result.csv", "w") do f
+    CSV.print(f, result)
+end
+
+[println(r.loss_final) for r in result]

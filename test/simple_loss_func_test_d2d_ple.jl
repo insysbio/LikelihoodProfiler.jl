@@ -66,6 +66,15 @@ res_f_5p_3im = [params_intervals(
     method = :D2D_PLE
 ) for i in 1:5]
 
+res_f_3p_im = [params_intervals(
+    [3., 0.1, 8.],
+    i,
+    9.,
+    f_3p_im,
+    scan_bound = [0.,10^3],
+    logscale_all = false,
+    method = :D2D_PLE
+) for i in 1:3]
 # tests
 @testset "f_1p" begin
     @test all(@. isapprox(res_f_1p.interval, [1.0, 5.0], atol=res_f_1p.input.ptol))
