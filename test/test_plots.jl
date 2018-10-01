@@ -1,6 +1,6 @@
 include("./cases_func.jl")
 
-using ParametersIdentification, Plots
+using LikelihoodProfiler, Plots
 
 params_plot([3.,4.], 1, f_2p, (1.,6.))
 

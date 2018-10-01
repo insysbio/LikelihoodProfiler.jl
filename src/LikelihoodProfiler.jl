@@ -1,6 +1,6 @@
 __precompile__(false)
 
-module ParametersIdentification
+module LikelihoodProfiler
 
 export params_intervals, params_plot
 # includes

@@ -2,9 +2,7 @@ include("./dream6_m1/dream6_m1_@macro.jl")
 
 # using JSON
 
-using NLopt
-# using ParametersIdentification
-# include("../src/params_intervals.jl")
+using NLopt, LikelihoodProfiler
 
 # Scale types
 mixed_scale = fill(true, length(p0))

@@ -1,4 +1,3 @@
-#using ParametersIdentification, Base.Test
 
 include("./cases_func.jl")
 

@@ -1,6 +1,6 @@
 # Overview
 
-**ParametersIdentification** is a Julia package for **identifiability analysis** and confidence intervals evaluation.
+**LikelihoodProfiler** is a Julia package for **identifiability analysis** and confidence intervals evaluation.
 
 ## Installation
 **Julia** [download page](https://julialang.org/downloads/).
@@ -8,9 +8,9 @@ Currently supported **Julia** versions are 0.6, 0.7
 
 To install the package from `REPL`
 ```
-julia> Pkg.add(PackageSpec(url="http://gitlab.insilicobio.ru/development/ParametersIdentification.git"))
+julia> Pkg.add(PackageSpec(url="http://gitlab.insilicobio.ru/development/LLikelihoodProfiler.git"))
 
-julia> using ParametersIdentification
+julia> using LikelihoodProfiler
 ```
 
 ## Objective

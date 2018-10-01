@@ -5,8 +5,8 @@ The package exports the following functions for **parameters identifiability ana
 ## Functions
 
 ```@docs
-ParametersIdentification.params_intervals
+LikelihoodProfiler.params_intervals
 ```
 ```@docs
-ParametersIdentification.params_plot
+LikelihoodProfiler.params_plot
 ```

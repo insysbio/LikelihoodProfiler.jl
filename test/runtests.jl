@@ -1,5 +1,5 @@
 
-using ParametersIdentification, Base.Test
+using LikelihoodProfiler, Base.Test
 
 println("Starting tests for ONE_PASS")
 @time @testset "Simple loss functions" begin include("simple_loss_func_test_one_pass.jl") end

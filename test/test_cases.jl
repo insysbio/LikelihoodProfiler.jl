@@ -1,4 +1,4 @@
-using ParametersIdentification
+using LikelihoodProfiler
 
 include("./cases_func.jl")
 

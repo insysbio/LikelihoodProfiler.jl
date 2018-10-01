@@ -1,5 +1,11 @@
 #=
- This code was taken from ...
+ This code is based on the Matlab Data2Dynamics code.
+ The original implementation is available at https://github.com/Data2Dynamics
+
+ A. Raue, C. Kreutz, T. Maiwald, J. Bachmann, M. Schilling, U. Klingmüller, J. Timmer;
+ Structural and practical identifiability analysis of partially observed
+ dynamical models by exploiting the profile likelihood,
+ Bioinformatics, Volume 25, Issue 15, 1 August 2009, Pages 1923–1929.
 =#
 
 # Calculate interval with D2D_PLE method
