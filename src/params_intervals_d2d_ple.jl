@@ -1,3 +1,7 @@
+#=
+ This code was taken from ...
+=#
+
 # Calculate interval with D2D_PLE method
 function interval_calc(input::ParamInput, ::Val{:D2D_PLE})
     # unpack parameters e.x input.init_params to init_params

@@ -1,3 +1,32 @@
+#=
+This file was taken from PlotUtils.jl package, see
+https://github.com/JuliaPlots/PlotUtils.jl
+
+Some modifications were added to output
+
+The PlotUtils.jl package is licensed under the MIT "Expat" License:
+
+> Copyright (c) 2016: Thomas Breloff*.
+>
+> Permission is hereby granted, free of charge, to any person obtaining
+> a copy of this software and associated documentation files (the
+> "Software"), to deal in the Software without restriction, including
+> without limitation the rights to use, copy, modify, merge, publish,
+> distribute, sublicense, and/or sell copies of the Software, and to
+> permit persons to whom the Software is furnished to do so, subject to
+> the following conditions:
+>
+> The above copyright notice and this permission notice shall be
+> included in all copies or substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+> MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+> IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+> CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+> TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+> SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+=#
 
 """
     adapted_grid2(f, minmax::Tuple{Number, Number}; max_recursions = 7)
@@ -131,5 +160,5 @@ function adapted_grid2(f, minmax::Tuple{Real, Real}; max_recursions = 7)
         n_intervals = n_points ÷ 2
     end
 
-    return xs[2:end-1], fs[2:end-1]
+    return xs[2:end-1], fs[2:end-1] # modified by Ivan Borisov
 end
