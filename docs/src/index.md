@@ -3,9 +3,15 @@
 **ParametersIdentification** is a Julia package for **identifiability analysis** and confidence intervals evaluation.
 
 ## Installation
-**Julia** download page: https://julialang.org/downloads/
-Currently supported **Julia** releases are 0.6, 0.7
+**Julia** [download page](https://julialang.org/downloads/).
+Currently supported **Julia** versions are 0.6, 0.7
 
+To install the package from `REPL`
+```
+julia> Pkg.add(PackageSpec(url="http://gitlab.insilicobio.ru/development/ParametersIdentification.git"))
+
+julia> using ParametersIdentification
+```
 
 ## Objective
 
@@ -18,10 +24,7 @@ The proposed algorithm for **Profile Likelihood** method addresses the disadvant
 
 ## References
 
-1) Kreutz C., et al. Profile Likelihood in Systems Biology. FEBS Journal 280(11), 2564-2571, 2013
-
-2) Steven G. Johnson, The NLopt nonlinear-optimization package, http://ab-initio.mit.edu/nlopt
-
-3) Andrew R. Conn, Nicholas I. M. Gould, and Philippe L. Toint, "A globally convergent augmented Lagrangian algorithm for optimization with general constraints and simple bounds," SIAM J. Numer. Anal. vol. 28, no. 2, p. 545-572 (1991)
-
-4) Julia: A Fresh Approach to Numerical Computing. Jeff Bezanson, Alan Edelman, Stefan Karpinski and Viral B. Shah (2017) SIAM Review, 59: 65–98
+1. Kreutz C., et al. Profile Likelihood in Systems Biology. FEBS Journal 280(11), 2564-2571, 2013
+2. Steven G. Johnson, The NLopt nonlinear-optimization package, [link](http://ab-initio.mit.edu/nlopt)
+3. Andrew R. Conn, Nicholas I. M. Gould, and Philippe L. Toint, "A globally convergent augmented Lagrangian algorithm for optimization with general constraints and simple bounds," SIAM J. Numer. Anal. vol. 28, no. 2, p. 545-572 (1991)
+4. Julia: A Fresh Approach to Numerical Computing. Jeff Bezanson, Alan Edelman, Stefan Karpinski and Viral B. Shah (2017) SIAM Review, 59: 65–98
