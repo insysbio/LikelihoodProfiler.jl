@@ -101,7 +101,7 @@ function params_intervals_one_side(
     init_params::Vector{Float64},
     optim_func::Function,
     constraints_func::Function,
-    # id::Int64
+    #id::Int64,
     min_max::Symbol;
 
     fit_alg::Symbol = :LN_AUGLAG,

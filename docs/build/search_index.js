@@ -13,7 +13,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Overview",
     "title": "Overview",
     "category": "section",
-    "text": "ParametersIdentification is a Julia package for identifiability analysis and confidence intervals evaluation."
+    "text": "LikelihoodProfiler is a Julia package for identifiability analysis and confidence intervals evaluation."
 },
 
 {
@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Overview",
     "title": "Installation",
     "category": "section",
-    "text": "Julia download page. Currently supported Julia versions are 0.6, 0.7To install the package from REPLjulia> Pkg.add(PackageSpec(url=\"http://gitlab.insilicobio.ru/development/ParametersIdentification.git\"))\r\n\r\njulia> using ParametersIdentification"
+    "text": "Julia download page. Currently supported Julia versions are 0.6, 0.7To install the package from REPLjulia> Pkg.add(PackageSpec(url=\"http://gitlab.insilicobio.ru/development/LLikelihoodProfiler.git\"))\r\n\r\njulia> using LikelihoodProfiler"
 },
 
 {
@@ -65,17 +65,17 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "basics.html#ParametersIdentification.params_intervals",
+    "location": "basics.html#LikelihoodProfiler.params_intervals",
     "page": "Basics",
-    "title": "ParametersIdentification.params_intervals",
+    "title": "LikelihoodProfiler.params_intervals",
     "category": "function",
     "text": "params_intervals(init_params::Vector{Float64}, id::Int64,\nloss_crit::Float64, loss_func::Function; <keyword arguments>)\n\nComputes confidence interval for id parameter of init_params vector and loss_func according to loss_crit confidence level.\n\nReturns ParamInterval structure storing all input data and estimated confidence interval.\n\nArguments\n\nmethod::Symbol: computational method (:ONE_PASS,:D2D_PLE).\nlogscale_all::Bool: set logscale for all parameters to true / false (default false).\nlogscale::Vector{Bool}: set logscale for each parameter (default false for all parameters).\nscan_bound::Vector{Float64}: search bounds for id parameter (default [-9.,9.]).\nlocal_alg::Symbol: fitting algorithm (default :LN_NELDERMEAD).\nbounds::Vector{Vector{Float64}}: bound constraints for all parameters (default [-Inf,Inf]).\nmax_iter::Int64: maximum loss_func evaluations (default 10^5).\nptol::Float64: fitting tolerance for optimizer (default 1e-3).\nlosstol::Float64: constraints tolerance (default 1e-3).\n\n\n\n\n\n"
 },
 
 {
-    "location": "basics.html#ParametersIdentification.params_plot",
+    "location": "basics.html#LikelihoodProfiler.params_plot",
     "page": "Basics",
-    "title": "ParametersIdentification.params_plot",
+    "title": "LikelihoodProfiler.params_plot",
     "category": "function",
     "text": "params_plot(params::Vector{Float64}, id::Int64, loss_func::Function,\ninterval::Tuple{Float64,Float64}; <keyword arguments>)\n\nComputes adapted_grid for loss_func and id parameter values from the interval. See also: Plots.adapted_grid\n\nArguments\n\nfit_alg::Symbol: fitting algorithm (default :LN_NELDERMEAD).\nbounds::Vector{Vector{Float64}}: bound constraints for all parameters (default [-Inf,Inf]).\ntol::Float64: fitting tolerance (default ftol_abs = 1e-3).\nmax_recursions::Int64: how many times each interval is allowed to be refined (default 2).\n\n\n\n\n\n"
 },
@@ -85,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Basics",
     "title": "Functions",
     "category": "section",
-    "text": "ParametersIdentification.params_intervalsParametersIdentification.params_plot"
+    "text": "LikelihoodProfiler.params_intervalsLikelihoodProfiler.params_plot"
 },
 
 ]}

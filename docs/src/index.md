@@ -4,10 +4,13 @@
 
 ## Installation
 **Julia** [download page](https://julialang.org/downloads/).
+
 Currently supported **Julia** versions are 0.6, 0.7
 
 To install the package from `REPL`
 ```
+julia> import Pkg   # if you are on Julia 0.7
+
 julia> Pkg.add(PackageSpec(url="http://gitlab.insilicobio.ru/development/LLikelihoodProfiler.git"))
 
 julia> using LikelihoodProfiler
