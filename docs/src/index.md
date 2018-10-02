@@ -11,7 +11,7 @@ To install the package from `REPL`
 ```
 julia> import Pkg   # if you are on Julia 0.7
 
-julia> Pkg.add(PackageSpec(url="http://gitlab.insilicobio.ru/development/LLikelihoodProfiler.git"))
+julia> Pkg.add(PackageSpec(url="https://github.com/insysbio/LikelihoodProfiler.jl.git"))
 
 julia> using LikelihoodProfiler
 ```

@@ -2,7 +2,7 @@
 
 | Documentation |
 |:-------------:|
-| [![](https://img.shields.io/badge/docs-stable-blue.svg)](http://google.com)|
+| [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://insysbio.github.io/LikelihoodProfiler.jl)|
 
 **LikelihoodProfiler** is a Julia package for **identifiability analysis** and confidence intervals evaluation.
 
@@ -12,7 +12,7 @@
 ```
 julia> import Pkg   # if you are on Julia 0.7
 
-julia> Pkg.add(PackageSpec(url="http://gitlab.insilicobio.ru/development/LLikelihoodProfiler.git"))
+julia> Pkg.add(PackageSpec(url="https://github.com/insysbio/LikelihoodProfiler.jl.git"))
 
 julia> using LikelihoodProfiler
 ```
