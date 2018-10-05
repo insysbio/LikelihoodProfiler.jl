@@ -92,7 +92,7 @@ function params_intervals(
         throw(ArgumentError("Check init_params and loss_crit: loss_func(init_params) should be < loss_crit"))
     # scan bounds should be within bounds
     !(bounds[id][1] < scan_bound[1] < scan_bound[2] < bounds[id][2]) &&
-        throw(ArgumentError("scan bounds are outside of the bounds $bound[id]"))
+        throw(ArgumentError("scan bounds are outside of the bounds $bounds[id]"))
     # init_params should be within scan_bound
     !(scan_bound[1] < init_params[id] < scan_bound[2]) &&
         throw(ArgumentError("init values are outside of the scan_bound $scan_bound"))

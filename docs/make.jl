@@ -8,7 +8,7 @@ makedocs(
     pages = [
         "index.md",
         "basics.md"
-    ]
+    ],
 )
 
 deploydocs(
@@ -16,5 +16,6 @@ deploydocs(
     julia = "0.6",
     osname = "windows",
     target = "build",
-    deps   = not
+    deps   = nothing,
+    make = nothing
 )
