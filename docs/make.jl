@@ -9,6 +9,7 @@ makedocs(
         "index.md",
         "basics.md"
     ],
+    repo = "https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/docs/src/index.md"
 )
 
 deploydocs(
