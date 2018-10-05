@@ -1,15 +1,14 @@
 
 include("./cases_func.jl")
-
+#=
 res_f_1p = params_intervals(
     [3.],
     1,
     9.,
     f_1p,
     logscale_all = false,
-    method = :ONE_PASS
-)
-
+    method = :ONE_PASS)
+=#
 res_f_2p_1im = [params_intervals(
     [3., 1.],
     i,
@@ -75,12 +74,15 @@ res_f_3p_im = [params_intervals(
     logscale_all = false,
     method = :ONE_PASS
 ) for i in 1:3]
+
+#=
 # tests
 @testset "f_1p" begin
     @test all(@. isapprox(res_f_1p.interval, [1.0, 5.0], atol=res_f_1p.input.ptol))
     #@test all(@. isapprox(res_f_1p.loss_final, [res_f_1p.input.loss_crit, res_f_1p.input.loss_crit], atol=res_f_1p.input.losstol))
     @test res_f_1p.ret_codes == [:FTOL_REACHED, :FTOL_REACHED]
 end
+=#
 
 @testset "f_2p_1im" begin
     @test all(@. isapprox(res_f_2p_1im[1].interval, [1.0, 5.0], atol=res_f_2p_1im[1].input.ptol))
