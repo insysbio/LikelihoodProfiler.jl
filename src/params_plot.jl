@@ -1,7 +1,7 @@
 #using Plots
 
 """
-    params_plot(params::Vector{Float64}, id::Int64, loss_func::Function,
+    params_plot(params::Vector{Float64}, id::Int, loss_func::Function,
     interval::Tuple{Float64,Float64}; <keyword arguments>)
 
 Computes `adapted_grid` for `loss_func` and `id` parameter values from the `interval`.
@@ -11,11 +11,11 @@ See also: `Plots.adapted_grid`
 - `fit_alg::Symbol`: fitting algorithm (default `:LN_NELDERMEAD`).
 - `bounds::Vector{Vector{Float64}}`: bound constraints for all parameters (default `[-Inf,Inf]`).
 - `tol::Float64`: fitting tolerance (default `ftol_abs = 1e-3`).
-- `max_recursions::Int64`: how many times each interval is allowed to be refined (default `2`).
+- `max_recursions::Int`: how many times each interval is allowed to be refined (default `2`).
 """
 function params_plot(
     params::Vector{Float64},
-    id::Int64,
+    id::Int,
     loss_func::Function,
     interval::Tuple{Float64,Float64};
     fit_alg::Symbol = :LN_NELDERMEAD,
@@ -24,7 +24,7 @@ function params_plot(
         length(params)
     ),
     tol::Float64 = 1e-3,
-    max_recursions::Int64 = 2
+    max_recursions::Int = 2
 )
 
     # bounds
@@ -74,7 +74,7 @@ end
 function params_plot(
     params_interval::ParamInterval;
     delta::Float64 = 0.2, # magic number
-    max_recursions::Int64 = 2
+    max_recursions::Int = 2
 )
     params = params_interval.input.init_params
     id = params_interval.input.id

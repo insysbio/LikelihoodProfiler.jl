@@ -15,14 +15,14 @@ function interval_calc(input::ParamInput, ::Val{:D2D_PLE})
     bounds, local_alg, max_iter, ptol, losstol = input
 
     # set counter scope
-    counter::Int64 = 0
+    counter::Int = 0
 
     # Output
     result = ParamInterval(
         input,
         Vector{Float64}(2),
         Vector{Symbol}(2),
-        Vector{Int64}(2),
+        Vector{Int}(2),
         Vector{Float64}(2),
 
         []
@@ -43,7 +43,7 @@ function interval_calc(input::ParamInput, ::Val{:D2D_PLE})
     lb = minimum.(bounds)
     ub = maximum.(bounds)
 
-    function profile_func(id::Int64, params::Vector{Float64})
+    function profile_func(id::Int, params::Vector{Float64})
         if length(params) == 1
             loss = loss_func_upd(params)
             return params, loss
@@ -118,7 +118,7 @@ function interval_calc(input::ParamInput, ::Val{:D2D_PLE})
 end # function
 
 function getStepDirect(
-    id::Int64,                # p[jk] id
+    id::Int,                # p[jk] id
     ps::Vector{Float64},      # current p values
     last_step::Float64,       # current dp
     q_delta_alpha::Float64,

@@ -5,14 +5,14 @@ function interval_calc(input::ParamInput, ::Val{:ONE_PASS})
     bounds, local_alg, max_iter, ptol, losstol = input
 
     # set counter scope
-    counter::Int64 = 0
+    counter::Int = 0
 
     # Output
     result = ParamInterval(
         input,
         Vector{Float64}(2),
         Vector{Symbol}(2),
-        Vector{Int64}(2),
+        Vector{Int}(2),
         Vector{Float64}(2),
 
         []
@@ -101,7 +101,7 @@ function params_intervals_one_side(
     init_params::Vector{Float64},
     optim_func::Function,
     constraints_func::Function,
-    #id::Int64,
+    #id::Int,
     min_max::Symbol;
 
     fit_alg::Symbol = :LN_AUGLAG,
@@ -112,7 +112,7 @@ function params_intervals_one_side(
     ftol_loc::Float64 = 1e-3,
     tol_const::Float64 = 1e-3, # tolerance of constraints
     # ftol_glob::Float64 = 1e-3, # tolerance of global method
-    max_iter::Int64 = 100000
+    max_iter::Int = 100000
 )
     # dim of the problem
     n_params = length(init_params)
