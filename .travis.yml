@@ -36,4 +36,4 @@ notifications:
 after_success:[
     "julia -e 'import Pkg; Pkg.add(\"Documenter\"); Pkg.add(\"LikelihoodProfiler\")'",
     "julia -e 'import Pkg; cd(Pkg.dir(\"LikelihoodProfiler\")); include(joinpath(\"docs\", \"make.jl\"))'"
-]
+] 
