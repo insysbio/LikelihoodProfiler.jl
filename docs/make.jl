@@ -14,7 +14,8 @@ makedocs(
 
 deploydocs(
     repo   = "github.com/insysbio/LikelihoodProfiler.jl.git",
-    deps   = Deps.pip("mkdocs"),
+    deps   = nothing,
+    make = nothing,
     julia = "0.7",
     osname = "linux",
     target = "build"

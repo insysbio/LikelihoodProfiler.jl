@@ -35,4 +35,4 @@ notifications:
 #  - julia -e 'cd(Pkg.dir("LikelihoodProfiler")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
 after_success:
   - julia -e 'Pkg.add("Documenter")'
-  - julia -e 'cd(Pkg.dir("LikelihoodProfiler")); include(joinpath("docs", "make.jl"))'
+  - julia -e 'ENV["DOCUMENTER_DEBUG"] = "true"; cd(Pkg.dir("LikelihoodProfiler")); include(joinpath("docs", "make.jl"))'
