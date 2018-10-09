@@ -33,7 +33,6 @@ notifications:
 #  - julia -e 'cd(Pkg.dir("LikelihoodProfiler")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
   # push coverage results to Codecov
 #  - julia -e 'cd(Pkg.dir("LikelihoodProfiler")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-after_success: [
-    "julia -e 'import Pkg; Pkg.add(\"Documenter\"); Pkg.add(\"LikelihoodProfiler\")'",
-    "julia -e 'import Pkg; cd(Pkg.dir(\"LikelihoodProfiler\")); include(joinpath(\"docs\", \"make.jl\"))'"
-]
+after_success:
+  - julia -e 'Pkg.add("Documenter")'
+  - julia -e 'cd(Pkg.dir("LikelihoodProfiler")); include(joinpath("docs", "make.jl"))'
