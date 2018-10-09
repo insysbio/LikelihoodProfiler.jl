@@ -17,7 +17,5 @@ deploydocs(
     deps   = Deps.pip("mkdocs"),
     julia = "0.7",
     osname = "linux",
-    target = "build",
-    deps   = nothing,
-    make = nothing
+    target = "build"
 )
