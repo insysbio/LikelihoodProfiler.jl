@@ -11,12 +11,11 @@ function get_right_endpoint(
         [-Inf, Inf], length(theta_init)
     ),
     scan_bound::Float64 = 9.0,
-    local_alg::Symbol = :LN_NELDERMEAD,
     scan_tol::Float64 = 1e-3,
-    # params_tol::Float64 = 1e-3, # not sure this required
-    ll_tol::Float64 = 1e-3, # i do not know how to use it
+    loss_tol::Float64 = 1e-3, # i do not know how to use it
+    local_alg::Symbol = :LN_NELDERMEAD,
     max_iter::Int64 = 10^5,
-    kwargs...
+    kwargs... # options for local fitter :max_iter
 )
     # dim of the theta vector
     n_theta = length(theta_init)
@@ -40,7 +39,7 @@ function get_right_endpoint(
     max_objective!(
         opt,
         (x, g) -> scan_func(x)
-    )
+        )
     lb = minimum.(theta_bounds)
     ub = maximum.(theta_bounds)
     lower_bounds!(opt, lb)
@@ -50,10 +49,11 @@ function get_right_endpoint(
     inequality_constraint!(
         opt,
         constraints_func,
-        ll_tol
+        loss_tol
     )
 
-    (optf, optx, ret) = optimize(opt, theta_init)
+    # TODO: where to put kwargs?
+    (optf, optx, ret) = optimize(opt, theta_init, kwargs...)
 
     if ret == :FORCED_STOP
         pp = []
@@ -80,7 +80,11 @@ function get_right_endpoint(
     theta_bounds::Vector{Vector{Float64}} = fill(
         [-Inf, Inf], length(theta_init)
     ),
-    kwargs...
+    scan_bound::Float64 = 9.0,
+    scan_tol::Float64 = 1e-3,
+    loss_tol::Float64 = 1e-3,
+    local_alg::Symbol = :LN_NELDERMEAD,
+    kwargs... # options for local fitter
 )
     # checking arguments
     if theta_num > length(theta_init)
@@ -98,6 +102,10 @@ function get_right_endpoint(
         method;
 
         theta_bounds = theta_bounds,
-        kwargs...
+        scan_bound = scan_bound,
+        scan_tol = scan_tol,
+        loss_tol = loss_tol,
+        local_alg = local_alg,
+        kwargs... # options for local fitter
     )
 end

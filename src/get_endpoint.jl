@@ -26,9 +26,16 @@ function get_endpoint(
     theta_bounds::Vector{Vector{Float64}} = ungarm.(
         fill([-Inf, Inf], length(theta_init)),
         scale
-    ),
-    kwargs...
-)
+        ),
+    scan_bound::Float64 = ungarm(
+        (direction==:left) ? -9.0 : 9.0,
+        scale[theta_num]
+        ),
+    scan_tol::Float64 = 1e-3,
+    loss_tol::Float64 = 1e-3,
+    local_alg::Symbol = :LN_NELDERMEAD,
+    kwargs... # options for local fitter
+    )
     isLeft = direction == :left
 
     # set counter in the scope
@@ -48,6 +55,8 @@ function get_endpoint(
     end
     theta_bounds_gd = garm.(theta_bounds, scale)
     if isLeft theta_bounds_gd[theta_num] *= -1 end # change direction
+    scan_bound_gd = garm(scan_bound, scale[theta_num])
+    if isLeft scan_bound_gd *= -1 end # change direction
 
     # calculate endpoint using base method
     (optf_gd, pp_gd, status) = get_right_endpoint(
@@ -56,7 +65,11 @@ function get_endpoint(
         loss_func_gd,
         Val(method);
         theta_bounds = theta_bounds_gd,
-        kwargs...
+        scan_bound = scan_bound_gd,
+        scan_tol = scan_tol,
+        loss_tol = loss_tol,
+        local_alg = local_alg,
+        kwargs... # options for local fitter
     )
 
     # transforming back
