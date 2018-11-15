@@ -3,8 +3,8 @@
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x),
-        9.,
-        :CICO_ONE_PASS
+        :CICO_ONE_PASS;
+        loss_crit = 9.
     ) for i in 1:3]
 
     @test isapprox(res0[1].value, 5.0, atol=1e-2)
@@ -25,9 +25,9 @@ end
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x),
-        9.,
         :CICO_ONE_PASS,
-        :left
+        :left;
+        loss_crit = 9.,
     ) for i in 1:3]
 
     @test isapprox(res0[1].value, 1.0, atol=1e-2)
@@ -48,10 +48,10 @@ end
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x),
-        9.,
         :CICO_ONE_PASS,
-        :right,
-        [:log, :direct, :log]
+        :right;
+        loss_crit = 9.,
+        scale = [:log, :direct, :log]
     ) for i in 1:3]
 
     @test isapprox(log10(res0[1].value), log10(5.), atol=1e-2)

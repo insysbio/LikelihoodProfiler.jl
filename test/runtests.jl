@@ -1,6 +1,4 @@
 # push!(LOAD_PATH, "Y:\\")
-# ] add NLopt
-# using NLopt
 
 using LikelihoodProfiler
 @static if VERSION < v"0.7.0-DEV.2005"
@@ -8,6 +6,7 @@ using LikelihoodProfiler
 else
     using Test
 end
+
 include("./cases_func.jl")
 
 println("Starting tests for CICO")
@@ -15,3 +14,6 @@ println("Starting tests for CICO")
 
 println("Starting tests for get_endpoint")
 @testset "get_endpoint" begin include("test_get_endpoint.jl") end
+
+println("Starting tests for param_interval")
+@testset "get_endpoint" begin include("test_param_interval.jl") end

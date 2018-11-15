@@ -19,10 +19,11 @@ function get_endpoint(
     theta_init::Vector{Float64},
     theta_num::Int64,
     loss_func::Function,
-    loss_crit::Float64,
     method::Symbol,
-    direction::Symbol = :right,
-    scale::Vector{Symbol} = fill(:direct, length(theta_init));
+    direction::Symbol = :right;
+
+    loss_crit::Float64 = 0.0,
+    scale::Vector{Symbol} = fill(:direct, length(theta_init)),
     theta_bounds::Vector{Vector{Float64}} = ungarm.(
         fill([-Inf, Inf], length(theta_init)),
         scale

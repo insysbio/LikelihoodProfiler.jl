@@ -9,14 +9,14 @@ function get_right_endpoint(
 
     theta_bounds::Vector{Vector{Float64}} = fill(
         [-Inf, Inf], length(theta_init)
-    ),
+        ),
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3, # i do not know how to use it
     local_alg::Symbol = :LN_NELDERMEAD,
     max_iter::Int64 = 10^5,
     kwargs... # options for local fitter :max_iter
-)
+    )
     # dim of the theta vector
     n_theta = length(theta_init)
 
@@ -79,13 +79,13 @@ function get_right_endpoint(
 
     theta_bounds::Vector{Vector{Float64}} = fill(
         [-Inf, Inf], length(theta_init)
-    ),
+        ),
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3,
     local_alg::Symbol = :LN_NELDERMEAD,
     kwargs... # options for local fitter
-)
+    )
     # checking arguments
     if theta_num > length(theta_init)
         throw(DomainError(theta_num, "theta_num exceed theta dimention"))
