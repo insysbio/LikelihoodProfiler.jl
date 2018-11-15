@@ -21,15 +21,16 @@ function param_interval(
     theta_init::Vector{Float64},
     theta_num::Int64,
     loss_func::Function,
-    loss_crit::Float64,
-    method::Symbol,
-    scale::Vector{Symbol} = fill(:direct, length(theta_init));
+    method::Symbol;
+
+    loss_crit::Float64 = 0.0,
+    scale::Vector{Symbol} = fill(:direct, length(theta_init)),
     theta_bounds::Vector{Vector{Float64}} = ungarm.(
         fill([-Inf, Inf], length(theta_init)),
         scale
         ),
     scan_bounds::Tuple{Float64,Float64} = ungarm.(
-        [-9.0, 9.0],
+        (-9.0, 9.0),
         scale[theta_num]
         ),
     scan_tol::Float64 = 1e-3,
@@ -42,10 +43,10 @@ function param_interval(
         theta_init,
         theta_num,
         loss_func,
-        loss_crit,
         method,
-        [:left,:right][i], # method
-        scale;
+        [:left,:right][i]; # method
+        loss_crit = loss_crit,
+        scale = scale,
         theta_bounds = theta_bounds,
         scan_bound = scan_bounds[i],
         scan_tol = scan_tol,
@@ -70,6 +71,6 @@ function param_interval(
     ParamInterval(
         input,
         method,
-        Tuple(endpoint)
+        Tuple(endpoints)
         )
 end
