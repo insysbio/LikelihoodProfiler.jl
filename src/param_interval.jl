@@ -4,7 +4,7 @@ struct ParamIntervalInput
     loss_func::Function # loss function
     loss_crit::Float64 # loss function maximum value, "identifiability level"
     scale::Vector{Symbol}
-    theta_bounds::Vector{Vector{Float64}} # search bounds for id parameter
+    theta_bounds::Vector{Tuple{Float64, Float64}} # search bounds for id parameter
     scan_bounds::Tuple{Float64,Float64}
     scan_tol::Float64 # fitting tolerance for local optimizer (default - 1e-3)
     loss_tol::Float64 # constraints tolerance
@@ -25,8 +25,8 @@ function param_interval(
 
     loss_crit::Float64 = 0.0,
     scale::Vector{Symbol} = fill(:direct, length(theta_init)),
-    theta_bounds::Vector{Vector{Float64}} = ungarm.(
-        fill([-Inf, Inf], length(theta_init)),
+    theta_bounds::Vector{Tuple{Float64,Float64}} = ungarm.(
+        fill((-Inf, Inf), length(theta_init)),
         scale
         ),
     scan_bounds::Tuple{Float64,Float64} = ungarm.(

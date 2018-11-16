@@ -24,8 +24,8 @@ function get_endpoint(
 
     loss_crit::Float64 = 0.0,
     scale::Vector{Symbol} = fill(:direct, length(theta_init)),
-    theta_bounds::Vector{Vector{Float64}} = ungarm.(
-        fill([-Inf, Inf], length(theta_init)),
+    theta_bounds::Vector{Tuple{Float64,Float64}} = ungarm.(
+        fill((-Inf, Inf), length(theta_init)),
         scale
         ),
     scan_bound::Float64 = ungarm(
@@ -55,7 +55,7 @@ function get_endpoint(
         loss_func(theta) - loss_crit
     end
     theta_bounds_gd = garm.(theta_bounds, scale)
-    if isLeft theta_bounds_gd[theta_num] *= -1 end # change direction
+    if isLeft theta_bounds_gd[theta_num] = (-1*theta_bounds_gd[theta_num][2], -1*theta_bounds_gd[theta_num][1]) end # change direction
     scan_bound_gd = garm(scan_bound, scale[theta_num])
     if isLeft scan_bound_gd *= -1 end # change direction
 

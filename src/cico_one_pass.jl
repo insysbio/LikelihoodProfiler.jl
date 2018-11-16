@@ -7,8 +7,8 @@ function get_right_endpoint(
     loss_func::Function, # lambda(theta) - labmbda_min - delta_lambda
     method::Val{:CICO_ONE_PASS}; # function works only for method ONE_PASS;
 
-    theta_bounds::Vector{Vector{Float64}} = fill(
-        [-Inf, Inf], length(theta_init)
+    theta_bounds::Vector{Tuple{Float64,Float64}} = fill(
+        (-Inf, Inf), length(theta_init)
         ),
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
@@ -77,8 +77,8 @@ function get_right_endpoint(
     loss_func::Function, # lambda(theta) - labmbda_min - delta_lambda
     method::Val{:CICO_ONE_PASS}; # function works only for method ONE_PASS;
 
-    theta_bounds::Vector{Vector{Float64}} = fill(
-        [-Inf, Inf], length(theta_init)
+    theta_bounds::Vector{Tuple{Float64,Float64}} = fill(
+        (-Inf, Inf), length(theta_init)
         ),
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
