@@ -14,7 +14,10 @@ function get_right_endpoint(
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3, # i do not know how to use it
     local_alg::Symbol = :LN_NELDERMEAD,
+    # good results in :LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS,
+    # errors in :LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA
     max_iter::Int64 = 10^5,
+    ftol_abs::Float64 = 1e-3
     kwargs... # options for local fitter :max_iter
     )
     # dim of the theta vector
@@ -36,6 +39,7 @@ function get_right_endpoint(
 
     # constrain optimizer
     opt = Opt(:LN_AUGLAG, n_theta)
+    ftol_abs!(opt, ftol_abs)
     max_objective!(
         opt,
         (x, g) -> scan_func(x)
