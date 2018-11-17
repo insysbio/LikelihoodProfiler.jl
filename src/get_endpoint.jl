@@ -8,7 +8,7 @@ function logistic10(x::Float64)
     exp10(x) / (exp10(x) + 1.0)
 end
 
-function garm(x::Float64, scale::Symbol = :direct)
+function scaling(x::Float64, scale::Symbol = :direct)
     if scale == :direct
         return x
     elseif scale == :log
@@ -20,7 +20,7 @@ function garm(x::Float64, scale::Symbol = :direct)
     end
 end
 
-function ungarm(x::Float64, scale::Symbol = :direct)
+function unscaling(x::Float64, scale::Symbol = :direct)
     if scale == :direct
         return x
     elseif scale == :log
@@ -32,9 +32,9 @@ function ungarm(x::Float64, scale::Symbol = :direct)
     end
 end
 
-garm(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = garm.(x_tup, scale)
+scaling(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = scaling.(x_tup, scale)
 
-ungarm(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = ungarm.(x_tup, scale)
+unscaling(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = unscaling.(x_tup, scale)
 
 "Structure storing one point from profile function"
 struct ProfilePoint
@@ -49,13 +49,13 @@ struct EndPoint
     profilePoints::Array{ProfilePoint, 1}
     status::Symbol
     direction::Symbol
-    counter::Int64
+    counter::Int
 end
 
 # get left or right endpoint of CI for parameter component
 function get_endpoint(
     theta_init::Vector{Float64},
-    theta_num::Int64,
+    theta_num::Int,
     loss_func::Function,
     method::Symbol,
     direction::Symbol = :right;
@@ -63,11 +63,11 @@ function get_endpoint(
     loss_crit::Float64 = 0.0,
     # :direct, :log, :logit
     scale::Vector{Symbol} = fill(:direct, length(theta_init)),
-    theta_bounds::Vector{Tuple{Float64,Float64}} = ungarm.(
+    theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
         fill((-Inf, Inf), length(theta_init)),
         scale
         ),
-    scan_bound::Float64 = ungarm(
+    scan_bound::Float64 = unscaling(
         (direction==:left) ? -9.0 : 9.0,
         scale[theta_num]
         ),
@@ -106,23 +106,23 @@ function get_endpoint(
         throw(ArgumentError("Check theta_init and loss_crit: loss_func(theta_init) should be < loss_crit"))
 
     # set counter in the scope
-    counter::Int64 = 0
+    counter::Int = 0
 
     # transforming
-    theta_init_gd = garm.(theta_init, scale)
+    theta_init_gd = scaling.(theta_init, scale)
     if isLeft theta_init_gd[theta_num] *= -1 end # change direction
     function loss_func_gd(theta_gd::Vector{Float64})
         theta_g = copy(theta_gd)
         if isLeft theta_g[theta_num] *= -1 end # change direction
-        theta = ungarm.(theta_g, scale)
+        theta = unscaling.(theta_g, scale)
         # update counter
         counter += 1
         # calculate function
         loss_func(theta) - loss_crit
     end
-    theta_bounds_gd = garm.(theta_bounds, scale)
+    theta_bounds_gd = scaling.(theta_bounds, scale)
     if isLeft theta_bounds_gd[theta_num] = (-1*theta_bounds_gd[theta_num][2], -1*theta_bounds_gd[theta_num][1]) end # change direction
-    scan_bound_gd = garm(scan_bound, scale[theta_num])
+    scan_bound_gd = scaling(scan_bound, scale[theta_num])
     if isLeft scan_bound_gd *= -1 end # change direction
 
     # calculate endpoint using base method
@@ -141,12 +141,12 @@ function get_endpoint(
 
     # transforming back
     if isLeft optf_gd *= -1 end # change direction
-    optf = ungarm(optf_gd, scale[theta_num])
+    optf = unscaling(optf_gd, scale[theta_num])
     temp_fun = (pp::ProfilePoint) -> begin
         if isLeft pp.params[theta_num] *= -1 end # change direction
         ProfilePoint(
             pp.loss + loss_crit,
-            ungarm.(pp.params, scale),
+            unscaling.(pp.params, scale),
             pp.ret
         )
     end

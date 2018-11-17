@@ -1,6 +1,6 @@
 struct ParamIntervalInput
     theta_init::Vector{Float64} # initial parameters vector
-    theta_num::Int64 # id of the parameter for analysis
+    theta_num::Int # number of the parameter for analysis
     loss_func::Function # loss function
     loss_crit::Float64 # loss function maximum value, "identifiability level"
     scale::Vector{Symbol}
@@ -19,17 +19,17 @@ end
 
 function param_interval(
     theta_init::Vector{Float64},
-    theta_num::Int64,
+    theta_num::Int,
     loss_func::Function,
     method::Symbol;
 
     loss_crit::Float64 = 0.0,
     scale::Vector{Symbol} = fill(:direct, length(theta_init)),
-    theta_bounds::Vector{Tuple{Float64,Float64}} = ungarm.(
+    theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
         fill((-Inf, Inf), length(theta_init)),
         scale
         ),
-    scan_bounds::Tuple{Float64,Float64} = ungarm.(
+    scan_bounds::Tuple{Float64,Float64} = unscaling.(
         (-9.0, 9.0),
         scale[theta_num]
         ),

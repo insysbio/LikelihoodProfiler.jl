@@ -10,8 +10,8 @@ include("cico_one_pass.jl")
 # export
 export get_right_endpoint,
     get_endpoint,
-    garm,
-    ungarm,
+    scaling,
+    unscaling,
     ProfilePoint,
     EndPoint,
     ParamIntervalInput,

@@ -17,7 +17,7 @@ function get_right_endpoint(
     # errors in :LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA
     local_alg::Symbol = :LN_NELDERMEAD,
     # options for local fitter :max_iter
-    max_iter::Int64 = 10^5,
+    max_iter::Int = 10^5,
     ftol_abs::Float64 = 1e-3,
     kwargs...
     )
@@ -40,7 +40,7 @@ function get_right_endpoint(
 
     # optimizer
     local_opt = Opt(local_alg, n_theta)
-    ftol_abs!(local_opt, ftol_abs)
+    ftol_abs!(local_opt, scan_tol) #ftol_abs
 
     # Constraints function
     function constraints_func(x, g)
@@ -92,7 +92,7 @@ end # of bound_right
 # evaluate right or left endpoint parameter
 function get_right_endpoint(
     theta_init::Vector{Float64}, # initial point of parameters
-    theta_num::Int64, # number of parameter to scan
+    theta_num::Int, # number of parameter to scan
     loss_func::Function, # lambda(theta) - labmbda_min - delta_lambda
     method::Val{:CICO_ONE_PASS}; # function works only for method ONE_PASS;
 
