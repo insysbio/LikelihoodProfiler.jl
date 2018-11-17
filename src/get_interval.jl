@@ -17,7 +17,7 @@ struct ParamInterval
     result::Tuple{EndPoint, EndPoint}
 end
 
-function param_interval(
+function get_interval(
     theta_init::Vector{Float64},
     theta_num::Int,
     loss_func::Function,

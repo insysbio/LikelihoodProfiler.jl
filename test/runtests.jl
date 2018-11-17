@@ -15,7 +15,7 @@ println("Starting tests for CICO")
 println("Starting tests for get_endpoint")
 @testset "get_endpoint" begin include("test_get_endpoint.jl") end
 
-println("Starting tests for param_interval")
+println("Starting tests for get_interval")
 @testset "get_endpoint" begin include("test_param_interval.jl") end
 
 println("Starting tests for CICO different fitting alg")

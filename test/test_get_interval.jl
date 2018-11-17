@@ -1,5 +1,5 @@
 @testset "default options" begin
-    res0 = [param_interval(
+    res0 = [get_interval(
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x),
