@@ -20,3 +20,6 @@ println("Starting tests for param_interval")
 
 println("Starting tests for CICO different fitting alg")
 @testset "CICO_ONE_PASS_ALG" begin include("test_cico_one_pass_algorithms.jl") end
+
+println("Starting tests for errors")
+@testset "errors" begin include("test_errors.jl") end

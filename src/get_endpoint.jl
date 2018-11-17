@@ -39,6 +39,28 @@ function get_endpoint(
     )
     isLeft = direction == :left
 
+    # checking arguments
+    # theta_init
+    !(loss_func(theta_init) < loss_crit) &&
+        throw(ArgumentError("Check theta_init and loss_crit: loss_func(theta_init) should be < loss_crit"))
+    # scan_bound should be within theta_bounds
+    !(theta_bounds[theta_num][1] < scan_bound < theta_bounds[theta_num][2]) &&
+        throw(ArgumentError("scan_bound are outside of the theta_bounds $(theta_bounds[theta_num])"))
+    # theta_init should be within scan_bound
+    if (theta_init[theta_num] >= scan_bound && !isLeft) || (theta_init[theta_num] <= scan_bound && isLeft)
+        throw(ArgumentError("init values are outside of the scan_bound $scan_bound"))
+    end
+    # bigger than zero parameters for :log
+    less_than_zero_parameters = (scale .== :log) .& (theta_init .< 0.)
+    if any(less_than_zero_parameters)
+        throw(ArgumentError("Some of :log scaled parameters are negative: $(findall(less_than_zero_parameters))"))
+    end
+    # bigger than zero theta_bounds for :log
+    less_than_zero_theta_bounds = (scale .== :log) .& [theta_bounds[i][1] < 0 for i in 1:length(theta_init)]
+    if any(less_than_zero_theta_bounds)
+        throw(ArgumentError(":log scaled theta_bound min is negative: $(findall(less_than_zero_theta_bounds))"))
+    end
+
     # set counter in the scope
     counter::Int64 = 0
 

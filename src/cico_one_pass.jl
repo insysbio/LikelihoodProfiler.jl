@@ -13,15 +13,30 @@ function get_right_endpoint(
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3, # i do not know how to use it
-    local_alg::Symbol = :LN_NELDERMEAD,
     # good results in :LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS,
     # errors in :LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA
+    local_alg::Symbol = :LN_NELDERMEAD,
+    # options for local fitter :max_iter
     max_iter::Int64 = 10^5,
-    ftol_abs::Float64 = 1e-3
-    kwargs... # options for local fitter :max_iter
+    ftol_abs::Float64 = 1e-3,
+    kwargs...
     )
     # dim of the theta vector
     n_theta = length(theta_init)
+
+    # checking arguments
+    # methods which are not supported
+    if local_alg in [:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA]
+        @warn "Using local_alg = :"*String(local_alg)*" may result in wrong output."
+    end
+    # when using :LN_NELDERMEAD initial parameters should not be zero
+    if local_alg == :LN_NELDERMEAD
+        zeroParameter = [ isapprox(theta_init[i], 0., atol=1e-2) for i in 1:n_theta]
+        if any(zeroParameter)
+            @warn "Close-to-zero parameters found when using :LN_NELDERMEAD."
+            show(findall(zeroParameter))
+        end
+    end
 
     # optimizer
     local_opt = Opt(local_alg, n_theta)
@@ -44,8 +59,8 @@ function get_right_endpoint(
         opt,
         (x, g) -> scan_func(x)
         )
-    lb = minimum.(theta_bounds)
-    ub = maximum.(theta_bounds)
+    lb = [theta_bounds[i][1] for i in 1:n_theta] # minimum.(theta_bounds)
+    ub = [theta_bounds[i][2] for i in 1:n_theta] # maximum.(theta_bounds)
     lower_bounds!(opt, lb)
     upper_bounds!(opt, ub)
     local_optimizer!(opt, local_opt)
@@ -56,8 +71,8 @@ function get_right_endpoint(
         loss_tol
     )
 
-    # TODO: where to put kwargs?
-    (optf, optx, ret) = optimize(opt, theta_init, kwargs...)
+    # start optimization
+    (optf, optx, ret) = optimize(opt, theta_init)
 
     if ret == :FORCED_STOP
         pp = []
