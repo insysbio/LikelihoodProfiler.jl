@@ -21,7 +21,7 @@ end
         (x::Vector{Float64}) -> f_3p_1im_dep(x) - 9.,
         Val(:CICO_ONE_PASS);
         local_alg = :LN_BOBYQA,
-        loss_tol = 1e-1
+        loss_tol = 1e-3
     ) for i in 1:3]
     @test isapprox(res0[1][1], 5., atol=1e-2) # XXX: bad tolerance
     @test res0[1][3] == :BORDER_FOUND_BY_FTOL
@@ -44,7 +44,6 @@ end
     @test res0[2][3] == :BORDER_FOUND_BY_FTOL
     @test res0[3][3] == :SCAN_BOUND_REACHED
 end
-
 
 # :LN_NEWUOA
 @testset "f_3p_1im restricted :LN_NEWUOA" begin

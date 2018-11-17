@@ -1,3 +1,41 @@
+# transforms [0,1] to [-Inf, Inf]
+function logit10(x::Float64)
+    log10(x / (1.0 - x))
+end
+
+# transforms [-Inf, Inf] to [0,1]
+function logistic10(x::Float64)
+    exp10(x) / (exp10(x) + 1.0)
+end
+
+function garm(x::Float64, scale::Symbol = :direct)
+    if scale == :direct
+        return x
+    elseif scale == :log
+        return log10(x)
+    elseif scale == :logit
+        return logit10(x)
+    else
+        throw(DomainError(scale, "scale type is not supported"))
+    end
+end
+
+function ungarm(x::Float64, scale::Symbol = :direct)
+    if scale == :direct
+        return x
+    elseif scale == :log
+        return exp10(x)
+    elseif scale == :logit
+        return logistic10(x)
+    else
+        throw(DomainError(scale, "scale type is not supported"))
+    end
+end
+
+garm(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = garm.(x_tup, scale)
+
+ungarm(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = ungarm.(x_tup, scale)
+
 "Structure storing one point from profile function"
 struct ProfilePoint
     loss::Float64
@@ -23,6 +61,7 @@ function get_endpoint(
     direction::Symbol = :right;
 
     loss_crit::Float64 = 0.0,
+    # :direct, :log, :logit
     scale::Vector{Symbol} = fill(:direct, length(theta_init)),
     theta_bounds::Vector{Tuple{Float64,Float64}} = ungarm.(
         fill((-Inf, Inf), length(theta_init)),
@@ -40,9 +79,11 @@ function get_endpoint(
     isLeft = direction == :left
 
     # checking arguments
-    # theta_init
-    !(loss_func(theta_init) < loss_crit) &&
-        throw(ArgumentError("Check theta_init and loss_crit: loss_func(theta_init) should be < loss_crit"))
+    # theta_bound[1] < theta_init < theta_bound[2]
+    theta_init_outside_theta_bounds = .! [theta_bounds[i][1] < theta_init[i] < theta_bounds[i][2] for i in 1:length(theta_init)]
+    if any(theta_init_outside_theta_bounds)
+        throw(ArgumentError("theta_init is outside theta_bound: $(findall(theta_init_outside_theta_bounds))"))
+    end
     # scan_bound should be within theta_bounds
     !(theta_bounds[theta_num][1] < scan_bound < theta_bounds[theta_num][2]) &&
         throw(ArgumentError("scan_bound are outside of the theta_bounds $(theta_bounds[theta_num])"))
@@ -50,16 +91,19 @@ function get_endpoint(
     if (theta_init[theta_num] >= scan_bound && !isLeft) || (theta_init[theta_num] <= scan_bound && isLeft)
         throw(ArgumentError("init values are outside of the scan_bound $scan_bound"))
     end
-    # bigger than zero parameters for :log
-    less_than_zero_parameters = (scale .== :log) .& (theta_init .< 0.)
-    if any(less_than_zero_parameters)
-        throw(ArgumentError("Some of :log scaled parameters are negative: $(findall(less_than_zero_parameters))"))
-    end
-    # bigger than zero theta_bounds for :log
+    # 0 <= theta_bound[1] for :log
     less_than_zero_theta_bounds = (scale .== :log) .& [theta_bounds[i][1] < 0 for i in 1:length(theta_init)]
     if any(less_than_zero_theta_bounds)
         throw(ArgumentError(":log scaled theta_bound min is negative: $(findall(less_than_zero_theta_bounds))"))
     end
+    # 0 <= theta_bounds <= 1 for :logit
+    less_than_zero_theta_bounds = (scale .== :logit) .& [theta_bounds[i][1] < 0 || theta_bounds[i][2] > 1 for i in 1:length(theta_init)]
+    if any(less_than_zero_theta_bounds)
+        throw(ArgumentError(":logit scaled theta_bound min is outside range [0,1]: $(findall(less_than_zero_theta_bounds))"))
+    end
+    # loss_func(theta_init) < loss_crit
+    !(loss_func(theta_init) < loss_crit) &&
+        throw(ArgumentError("Check theta_init and loss_crit: loss_func(theta_init) should be < loss_crit"))
 
     # set counter in the scope
     counter::Int64 = 0

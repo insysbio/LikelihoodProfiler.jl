@@ -40,7 +40,7 @@ function get_right_endpoint(
 
     # optimizer
     local_opt = Opt(local_alg, n_theta)
-    ftol_abs!(local_opt, scan_tol)
+    ftol_abs!(local_opt, ftol_abs)
 
     # Constraints function
     function constraints_func(x, g)
@@ -54,7 +54,7 @@ function get_right_endpoint(
 
     # constrain optimizer
     opt = Opt(:LN_AUGLAG, n_theta)
-    ftol_abs!(opt, ftol_abs)
+    ftol_abs!(opt, scan_tol)
     max_objective!(
         opt,
         (x, g) -> scan_func(x)

@@ -5,7 +5,6 @@ module LikelihoodProfiler
 # include
 include("get_endpoint.jl")
 include("param_interval.jl")
-include("auxilary.jl")
 include("cico_one_pass.jl")
 
 # export

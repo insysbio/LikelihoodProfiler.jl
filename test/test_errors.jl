@@ -42,7 +42,7 @@ end
         )
 end
 
-@testset "wrong theta_init in log scale" begin
+@testset "wrong theta_bounds in log scale" begin
     @test_throws ArgumentError get_endpoint(
         [3., 2., 2.],
         3,
