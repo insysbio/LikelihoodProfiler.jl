@@ -89,7 +89,6 @@ function get_right_endpoint(
     return res
 end # of bound_right
 
-# evaluate right or left endpoint parameter
 function get_right_endpoint(
     theta_init::Vector{Float64}, # initial point of parameters
     theta_num::Int, # number of parameter to scan

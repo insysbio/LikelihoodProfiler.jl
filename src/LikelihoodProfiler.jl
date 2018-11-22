@@ -1,5 +1,13 @@
 __precompile__(false)
+"""
+Main module for `LikelihoodProfiler.jl`.
 
+Two functions are exported from this module for public use:
+
+- [`get_endpoint`](@ref). Calculates endpoint of confidence interval.
+- [`get_interval`](@ref). Calculates confidence interval.
+
+"""
 module LikelihoodProfiler
 
 # include
