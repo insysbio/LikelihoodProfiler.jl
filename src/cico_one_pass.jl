@@ -65,6 +65,8 @@ function get_right_endpoint(
     upper_bounds!(opt, ub)
     local_optimizer!(opt, local_opt)
     maxeval!(opt, max_iter)
+    
+    # inequality constraints
     inequality_constraint!(
         opt,
         constraints_func,

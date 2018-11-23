@@ -271,7 +271,7 @@ Tuple of three values:
 - `scan_tol`: Abolute tolerance of scanned component (stop criterion).
 - `loss_tol`: *experimental*. Required tolerance of `loss_func` at `loss_crit`.
 - `local_alg`: algorithm of optimization. Currently the local derivation free algorithms form NLOPT pack were tested. The methods: `:LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS` show good results. Methods: `:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA` is not recommended.
-- `kwargs...`: *experimental*. other keyword arguments passed to optimization method.
+- `kwargs...`: *experimental*. other keyword arguments passed to optimization method. `max_iter`: maximal number of `loss_func` calls. `ftol_abs`: absolute tolerance of parameter vector components.
 """
 function get_right_endpoint
 end
