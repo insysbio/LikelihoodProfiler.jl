@@ -66,32 +66,6 @@ scaling(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = scaling.(x_tup
 
 unscaling(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = unscaling.(x_tup, scale)
 
-"Structure storing one point from profile function"
-struct ProfilePoint
-    loss::Float64
-    params::Array{Float64, 1}
-    ret::Symbol
-end
-
-"""
-    struct EndPoint
-        value::Float64
-        profilePoints::Array{ProfilePoint, 1}
-        status::Symbol
-        direction::Symbol
-        counter::Int
-    end
-End point storage.
-
-"""
-struct EndPoint
-    value::Float64
-    profilePoints::Array{ProfilePoint, 1}
-    status::Symbol
-    direction::Symbol
-    counter::Int
-end
-
 """
     function get_endpoint(
         theta_init::Vector{Float64},
@@ -225,6 +199,7 @@ function get_endpoint(
     temp_fun = (pp::ProfilePoint) -> begin
         if isLeft pp.params[theta_num] *= -1 end # change direction
         ProfilePoint(
+            unscaling(pp.params[theta_num], scale[theta_num]),
             pp.loss + loss_crit,
             unscaling.(pp.params, scale),
             pp.ret

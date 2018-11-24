@@ -65,7 +65,7 @@ function get_right_endpoint(
     upper_bounds!(opt, ub)
     local_optimizer!(opt, local_opt)
     maxeval!(opt, max_iter)
-    
+
     # inequality constraints
     inequality_constraint!(
         opt,
@@ -81,7 +81,7 @@ function get_right_endpoint(
         res = (scan_bound, pp, :SCAN_BOUND_REACHED)
     elseif ret == :FTOL_REACHED
         loss = loss_func(optx)
-        pp = [ ProfilePoint(loss, optx, ret) ]
+        pp = [ ProfilePoint(optf, loss, optx, ret) ]
         res = (optf, pp, :BORDER_FOUND_BY_FTOL)
     else
         pp = []

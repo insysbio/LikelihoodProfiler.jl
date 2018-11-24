@@ -1,7 +1,19 @@
 using NLopt
 
 """
-Returns profile function for selected parameter component"
+    function profile(
+        theta_init::Vector{Float64},
+        theta_num::Int,
+        loss_func::Function;
+
+        skip_optim::Bool = false,
+        theta_bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(theta_init)),
+        loss_tol::Float64 = 1e-3,
+        local_alg::Symbol = :LN_NELDERMEAD,
+        max_iter::Int = 10^5,
+        kwargs... # options for local fitter
+        )
+Returns profile function for selected parameter component.
 """
 function profile(
     theta_init::Vector{Float64},
@@ -9,11 +21,7 @@ function profile(
     loss_func::Function;
 
     skip_optim::Bool = false,
-    scale::Vector{Symbol} = fill(:direct, length(theta_init)),
-    theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
-        fill((-Inf, Inf), length(theta_init)),
-        scale
-        ),
+    theta_bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(theta_init)),
     loss_tol::Float64 = 1e-3,
     local_alg::Symbol = :LN_NELDERMEAD,
     max_iter::Int = 10^5,
@@ -34,13 +42,21 @@ function profile(
             loss = loss_func(theta_full)
             # return
             ProfilePoint(
+                x,
                 loss,
                 theta_full,
                 :OPTIMIZATION_SKIPPED
             )
         end
     else
-        out = (x::Float64; theta_init_i::Vector{Float64} = theta_init) -> begin
+        # set optimizer
+        opt = Opt(local_alg, theta_length - 1)
+        ftol_abs!(opt, loss_tol)
+        lower_bounds!(opt, lb)
+        upper_bounds!(opt, ub)
+        maxeval!(opt, max_iter)
+        # profile function
+        return (x::Float64; theta_init_i::Vector{Float64} = theta_init) -> begin
             # get init of rest component
             theta_init_rest = copy(theta_init_i)
             deleteat!(theta_init_rest, theta_num)
@@ -51,22 +67,17 @@ function profile(
                 loss_func(theta_full)
             end
             # set optimizer
-            opt = Opt(local_alg, length(theta_init_rest))
             min_objective!(opt, loss_func_rest)
-            ftol_abs!(opt, loss_tol)
-            lower_bounds!(opt, lb)
-            upper_bounds!(opt, ub)
-            maxeval!(opt, max_iter)
             # start optimization
             (loss, theta_opt, ret) = optimize(opt, theta_init_rest)
             splice!(theta_opt, theta_num:(theta_num-1), x)
             # return
             ProfilePoint(
+                x,
                 loss,
                 theta_opt,
                 ret
             )
         end
-        return out
     end
 end

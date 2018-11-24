@@ -11,9 +11,11 @@ Two functions are exported from this module for public use:
 module LikelihoodProfiler
 
 # include
+include("structures.jl")
 include("get_endpoint.jl")
 include("get_interval.jl")
 include("cico_one_pass.jl")
+include("profile.jl")
 
 # export
 export get_right_endpoint,
@@ -24,5 +26,7 @@ export get_right_endpoint,
     EndPoint,
     ParamIntervalInput,
     ParamInterval,
-    get_interval
+    get_interval,
+    profile,
+    plot2
 end
