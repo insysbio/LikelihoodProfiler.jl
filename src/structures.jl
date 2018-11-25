@@ -8,7 +8,6 @@ struct ProfilePoint
     ret::Symbol
 end
 
-"*Experimental*. Plot array of ProfilePoint."
 #=
 @recipe function f(::Type{Array{ProfilePoint,1}}, pps::Array{ProfilePoint,1})
     x = [pps[i].value for i in 1:length(pps)]
@@ -16,6 +15,7 @@ end
     plot!(x, y)
 end
 =#
+"*Experimental*. Plot array of ProfilePoint."
 function plot2(pps::Array{ProfilePoint,1})
     x = [pps[i].value for i in 1:length(pps)]
     y = [pps[i].loss for i in 1:length(pps)]

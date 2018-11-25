@@ -8,10 +8,10 @@ using NLopt
 
         skip_optim::Bool = false,
         theta_bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(theta_init)),
-        loss_tol::Float64 = 1e-3,
         local_alg::Symbol = :LN_NELDERMEAD,
-        max_iter::Int = 10^5,
-        kwargs... # options for local fitter
+        ftol_abs::Float64 = 1e-3,
+        maxeval::Int = 10^5,
+        kwargs...
         )
 Returns profile function for selected parameter component.
 """
@@ -22,10 +22,11 @@ function profile(
 
     skip_optim::Bool = false,
     theta_bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(theta_init)),
-    loss_tol::Float64 = 1e-3,
+    # fit alg args
     local_alg::Symbol = :LN_NELDERMEAD,
-    max_iter::Int = 10^5,
-    kwargs... # options for local fitter
+    ftol_abs::Float64 = 1e-3,
+    maxeval::Int = 10^5,
+    kwargs...
     )
     theta_length = length(theta_init)
     # set indexes
@@ -51,10 +52,10 @@ function profile(
     else
         # set optimizer
         opt = Opt(local_alg, theta_length - 1)
-        ftol_abs!(opt, loss_tol)
+        ftol_abs!(opt, ftol_abs)
         lower_bounds!(opt, lb)
         upper_bounds!(opt, ub)
-        maxeval!(opt, max_iter)
+        maxeval!(opt, maxeval)
         # profile function
         return (x::Float64; theta_init_i::Vector{Float64} = theta_init) -> begin
             # get init of rest component
