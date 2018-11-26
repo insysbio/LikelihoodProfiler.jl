@@ -22,9 +22,9 @@ end
         local_alg = :LN_COBYLA
     ) for i in 1:3]
     @test isapprox(res0[1][1], 5., atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test isapprox(res0[2][1], 2.0+2.0*sqrt(2.), atol=1e-2)
-    @test res0[2][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[2][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[3][3] == :SCAN_BOUND_REACHED
 end
 
@@ -39,7 +39,7 @@ end
     ) for i in 1:3]
     @test res0[1][3] == :SCAN_BOUND_REACHED
     @test isapprox(res0[2][1], 2.0+2.0*sqrt(2.), atol=1e-2)
-    @test res0[2][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[2][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[3][3] == :SCAN_BOUND_REACHED
 end
 
@@ -67,9 +67,9 @@ end
         local_alg = :LN_PRAXIS
     ) for i in 1:3]
     @test isapprox(res0[1][1], 5., atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test isapprox(res0[2][1], 2.0+2.0*sqrt(2.), atol=1e-2)
-    @test res0[2][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[2][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[3][3] == :SCAN_BOUND_REACHED
 end
 
@@ -84,6 +84,6 @@ end
     ) for i in 1:3]
     @test res0[1][3] == :SCAN_BOUND_REACHED
     @test isapprox(res0[2][1], 2.0+2.0*sqrt(2.), atol=1e-2)
-    @test res0[2][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[2][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[3][3] == :SCAN_BOUND_REACHED
 end

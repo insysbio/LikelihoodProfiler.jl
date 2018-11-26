@@ -8,7 +8,7 @@
         Val(:CICO_ONE_PASS)
     ) for i in 1:1]
     @test isapprox(res0[1][1], 5., atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
 end
 
 @testset "f_2p_1im" begin
@@ -19,7 +19,7 @@ end
         Val(:CICO_ONE_PASS)
     ) for i in 1:2]
     @test isapprox(res0[1][1], 5., atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[2][3] == :SCAN_BOUND_REACHED
 end
 
@@ -32,9 +32,9 @@ end
         scan_tol = 1e-6
     ) for i in 1:2]
     @test isapprox(res0[1][1], 5., atol=1e-6)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test isapprox(res0[2][1], 6., atol=1e-6)
-    @test res0[2][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[2][3] == :BORDER_FOUND_BY_SCAN_TOL
 end
 
 @testset "f_3p_1im" begin
@@ -45,7 +45,7 @@ end
         Val(:CICO_ONE_PASS)
     ) for i in 1:3]
     @test isapprox(res0[1][1], 5., atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[2][3] == :SCAN_BOUND_REACHED
     @test res0[3][3] == :SCAN_BOUND_REACHED
 end
@@ -71,9 +71,9 @@ end
         Val(:CICO_ONE_PASS)
     ) for i in 1:3]
     @test isapprox(res0[1][1], 5., atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test isapprox(res0[2][1], 2.0+2.0*sqrt(2.), atol=1e-2)
-    @test res0[2][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[2][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[3][3] == :SCAN_BOUND_REACHED
 end
 
@@ -87,7 +87,7 @@ end
     ) for i in 1:3]
     @test res0[1][3] == :SCAN_BOUND_REACHED
     @test isapprox(res0[2][1], 2.0+2.0*sqrt(2.), atol=1e-2)
-    @test res0[2][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[2][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[3][3] == :SCAN_BOUND_REACHED
 end
 
@@ -112,9 +112,9 @@ end
         Val(:CICO_ONE_PASS)
     ) for i in 1:4]
     @test isapprox(res0[1][1], 5., atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test isapprox(res0[2][1], 6., atol=1e-2)
-    @test res0[2][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[2][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[3][3] == :SCAN_BOUND_REACHED
     @test res0[4][3] == :SCAN_BOUND_REACHED
 end
@@ -128,7 +128,7 @@ end
     ) for i in 1:4]
 
     @test isapprox(res0[1][1], 5., atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[2][3] == :SCAN_BOUND_REACHED
     @test res0[3][3] == :SCAN_BOUND_REACHED
     @test res0[4][3] == :SCAN_BOUND_REACHED
@@ -143,7 +143,7 @@ end
     ) for i in 1:1]
 
     @test isapprox(res0[1][1], 2. + 1e-8, atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
 end
 
 @testset "f_5p_3im" begin
@@ -155,9 +155,9 @@ end
     ) for i in 1:5]
 
     @test isapprox(res0[1][1], 5., atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test isapprox(res0[2][1], log(3.), atol=1e-2)
-    @test res0[2][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[2][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[3][3] == :SCAN_BOUND_REACHED
     @test res0[4][3] == :SCAN_BOUND_REACHED
     @test res0[5][3] == :SCAN_BOUND_REACHED
@@ -172,8 +172,8 @@ end
     ) for i in 1:3]
 
     @test isapprox(res0[1][1], 5., atol=1e-2)
-    @test res0[1][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test isapprox(res0[2][1], log(3.), atol=1e-2)
-    @test res0[2][3] == :BORDER_FOUND_BY_FTOL
+    @test res0[2][3] == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[3][3] == :SCAN_BOUND_REACHED
 end

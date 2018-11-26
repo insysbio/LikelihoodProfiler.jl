@@ -232,7 +232,7 @@ Interface for current and future methods for endpoint estimation.
 Tuple of three values:
 - Right end point value: `::Float64`.
 - Profile points estimated on fly: `::Array{ ProfilePoint, 1}`, see [`ProfilePoint`](@ref).
-- Status of sulution: `::Symbol`. One of values: `:BORDER_FOUND_BY_FTOL`, `:SCAN_BOUND_REACHED`.
+- Status of sulution: `::Symbol`. One of values: `:BORDER_FOUND_BY_SCAN_TOL`, `:SCAN_BOUND_REACHED`.
 
 ## Arguments
 - `theta_init`: starting values of parameter vector ``\\theta``. The starting values is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.

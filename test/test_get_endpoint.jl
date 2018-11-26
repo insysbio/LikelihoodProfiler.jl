@@ -9,11 +9,11 @@
 
     @test isapprox(res0[1].value, 5.0, atol=1e-2)
     @test length(res0[1].profilePoints) > 0
-    @test res0[1].status == :BORDER_FOUND_BY_FTOL
+    @test res0[1].status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[1].direction == :right
     @test isapprox(res0[2].value, 2.0+2.0*sqrt(2.), atol=1e-2)
     @test length(res0[2].profilePoints) > 0
-    @test res0[2].status == :BORDER_FOUND_BY_FTOL
+    @test res0[2].status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[2].direction == :right
     @test length(res0[3].profilePoints) == 0
     @test res0[3].status == :SCAN_BOUND_REACHED
@@ -32,11 +32,11 @@ end
 
     @test isapprox(res0[1].value, 1.0, atol=1e-2)
     @test length(res0[1].profilePoints) > 0
-    @test res0[1].status == :BORDER_FOUND_BY_FTOL
+    @test res0[1].status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[1].direction == :left
     @test isapprox(res0[2].value, 2.0-2.0*sqrt(2.), atol=1e-2)
     @test length(res0[2].profilePoints) > 0
-    @test res0[2].status == :BORDER_FOUND_BY_FTOL
+    @test res0[2].status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[2].direction == :left
     @test length(res0[3].profilePoints) == 0
     @test res0[3].status == :SCAN_BOUND_REACHED
@@ -56,11 +56,11 @@ end
 
     @test isapprox(log10(res0[1].value), log10(5.), atol=1e-2)
     @test length(res0[1].profilePoints) > 0
-    @test res0[1].status == :BORDER_FOUND_BY_FTOL
+    @test res0[1].status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[1].direction == :right
     @test isapprox(res0[2].value, 2.0+2.0*sqrt(2.), atol=1e-2)
     @test length(res0[2].profilePoints) > 0
-    @test res0[2].status == :BORDER_FOUND_BY_FTOL
+    @test res0[2].status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0[2].direction == :right
     @test length(res0[3].profilePoints) == 0
     @test res0[3].status == :SCAN_BOUND_REACHED
