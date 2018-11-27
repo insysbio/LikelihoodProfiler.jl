@@ -4,7 +4,7 @@ function get_right_endpoint(
     theta_init::Vector{Float64}, # initial point of parameters
     theta_num::Int, # number of parameter to scan
     loss_func::Function, # lambda(theta) - labmbda_min - delta_lambda
-    method::Val{:LIN_INTER}; # function works only for method LIN_INTER
+    method::Val{:LIN_EXTRAPOL}; # function works only for method LIN_INTER
 
     theta_bounds::Vector{Tuple{Float64,Float64}} = fill(
         (-Inf, Inf), length(theta_init)
@@ -13,6 +13,7 @@ function get_right_endpoint(
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3,
     # method args
+    scan_hini = 1.,
     scan_hmax = Inf,
     # local alg args
     local_alg::Symbol = :LN_NELDERMEAD,
@@ -33,16 +34,18 @@ function get_right_endpoint(
         maxeval = max_iter
     )
 
+    # empty container
     pps = ProfilePoint[]
-    i = 1
 
     # first iteration
     current_x = theta_init[theta_num]
     current_point = prof(current_x)
     push!(pps, current_point)
+
+    i = 1
     # next step
-    interpolated_x = Inf
-    next_x = minimum([current_x+scan_hmax, interpolated_x, scan_bound])
+    extrapol_x = current_x + scan_hini
+    next_x = minimum([current_x+scan_hmax, extrapol_x])
     (previous_point, previous_x, current_x) = (current_point, current_x, next_x)
 
     # other iterations
@@ -57,18 +60,17 @@ function get_right_endpoint(
             return (scan_bound, pps, :SCAN_BOUND_REACHED) # break
         elseif isapprox(current_point.loss, 0., atol = loss_tol)
             return (current_x, pps, :BORDER_FOUND_BY_LOSS_TOL) # break
-        elseif isapprox(current_x, previous_x, atol = scan_tol) && sign(current_x)*sign(current_x)<=0. # TODO: bad results are possible
+        elseif isapprox(current_x, previous_x, atol = scan_tol)
             return (current_x, pps, :BORDER_FOUND_BY_SCAN_TOL) # break
         end
+
         # next step
         if (current_point.loss - previous_point.loss) / (current_x - previous_x) <= 0
-            interpolated_x = Inf
+            extrapol_x = current_x + scan_hini
         else
-            interpolated_x = previous_x - (current_x - previous_x) * previous_point.loss / (current_point.loss - previous_point.loss)
+            extrapol_x = previous_x - (current_x - previous_x) * previous_point.loss / (current_point.loss - previous_point.loss)
         end
-        next_x = minimum([current_x+scan_hmax, interpolated_x, scan_bound])
+        next_x = minimum([current_x+scan_hmax, extrapol_x])
         (previous_point, previous_x, current_x) = (current_point, current_x, next_x)
     end
-
-    return nothing
 end
