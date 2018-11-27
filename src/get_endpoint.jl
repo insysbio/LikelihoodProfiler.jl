@@ -66,6 +66,10 @@ scaling(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = scaling.(x_tup
 
 unscaling(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = unscaling.(x_tup, scale)
 
+scaling(::Nothing, ::Symbol) = nothing
+
+unscaling(::Nothing, ::Symbol) = nothing
+
 """
     function get_endpoint(
         theta_init::Vector{Float64},
@@ -194,7 +198,7 @@ function get_endpoint(
     )
 
     # transforming back
-    if isLeft optf_gd *= -1 end # change direction
+    if (isLeft && typeof(optf_gd)!==Nothing) optf_gd *= -1 end # change direction
     optf = unscaling(optf_gd, scale[theta_num])
     temp_fun = (pp::ProfilePoint) -> begin
         if isLeft pp.params[theta_num] *= -1 end # change direction

@@ -34,7 +34,7 @@ End point storage.
 
 """
 struct EndPoint
-    value::Float64
+    value::Union{Float64, Nothing}
     profilePoints::Array{ProfilePoint, 1}
     status::Symbol
     direction::Symbol
