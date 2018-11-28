@@ -1,5 +1,3 @@
-import LikelihoodProfiler: get_right_endpoint
-
 function get_right_endpoint(
     theta_init::Vector{Float64}, # initial point of parameters
     theta_num::Int, # number of parameter to scan
@@ -39,6 +37,7 @@ function get_right_endpoint(
 
     # first iteration
     current_x = theta_init[theta_num]
+    current_init = theta_init
     iteration_count = 0
 
     # other iterations
@@ -46,11 +45,12 @@ function get_right_endpoint(
         # preparation
         global previous_x # not initialized for the first iteration
         global previous_point # not initialized for the first iteration
-        iteration_count += 1
+        iteration_count += 1 # to understand if this is a first iteration
 
         # get profile point
         current_point = prof(
             current_x;
+            theta_init_i = current_init, # hypothetically this makes optimization more effective
             maxeval = max_iter - accum_counter # how many calls left
             )
         push!(pps, current_point)
@@ -75,7 +75,8 @@ function get_right_endpoint(
         else
             extrapol_x = current_x + scan_hini
         end
-        next_x = minimum([current_x+scan_hmax, extrapol_x])
-        (previous_point, previous_x, current_x) = (current_point, current_x, next_x)
+        next_x = minimum([current_x+scan_hmax, extrapol_x, theta_bounds[theta_num][2]])
+        # preparation for the next iteration
+        (previous_point, previous_x, current_x, current_init) = (current_point, current_x, next_x, current_point.params)
     end
 end
