@@ -206,7 +206,8 @@ function get_endpoint(
             unscaling(pp.params[theta_num], scale[theta_num]),
             pp.loss + loss_crit,
             unscaling.(pp.params, scale),
-            pp.ret
+            pp.ret,
+            pp.counter
         )
     end
     pps = [ temp_fun(pp_gd[i]) for i in 1:length(pp_gd) ]

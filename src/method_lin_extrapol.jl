@@ -23,6 +23,10 @@ function get_right_endpoint(
     )
     # dim of the theta vector
     n_theta = length(theta_init)
+    # to count loss function calls inside this function, accumulation
+    accum_counter::Int = 0
+    # empty container
+    pps = ProfilePoint[]
 
     prof = profile(
         theta_init,
@@ -30,45 +34,46 @@ function get_right_endpoint(
         loss_func;
         theta_bounds = theta_bounds,
         local_alg = local_alg,
-        ftol_abs = loss_tol,
-        maxeval = max_iter
+        ftol_abs = loss_tol
     )
-
-    # empty container
-    pps = ProfilePoint[]
 
     # first iteration
     current_x = theta_init[theta_num]
-    current_point = prof(current_x)
-    push!(pps, current_point)
-
-    i = 1
-    # next step
-    extrapol_x = current_x + scan_hini
-    next_x = minimum([current_x+scan_hmax, extrapol_x])
-    (previous_point, previous_x, current_x) = (current_point, current_x, next_x)
+    iteration_count = 0
 
     # other iterations
     while true
-        current_point = prof(current_x)
-        push!(pps, current_point)
+        # preparation
+        global previous_x # not initialized for the first iteration
+        global previous_point # not initialized for the first iteration
+        iteration_count += 1
 
-        i += 1
-        if i > 100
-            return (scan_bound, pps, :MAX_ITER_REACHED) # break
-        elseif current_x >= scan_bound && current_point.loss < 0.
-            return (scan_bound, pps, :SCAN_BOUND_REACHED) # break
+        # get profile point
+        current_point = prof(
+            current_x;
+            maxeval = max_iter - accum_counter # how many calls left
+            )
+        push!(pps, current_point)
+        accum_counter += current_point.counter # update counter
+
+        if current_x >= scan_bound && current_point.loss < 0.
+            return (nothing, pps, :SCAN_BOUND_REACHED) # break
         elseif isapprox(current_point.loss, 0., atol = loss_tol)
             return (current_x, pps, :BORDER_FOUND_BY_LOSS_TOL) # break
-        elseif isapprox(current_x, previous_x, atol = scan_tol)
+        elseif iteration_count!=1 && isapprox(current_x, previous_x, atol = scan_tol) # no checking for the first iteration
             return (current_x, pps, :BORDER_FOUND_BY_SCAN_TOL) # break
+        elseif current_point.ret == :MAXEVAL_REACHED
+            return (nothing, pps, :MAX_ITER_REACHED) # break
         end
 
         # next step
-        if (current_point.loss - previous_point.loss) / (current_x - previous_x) <= 0
-            extrapol_x = current_x + scan_hini
-        else
+        extrapolate_next_step =
+            iteration_count!=1 && # for the first iteration
+            (current_point.loss - previous_point.loss) / (current_x - previous_x) > 0
+        if extrapolate_next_step
             extrapol_x = previous_x - (current_x - previous_x) * previous_point.loss / (current_point.loss - previous_point.loss)
+        else
+            extrapol_x = current_x + scan_hini
         end
         next_x = minimum([current_x+scan_hmax, extrapol_x])
         (previous_point, previous_x, current_x) = (current_point, current_x, next_x)

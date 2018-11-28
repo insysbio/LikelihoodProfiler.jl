@@ -6,6 +6,7 @@ struct ProfilePoint
     loss::Float64
     params::Array{Float64, 1}
     ret::Symbol
+    counter::Union{Int, Nothing}
 end
 
 #=

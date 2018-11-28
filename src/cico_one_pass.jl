@@ -81,7 +81,7 @@ function get_right_endpoint(
         res = (nothing, pp, :SCAN_BOUND_REACHED)
     elseif ret == :FTOL_REACHED
         loss = loss_func(optx)
-        pp = [ ProfilePoint(optf, loss, optx, ret) ]
+        pp = [ ProfilePoint(optf, loss, optx, ret, nothing) ]
         res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL)
     else
         pp = []
