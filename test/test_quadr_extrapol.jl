@@ -1,4 +1,4 @@
-method = :LIN_EXTRAPOL
+method = :QUADR_EXTRAPOL
 
 @testset "f_2p_1im" begin
     res0 = [get_right_endpoint(
@@ -87,6 +87,7 @@ end
         1,
         (x::Vector{Float64}) -> f_3p_1im_dep(x) - 9.,
         Val(method);
+        loss_tol = 0.,
         scan_tol = [1e-2, 1e-4, 1e-6][i]
     ) for i in 1:3]
     @test isapprox(res0[1][1], 5., atol=1e-1)

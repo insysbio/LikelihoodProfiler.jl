@@ -24,5 +24,8 @@ println("Starting tests for CICO")
 println("Starting tests for CICO different fitting alg")
 @testset "CICO_ONE_PASS_ALG" begin include("test_cico_one_pass_algorithms.jl") end
 
-println("Starting tests for LIN_INTER")
-@testset "LIN_INTER" begin include("test_lin_extrapol.jl") end
+println("Starting tests for LIN_EXTRAPOL")
+@testset "LIN_EXTRAPOL" begin include("test_lin_extrapol.jl") end
+
+println("Starting tests for QUADR_EXTRAPOL")
+@testset "QUADR_EXTRAPOL" begin include("test_quadr_extrapol.jl") end

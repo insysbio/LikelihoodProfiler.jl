@@ -16,6 +16,7 @@ include("get_endpoint.jl")
 include("get_interval.jl")
 include("cico_one_pass.jl")
 include("method_lin_extrapol.jl")
+include("method_quadr_extrapol.jl")
 include("profile.jl")
 
 # export
