@@ -65,16 +65,17 @@ function get_right_endpoint(
         end
 
         # next step
-        extrapolate_next_step =
-            iteration_count!=1 && # for the first iteration
-            (point_2.loss - point_1.loss) / (x_2 - x_1) > 0
-        if extrapolate_next_step
-            x_3_extrapol = x_1 - (x_2 - x_1) * point_1.loss / (point_2.loss - point_1.loss)
-        else
+        if iteration_count==1
             x_3_extrapol = x_2 + scan_hini
+        else
+            if (point_2.loss - point_1.loss) / (x_2 - x_1) <= 0.
+                x_3_extrapol = x_2 + scan_hini
+            else
+                x_3_extrapol = x_2 - (x_2 - x_1) * point_2.loss / (point_2.loss - point_1.loss)
+            end
         end
-        next_x = minimum([x_2+scan_hmax, x_3_extrapol, theta_bounds[theta_num][2]])
+        x_3 = minimum([x_2+scan_hmax, x_3_extrapol, theta_bounds[theta_num][2]])
         # preparation for the next iteration
-        (point_1, x_1, x_2, theta_init_2) = (point_2, x_2, next_x, point_2.params)
+        (point_1, x_1, x_2, theta_init_2) = (point_2, x_2, x_3, point_2.params)
     end
 end
