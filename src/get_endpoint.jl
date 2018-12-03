@@ -227,7 +227,7 @@ end
             ),
         scan_bound::Float64 = 9.0,
         scan_tol::Float64 = 1e-3,
-        loss_tol::Float64 = 1e-3,
+        loss_tol::Float64 = 0.,
         local_alg::Symbol = :LN_NELDERMEAD,
         kwargs...
         )

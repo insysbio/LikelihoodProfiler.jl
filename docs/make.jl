@@ -7,6 +7,7 @@ makedocs(
     sitename = "LikelihoodProfiler.jl",
     pages = [
         "index.md",
+        "methods.md",
         "api.md"
     ],
     modules = [LikelihoodProfiler]
