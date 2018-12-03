@@ -9,7 +9,7 @@ function get_right_endpoint(
         ),
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3,
+    loss_tol::Float64 = 0., # 1e-3,
     # method args
     scan_hini = 1.,
     scan_hmax = Inf,
@@ -58,7 +58,8 @@ function get_right_endpoint(
             return (nothing, pps, :SCAN_BOUND_REACHED) # break
         elseif isapprox(point_2.loss, 0., atol = loss_tol)
             return (x_2, pps, :BORDER_FOUND_BY_LOSS_TOL) # break
-        elseif iteration_count>1 && isapprox(x_2, x_1, atol = scan_tol) # no checking for the first iteration
+        # no checking for the first iteration
+        elseif iteration_count>1 && isapprox((x_2 - x_1) * point_2.loss / (point_2.loss - point_1.loss), 0., atol = scan_tol)
             return (x_2, pps, :BORDER_FOUND_BY_SCAN_TOL) # break
         elseif point_2.ret == :MAXEVAL_REACHED
             return (nothing, pps, :MAX_ITER_REACHED) # break
@@ -71,7 +72,7 @@ function get_right_endpoint(
             if (point_2.loss - point_1.loss) / (x_2 - x_1) <= 0.
                 x_3_extrapol = x_2 + scan_hini
             else
-                x_3_extrapol = x_2 - (x_2 - x_1) * point_2.loss / (point_2.loss - point_1.loss)
+                x_3_extrapol = x_2 + (x_2 - x_1) * (0. - point_2.loss) / (point_2.loss - point_1.loss)
             end
         end
         x_3 = minimum([x_2+scan_hmax, x_3_extrapol, theta_bounds[theta_num][2]])

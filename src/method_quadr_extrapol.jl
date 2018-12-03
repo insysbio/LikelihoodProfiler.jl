@@ -12,7 +12,7 @@ function get_right_endpoint(
         ),
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3,
+    loss_tol::Float64 = 0., # 1e-3,
     # method args
     scan_hini = 1.,
     scan_hmax = Inf,
@@ -64,7 +64,8 @@ function get_right_endpoint(
         elseif isapprox(point_3.loss, 0., atol = loss_tol)
             return (x_3, pps, :BORDER_FOUND_BY_LOSS_TOL) # break
         # no checking for the first and second iterations
-        elseif iteration_count>2 && isapprox(x_3, x_2, atol = scan_tol)
+        # elseif iteration_count>2 && isapprox(x_3, x_2, atol = scan_tol)
+        elseif iteration_count>1 && isapprox((x_3 - x_2) * point_3.loss / (point_3.loss - point_2.loss), 0., atol = scan_tol)
             return (x_3, pps, :BORDER_FOUND_BY_SCAN_TOL) # break
         elseif point_3.ret == :MAXEVAL_REACHED
             return (nothing, pps, :MAX_ITER_REACHED) # break
