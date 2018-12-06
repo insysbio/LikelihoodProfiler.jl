@@ -18,6 +18,9 @@ println("Starting tests for get_endpoint")
 println("Starting tests for errors")
 @testset "errors" begin include("test_errors.jl") end
 
+println("Starting tests for profile")
+@testset "profile" begin include("test_profile.jl") end
+
 println("Starting tests for CICO")
 @testset "CICO_ONE_PASS" begin include("test_cico_one_pass.jl") end
 
