@@ -47,6 +47,9 @@ function get_right_endpoint(
         loss = loss_func(x)
         if (loss < 0.) && (scan_func(x) > scan_bound)
             throw(ForcedStop("Out of the scan bound but in ll constraint."))
+        #elseif isapprox(loss, 0., atol=loss_tol)
+        #    @warn "loss_tol reached... but..."
+        #    return loss
         else
             return loss
         end
