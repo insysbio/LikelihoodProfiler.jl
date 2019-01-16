@@ -20,7 +20,6 @@ markdown_extensions:
 
 docs_dir: 'build'
 
-
 pages:
   - README: README.md
   - Overview: index.md
