@@ -5,11 +5,13 @@ makedocs(
     # format = :html,
     # build   = "",
     sitename = "LikelihoodProfiler.jl",
+    #=
     pages = [
         "index.md",
         "methods.md",
         "api.md"
     ],
+    =#
     modules = [LikelihoodProfiler]
     #repo = "https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/docs/src/index.md"
 )
