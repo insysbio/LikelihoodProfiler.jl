@@ -22,6 +22,6 @@ docs_dir: 'build'
 
 pages:
   - README: README.md
-  - Overview: index.md
-  - API: api.md
-  - Methods: methods.md
+  - Overview: 'index.md'
+  - API: 'pages/api.md'
+  - Methods: 'pages/methods.md'
