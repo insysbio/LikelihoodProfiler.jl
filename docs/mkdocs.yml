@@ -21,7 +21,7 @@ markdown_extensions:
 docs_dir: 'build'
 
 pages:
-  - README: README.md
-  - Overview: 'index.md'
-  - API: 'pages/api.md'
-  - Methods: 'pages/methods.md'
+  - README: 'README.md'
+  - Home: 'index.md'
+  - API: 'api.md'
+  - Methods: 'methods.md'
