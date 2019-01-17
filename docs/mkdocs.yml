@@ -19,9 +19,3 @@ markdown_extensions:
   - mdx_math
 
 docs_dir: 'build'
-
-pages:
-  - README: 'README.md'
-  - Home: 'index.md'
-  - API: 'api.md'
-  - Methods: 'methods.md'
