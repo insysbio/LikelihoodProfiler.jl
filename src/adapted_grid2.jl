@@ -40,7 +40,7 @@ exactly at the end points of the intervals.
 The parameter `max_recusions` computes how many times each interval is allowed to
 be refined.
 """
-function adapted_grid(f, minmax::Tuple{Real, Real}; max_recursions = 7)
+function adapted_grid2(f, minmax::Tuple{Real, Real}; max_recursions = 7)
     if minmax[1] >= minmax[2]
         throw(ArgumentError("interval must be given as (min, max)"))
     end

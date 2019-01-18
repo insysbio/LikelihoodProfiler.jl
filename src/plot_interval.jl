@@ -40,7 +40,9 @@ function get_grid(pi::ParamInterval)
     xs = Vector{Float64}()
     ys = Vector{Float64}()
     ep_start = pi.input.theta_init[pi.input.theta_num]
+
     for ep in pi.result
+
         x_pps, y_pps = get_pps(ep)
         append!(xs, x_pps)
         append!(ys, y_pps)
@@ -75,7 +77,7 @@ end
 
 function get_adapted_grid(
     interval::Tuple{Float64,Float64},
-    params::Vector{Float64},
+    init_params::Vector{Float64},
     id::Int64,
     loss_func::Function,
     fit_alg::Symbol,
@@ -83,6 +85,7 @@ function get_adapted_grid(
     tol::Float64;
     max_recursions::Int = 2
 )
+    params = copy(init_params)
     # bounds
     lb = minimum.(bounds)
     ub = maximum.(bounds)
