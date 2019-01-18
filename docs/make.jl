@@ -2,7 +2,7 @@
 using Documenter, LikelihoodProfiler
 
 makedocs(
-    format = :html,
+    format = Documenter.HTML(),
     # build   = "",
     sitename = "LikelihoodProfiler.jl",
     pages = [
