@@ -8,11 +8,6 @@ julia:
 notifications:
   email: false
 
-branches:
-  only:
-  - master
-  - new_api
-
 #git:
 #  depth: 99999999
 
