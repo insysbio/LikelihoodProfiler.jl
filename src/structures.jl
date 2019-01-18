@@ -1,5 +1,3 @@
-using Plots
-
 "Structure storing one point from profile function"
 struct ProfilePoint
     value::Float64
