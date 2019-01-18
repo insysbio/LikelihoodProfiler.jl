@@ -3,6 +3,7 @@
 **LikelihoodProfiler** is a Julia package for **identifiability analysis** and confidence intervals evaluation.
 
 ## Installation
+
 **Julia** [download page](https://julialang.org/downloads/).
 
 Currently supported **Julia** versions are 0.6, 0.7
@@ -19,6 +20,29 @@ julia> using LikelihoodProfiler
 ## Objective
 
 The reliability and predictability of a **kinetic systems biology (SB) model** depends on the calibration of model parameters. Experimental data can be insufficient to determine all the parameters unambiguously. This results in “non-identifiable” parameters and parameters identifiable within confidence intervals. The proposed algorithm is a practical implementation of Profile Likelihood [1] method for parameters identification which can be applied to complex SB models. The results of this algorithm can be used to qualify and calibrate parameters or to reduce the model.
+
+## Quick Start
+
+```
+using LikelihoodProfiler, Plots
+
+# Likelihood function
+f(x) = 5.0 + (x[1]-3.0)^2 + (x[2]/x[3]-4.0)^2
+
+# Calculate parameters intervals for x[1], x[2], x[3]
+res = [
+    get_interval(
+        [3., 2., 2.1],
+        i,
+        f,
+        :CICO_ONE_PASS;
+        loss_crit = 9.
+    ) for i in 1:3]
+
+# Plot parameter profile x[1]
+plotly()
+plot(res[1])
+```
 
 ## Algorithm
 

@@ -1,4 +1,4 @@
-method = :QUADR_EXTRAPOL #:CICO_ONE_PASS
+method = :CICO_ONE_PASS
 
 @testset "default options" begin
     res0 = [get_interval(

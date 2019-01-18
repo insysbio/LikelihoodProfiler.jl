@@ -1,25 +1,52 @@
-using Plots
+using RecipesBase
 
 """
     using Plots
+    plotly()
     plot(pi::ParamInterval)
 
-Plots profile for parameter `theta_num`.
+Plots profile `L(theta)` for parameter `theta_num`.
 Computes `adapted_grid` for :CICO_ONE_PASS method
 See also: `Plots.adapted_grid`
 
-# Arguments
 """
 @recipe function f(pi::ParamInterval)
+    # get points for plot
+    xs, ys = get_grid(pi)
+
+    xlabel --> "theta"
+    ylabel --> "L(theta)"
+
+    # profile subplot
+    @series begin
+        label --> "Theta parameter profile"
+        seriestype --> :line
+        markershape --> :circle
+        line := (2.2,:green)
+        (xs, ys)
+    end
+
+    # critical level subplot
+    @series begin
+        label --> "Identifiability level"
+        seriestype --> :hline
+        line := (2.5, :red)
+        [pi.input.loss_crit]
+    end
+
+end
+
+function get_grid(pi::ParamInterval)
     xs = Vector{Float64}()
     ys = Vector{Float64}()
+    ep_start = pi.input.theta_init[pi.input.theta_num]
     for ep in pi.result
         x_pps, y_pps = get_pps(ep)
         append!(xs, x_pps)
         append!(ys, y_pps)
 
         if pi.method == :CICO_ONE_PASS && ep.status == :BORDER_FOUND_BY_SCAN_TOL
-            ep_start = pi.input.theta_init[pi.input.theta_num]
+
             x_ag, y_ag = get_adapted_grid(
                 ep.direction == :left ?
                     (ep.value, ep_start) :
@@ -36,20 +63,7 @@ See also: `Plots.adapted_grid`
         end
 
     end
-    @series begin
-        seriestype --> :line
-        markershape --> :circle
-        line := (2.2,:green)
-        (xs, ys)
-    end
-
-    @series begin
-        subplot := 1
-        line := (:2.5, :red)
-        seriestype --> :hline
-        [pi.input.loss_crit]
-    end
-    #seriestype  :=  :path
+    return (xs, ys)
 end
 
 function get_pps(ep::EndPoint)
@@ -70,7 +84,6 @@ function get_adapted_grid(
     max_recursions::Int = 2
 )
     # bounds
-    println(interval)
     lb = minimum.(bounds)
     ub = maximum.(bounds)
 
