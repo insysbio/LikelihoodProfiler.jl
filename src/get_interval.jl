@@ -16,6 +16,7 @@ end
 "Structure storing result of parameter interval calculation"
 struct ParamInterval
     input::ParamIntervalInput
+    loss_init::Float64
     method::Symbol
     result::Tuple{EndPoint, EndPoint}
 end
@@ -118,6 +119,7 @@ function get_interval(
 
     ParamInterval(
         input,
+        loss_func(theta_init),
         method,
         Tuple(endpoints)
         )
