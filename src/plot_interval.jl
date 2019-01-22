@@ -12,68 +12,109 @@ See also: `Plots.adapted_grid`
 """
 @recipe function f(pi::ParamInterval)
     # get points for plot
-    xs, ys = get_grid(pi)
-
+    xs, ys, ns = get_grid(pi)
     xlabel --> "theta"
     ylabel --> "L(theta)"
 
     # profile subplot
-    @series begin
-        label --> "Theta parameter profile"
-        seriestype --> :line
-        markershape --> :circle
-        line := (2.2,:green)
-        (xs, ys)
+    if length(xs)>1
+        @series begin
+            label --> "Theta parameter profile points"
+            seriestype --> :line
+            linestyle --> :dot
+            markershape --> :circle
+            markercolor --> :green
+            line := (2.2,:green)
+            (xs, ys)
+        end
     end
 
     # critical level subplot
     @series begin
         label --> "Identifiability level"
         seriestype --> :hline
-        line := (2.5, :red)
+        line := (2.5, :purple)
         [pi.input.loss_crit]
     end
 
+    if (pi.result[1].value != nothing) || (pi.result[2].value != nothing)
+        @series begin
+            label --> "Identifiability inteval"
+            seriestype --> :vline
+            line := (2.1, :pink)
+            [pi.result[1].value != nothing ? pi.result[1].value : NaN,
+            pi.result[2].value != nothing ? pi.result[2].value : NaN]
+
+            #[pi.result[1].value,pi.result[2].value]
+        end
+    end
+    # critical level subplot
+
+    @series begin
+        label --> "Initial point"
+        seriestype --> :scatter
+        markershape --> :diamond
+        markercolor --> :orange
+        [(pi.input.theta_init[pi.input.theta_num], pi.loss_init)]
+    end
+
 end
+
 
 function get_grid(pi::ParamInterval)
     xs = Vector{Float64}()
     ys = Vector{Float64}()
+    ns = Vector{String}()
+
     ep_start = pi.input.theta_init[pi.input.theta_num]
+    push!(xs, ep_start)
+    push!(ys, pi.loss_init)
+    push!(ns, "1")
 
     for ep in pi.result
-
-        x_pps, y_pps = get_pps(ep)
+        x_pps, y_pps, n_pps= get_pps(ep)
         append!(xs, x_pps)
         append!(ys, y_pps)
-
-        if pi.method == :CICO_ONE_PASS && ep.status == :BORDER_FOUND_BY_SCAN_TOL
-
-            x_ag, y_ag = get_adapted_grid(
-                ep.direction == :left ?
-                    (ep.value, ep_start) :
-                    (ep_start, ep.value),
-                pi.input.theta_init,
-                pi.input.theta_num,
-                pi.input.loss_func,
-                pi.input.local_alg,
-                pi.input.theta_bounds,
-                pi.input.loss_tol
-            )
-            append!(xs, x_ag)
-            append!(ys, y_ag)
-        end
-
+        append!(ns, n_pps)
     end
-    return (xs, ys)
+    return (xs, ys, ns)
 end
 
 function get_pps(ep::EndPoint)
-    pps = ep.profilePoints
-    xs = [pps[i].value for i in 1:length(pps)]
-    ys = [pps[i].loss for i in 1:length(pps)]
-    (xs,ys)
+    l = length(ep.profilePoints)
+
+    xs = Vector{Float64}(undef, l)
+    ys = Vector{Float64}(undef, l)
+    ns = Vector{String}(undef, l)
+
+    for i in 1:l
+        xs[i] = ep.profilePoints[i].value
+        ys[i] = ep.profilePoints[i].loss
+        ns[i] = ep.profilePoints[i].counter != nothing ?
+            string(ep.profilePoints[i].counter) : ""
+    end
+    (xs,ys,ns)
 end
+
+#=
+if pi.method == :CICO_ONE_PASS && ep.status == :BORDER_FOUND_BY_SCAN_TOL
+
+    x_ag, y_ag = get_adapted_grid(
+        ep.direction == :left ?
+            (ep.value, ep_start) :
+            (ep_start, ep.value),
+        pi.input.theta_init,
+        pi.input.theta_num,
+        pi.input.loss_func,
+        pi.input.local_alg,
+        pi.input.theta_bounds,
+        pi.input.loss_tol
+    )
+    append!(xs, x_ag)
+    append!(ys, y_ag)
+end
+=#
+
 
 function get_adapted_grid(
     interval::Tuple{Float64,Float64},
