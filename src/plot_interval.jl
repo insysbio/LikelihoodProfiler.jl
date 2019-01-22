@@ -16,8 +16,7 @@ See also: `Plots.adapted_grid`
     xlabel --> "theta"
     ylabel --> "L(theta)"
 
-    # profile subplot
-    if length(xs)>1
+    if length(xs) > 1
         @series begin
             label --> "Theta parameter profile points"
             seriestype --> :line
@@ -48,7 +47,6 @@ See also: `Plots.adapted_grid`
             #[pi.result[1].value,pi.result[2].value]
         end
     end
-    # critical level subplot
 
     @series begin
         label --> "Initial point"
@@ -96,6 +94,77 @@ function get_pps(ep::EndPoint)
     (xs,ys,ns)
 end
 
+function update_profile_interval!(pi::ParamInterval)
+    for ep in pi.result
+        if ep.status != :SCAN_BOUND_REACHED
+            ep_start = pi.input.theta_init[pi.input.theta_num]
+            update_profile_endpoint!(
+                ep.profilePoints,
+                ep.direction == :left ?
+                    (ep.value, ep_start) :
+                    (ep_start, ep.value),
+                pi.input.theta_init,
+                pi.input.theta_num,
+                pi.input.loss_func,
+                pi.input.local_alg,
+                pi.input.theta_bounds,
+                pi.input.loss_tol
+            )
+        else
+            @info "$(string(ep.direction)) - a half-open interval"
+        end
+    end
+    return nothing
+end
+
+function update_profile_endpoint!(
+    pps_arr::Vector{ProfilePoint},
+    interval::Tuple{Float64,Float64},
+    init_params::Vector{Float64},
+    id::Int64,
+    loss_func::Function,
+    fit_alg::Symbol,
+    bounds::Vector{Tuple{Float64,Float64}},
+    tol::Float64;
+    max_recursions::Int = 2
+)
+    params = copy(init_params)
+
+    # bounds
+    lb = minimum.(bounds)
+    ub = maximum.(bounds)
+
+    # function to be used in adapted_grid
+    function profile_func(x::Float64)
+        if length(params) == 1
+            return loss_func([x])
+        else
+            # ! params_intervals_one_side can be used here
+            fit_params_func = (p,g) -> loss_func(p)
+            opt = Opt(fit_alg, length(params))
+
+            params[id] = x
+            min_objective!(opt, fit_params_func)
+
+            # excluding params[id] from optimization
+            lb[id] = x
+            ub[id] = x
+            lower_bounds!(opt,lb)
+            upper_bounds!(opt,ub)
+            ftol_abs!(opt,tol)
+
+            (loss,minx,ret) = optimize(opt,params)
+
+            loss = loss_func(minx)
+            push!(pps_arr, ProfilePoint(x, loss, minx, ret, nothing))
+            return loss
+        end
+    end
+
+    # adapted_grid
+    adapted_grid2(profile_func,interval; max_recursions = max_recursions)
+    return nothing
+end
 #=
 if pi.method == :CICO_ONE_PASS && ep.status == :BORDER_FOUND_BY_SCAN_TOL
 
@@ -124,7 +193,7 @@ function get_adapted_grid(
     fit_alg::Symbol,
     bounds::Vector{Tuple{Float64,Float64}},
     tol::Float64;
-    max_recursions::Int = 2
+    max_recursions::Int = 1
 )
     params = copy(init_params)
     # bounds
@@ -151,6 +220,7 @@ function get_adapted_grid(
             ftol_abs!(opt,tol)
 
             (loss,minx,ret) = optimize(opt,params)
+
 
             return loss
         end

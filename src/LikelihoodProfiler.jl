@@ -32,5 +32,5 @@ export get_right_endpoint,
     ParamInterval,
     get_interval,
     profile,
-    plot2
+    update_profile_interval!
 end
