@@ -41,7 +41,6 @@ plotly()
 plot(res[1])
 ```
 
-The result is the following:
 ![](https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/img/plot_lin.png?raw=true)
 
 ## Objective

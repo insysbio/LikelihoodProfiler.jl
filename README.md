@@ -47,5 +47,4 @@ plotly()
 plot(res[1])
 ```
 
-The result is the following:
 ![Plot Linear](img/plot_lin.png?raw=true)
