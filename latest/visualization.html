@@ -17,4 +17,6 @@ res = [
 # Plot parameter profile x[1]
 using Plots
 plotly()
-plot(res[1])</code></pre><footer><hr/><a class="previous" href="methods.html"><span class="direction">Previous</span><span class="title">Methods</span></a><a class="next" href="api.html"><span class="direction">Next</span><span class="title">API</span></a></footer></article></body></html>
+plot(res[2])</code></pre><p><img src="https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/img/plot_cico.png?raw=true" alt/></p><p>To make a smooth plot compute more profile points using <a href="api.html#LikelihoodProfiler.update_profile_points!-Tuple{ParamInterval}"><code>LikelihoodProfiler.update_profile_points!</code></a> which internally uses <a href="https://github.com/JuliaPlots/PlotUtils.jl/blob/master/src/adapted_grid.jl"><code>PlotUtils.adapted_grid</code></a></p><pre><code class="language-none">update_profile_points!(res[2])
+
+plot(res[2])</code></pre><p><img src="https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/img/plot_cico_smooth.png?raw=true" alt/></p><footer><hr/><a class="previous" href="methods.html"><span class="direction">Previous</span><span class="title">Methods</span></a><a class="next" href="api.html"><span class="direction">Next</span><span class="title">API</span></a></footer></article></body></html>

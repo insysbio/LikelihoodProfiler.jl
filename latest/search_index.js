@@ -29,7 +29,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Quick start",
     "category": "section",
-    "text": "using LikelihoodProfiler\n\n# Likelihood function\nf(x) = 5.0 + (x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2\n\n# Calculate parameters intervals for x[1], x[2], x[3]\nres = [\n    get_interval(\n        [3., 2., 2.1],\n        i,\n        f,\n        :CICO_ONE_PASS;\n        loss_crit = 9.\n    ) for i in 1:3]\n\n# Plot parameter profile x[1]\nusing Plots\nplotly()\nplot(res[1])The result is the following: (Image: Plot Linear)"
+    "text": "using LikelihoodProfiler\n\n# Likelihood function\nf(x) = 5.0 + (x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2\n\n# Calculate parameters intervals for x[1], x[2], x[3]\nres = [\n    get_interval(\n        [3., 2., 2.1],\n        i,\n        f,\n        :CICO_ONE_PASS;\n        loss_crit = 9.\n    ) for i in 1:3]\n\n# Plot parameter profile x[1]\nusing Plots\nplotly()\nplot(res[1])The result is the following: (Image: )"
 },
 
 {
@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Visualization",
     "title": "Visualization",
     "category": "section",
-    "text": "LikelihoodProfiler.get_interval function outputs estimated confidence interval along with other data as LikelihoodProfiler.ParamInterval structure.LikelihoodProfiler provides a @recipe for Plots.jl to visualize confidence interval estimation and plot parameter profile based on LikelihoodProfiler.ParamInterval.using LikelihoodProfiler\n\n# Likelihood function\nf(x) = 5.0 + (x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2\n\n# Calculate parameters intervals for x[1], x[2], x[3]\nres = [\n    get_interval(\n        [3., 2., 2.1],\n        i,\n        f,\n        :CICO_ONE_PASS;\n        loss_crit = 9.\n    ) for i in 1:3]\n\n# Plot parameter profile x[1]\nusing Plots\nplotly()\nplot(res[1])"
+    "text": "LikelihoodProfiler.get_interval function outputs estimated confidence interval along with other data as LikelihoodProfiler.ParamInterval structure.LikelihoodProfiler provides a @recipe for Plots.jl to visualize confidence interval estimation and plot parameter profile based on LikelihoodProfiler.ParamInterval.using LikelihoodProfiler\n\n# Likelihood function\nf(x) = 5.0 + (x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2\n\n# Calculate parameters intervals for x[1], x[2], x[3]\nres = [\n    get_interval(\n        [3., 2., 2.1],\n        i,\n        f,\n        :CICO_ONE_PASS;\n        loss_crit = 9.\n    ) for i in 1:3]\n\n# Plot parameter profile x[1]\nusing Plots\nplotly()\nplot(res[2])(Image: )To make a smooth plot compute more profile points using LikelihoodProfiler.update_profile_points! which internally uses PlotUtils.adapted_gridupdate_profile_points!(res[2])\n\nplot(res[2])(Image: )"
 },
 
 {
