@@ -19,7 +19,3 @@ markdown_extensions:
   - mdx_math
 
 docs_dir: 'build'
-
-pages:
-  - Overview: index.md
-  - Basics: basics.md

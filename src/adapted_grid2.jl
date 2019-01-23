@@ -1,3 +1,4 @@
+using Random
 #=
 This file was taken from PlotUtils.jl package, see
 https://github.com/JuliaPlots/PlotUtils.jl
@@ -58,7 +59,7 @@ function adapted_grid2(f, minmax::Tuple{Real, Real}; max_recursions = 7)
     xs[end-1] = xs[end] - (xs[end] - xs[end-1]) * 0.25
 
     # Wiggle interior points a bit to prevent aliasing and other degenerate cases
-    rng = MersenneTwister(1337)
+    rng = Random.MersenneTwister(1337)
     rand_factor = 0.05
     for i in 2:length(xs)-1
         xs[i] += rand_factor * 2 * (rand(rng) - 0.5) * (xs[i+1] - xs[i-1])
@@ -71,30 +72,39 @@ function adapted_grid2(f, minmax::Tuple{Real, Real}; max_recursions = 7)
     while true
         curvatures = zeros(n_intervals)
         active = falses(n_intervals)
-        max_f = maximum(abs, fs[isfinite.(fs)])
+        isfinite_f = isfinite.(fs)
+        min_f, max_f = any(isfinite_f) ? extrema(fs[isfinite_f]) : (0.0, 0.0)
+        f_range = max_f - min_f
         # Guard against division by zero later
-        if max_f == 0 || !isfinite(max_f)
-            max_f = one(max_f)
+        if f_range == 0 || !isfinite(f_range)
+            f_range = one(f_range)
         end
         # Skip first and last interval
         for interval in 2:n_intervals-1
             p = 2 * interval
-            tot_w = 0.0
-            # Do a small convolution
-            for (q,w) in ((-1, 0.25), (0, 0.5), (1, 0.25))
-                interval == 1 && q == -1 && continue
-                interval == n_intervals && q == 1 && continue
-                tot_w += w
-                i = p + q
-                # Estimate integral of second derivative over interval, use that as a refinement indicator
-                # https://mathformeremortals.wordpress.com/2013/01/12/a-numerical-second-derivative-from-three-points/
-                curvatures[interval] += abs(2 * ((fs[i+1] - fs[i]) / ((xs[i+1]-xs[i]) * (xs[i+1]-xs[i-1]))
-                                                -(fs[i] - fs[i-1]) / ((xs[i]-xs[i-1]) * (xs[i+1]-xs[i-1])))
-                                                * (xs[i+1] - xs[i-1])^2) / max_f * w
+            if n_tot_refinements[interval] >= max_recursions
+                # Skip intervals that have been refined too much
+                active[interval] = false
+            elseif !all(isfinite.(fs[[p-1,p,p+1]]))
+                active[interval] = true
+            else
+                tot_w = 0.0
+                # Do a small convolution
+                for (q,w) in ((-1, 0.25), (0, 0.5), (1, 0.25))
+                    interval == 1 && q == -1 && continue
+                    interval == n_intervals && q == 1 && continue
+                    tot_w += w
+                    i = p + q
+                    # Estimate integral of second derivative over interval, use that as a refinement indicator
+                    # https://mathformeremortals.wordpress.com/2013/01/12/a-numerical-second-derivative-from-three-points/
+                    curvatures[interval] += abs(2 * ((fs[i+1] - fs[i]) / ((xs[i+1]-xs[i]) * (xs[i+1]-xs[i-1]))
+                                                    -(fs[i] - fs[i-1]) / ((xs[i]-xs[i-1]) * (xs[i+1]-xs[i-1])))
+                                                    * (xs[i+1] - xs[i-1])^2) / f_range * w
+                end
+                curvatures[interval] /= tot_w
+                # Only consider intervals with a high enough curvature
+                active[interval] = curvatures[interval] > max_curvature
             end
-            curvatures[interval] /= tot_w
-            # Only consider intervals that have not been refined too much and have a high enough curvature
-            active[interval] = n_tot_refinements[interval] < max_recursions && curvatures[interval] > max_curvature
         end
         # Approximate end intervals as being the same curvature as those next to it.
         # This avoids computing the function in the end points
@@ -146,10 +156,7 @@ function adapted_grid2(f, minmax::Tuple{Real, Real}; max_recursions = 7)
                 end
             else
                 new_xs[i + k] = xs[i]
-                # Don't evaluate function at end points
-                if !(i == 1 || i == n_points)
-                    new_fs[i + k] = fs[i]
-                end
+                new_fs[i + k] = fs[i]
             end
         end
 
@@ -160,5 +167,5 @@ function adapted_grid2(f, minmax::Tuple{Real, Real}; max_recursions = 7)
         n_intervals = n_points ÷ 2
     end
 
-    return xs[2:end-1], fs[2:end-1] # modified by Ivan Borisov
+    return xs[2:end-1], fs[2:end-1]
 end
