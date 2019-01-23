@@ -42,7 +42,7 @@ plot(res[1])
 ```
 
 The result is the following:
-![Plot Linear](img/plot_lin.png?raw=true)
+![](https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/img/plot_lin.png?raw=true)
 
 ## Objective
 
