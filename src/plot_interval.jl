@@ -6,13 +6,13 @@ using RecipesBase
     plot(pi::ParamInterval)
 
 Plots profile `L(theta)` for parameter `theta_num`.
-Computes `adapted_grid` for :CICO_ONE_PASS method
-See also: `Plots.adapted_grid`
-
+Also plots `identifiability level`, `identifiability interval`
+Use `update_profile_points!(pi::ProfileInterval)` function to refine
+profile points and make your plot more smooth
 """
 @recipe function f(pi::ParamInterval)
     # get points for plot
-    xs, ys, ns = get_grid(pi)
+    xs, ys = get_grid(pi)
     xlabel --> "theta"
     ylabel --> "L(theta)"
 
@@ -62,20 +62,20 @@ end
 function get_grid(pi::ParamInterval)
     xs = Vector{Float64}()
     ys = Vector{Float64}()
-    ns = Vector{String}()
+    #ns = Vector{String}()
 
     ep_start = pi.input.theta_init[pi.input.theta_num]
     push!(xs, ep_start)
     push!(ys, pi.loss_init)
-    push!(ns, "1")
+    #push!(ns, "1")
 
     for ep in pi.result
-        x_pps, y_pps, n_pps= get_pps(ep)
+        x_pps, y_pps = get_pps(ep)
         append!(xs, x_pps)
         append!(ys, y_pps)
-        append!(ns, n_pps)
+        #append!(ns, n_pps)
     end
-    return (xs, ys, ns)
+    return (xs, ys)
 end
 
 function get_pps(ep::EndPoint)
@@ -83,18 +83,28 @@ function get_pps(ep::EndPoint)
 
     xs = Vector{Float64}(undef, l)
     ys = Vector{Float64}(undef, l)
-    ns = Vector{String}(undef, l)
+    #ns = Vector{String}(undef, l)
 
     for i in 1:l
         xs[i] = ep.profilePoints[i].value
         ys[i] = ep.profilePoints[i].loss
-        ns[i] = ep.profilePoints[i].counter != nothing ?
-            string(ep.profilePoints[i].counter) : ""
+        #ns[i] = ep.profilePoints[i].counter != nothing ?
+        #    string(ep.profilePoints[i].counter) : ""
     end
-    (xs,ys,ns)
+    (xs,ys)
 end
 
-function update_profile_interval!(pi::ParamInterval)
+"""
+    update_profile_points!(pi::ParamInterval)
+
+Refines profile points to make your plot more smooth. Internally uses
+`adapted_grid` to compute additional profile points.
+See `PlotUtils.adapted_grid`
+## Arguments
+* `max_recursions`: how many times each interval is allowed to
+be refined (default: 2).
+"""
+function update_profile_points!(pi::ParamInterval; max_recursions::Int = 2)
     for ep in pi.result
         if ep.status != :SCAN_BOUND_REACHED
             ep_start = pi.input.theta_init[pi.input.theta_num]
@@ -108,7 +118,8 @@ function update_profile_interval!(pi::ParamInterval)
                 pi.input.loss_func,
                 pi.input.local_alg,
                 pi.input.theta_bounds,
-                pi.input.loss_tol
+                pi.input.loss_tol;
+                max_recursions = max_recursions
             )
         else
             @info "$(string(ep.direction)) - a half-open interval"
@@ -116,6 +127,7 @@ function update_profile_interval!(pi::ParamInterval)
     end
     return nothing
 end
+
 
 function update_profile_endpoint!(
     pps_arr::Vector{ProfilePoint},
@@ -165,26 +177,8 @@ function update_profile_endpoint!(
     adapted_grid2(profile_func,interval; max_recursions = max_recursions)
     return nothing
 end
-#=
-if pi.method == :CICO_ONE_PASS && ep.status == :BORDER_FOUND_BY_SCAN_TOL
 
-    x_ag, y_ag = get_adapted_grid(
-        ep.direction == :left ?
-            (ep.value, ep_start) :
-            (ep_start, ep.value),
-        pi.input.theta_init,
-        pi.input.theta_num,
-        pi.input.loss_func,
-        pi.input.local_alg,
-        pi.input.theta_bounds,
-        pi.input.loss_tol
-    )
-    append!(xs, x_ag)
-    append!(ys, y_ag)
-end
-=#
-
-
+# deprecated
 function get_adapted_grid(
     interval::Tuple{Float64,Float64},
     init_params::Vector{Float64},

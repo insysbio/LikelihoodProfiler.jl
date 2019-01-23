@@ -32,5 +32,5 @@ export get_right_endpoint,
     ParamInterval,
     get_interval,
     profile,
-    update_profile_interval!
+    update_profile_points!
 end

@@ -3,7 +3,7 @@ plotly()
 
 include("./cases_func.jl")
 
-method = :CICO_ONE_PASS#:LIN_EXTRAPOL#
+method = :LIN_EXTRAPOL#:CICO_ONE_PASS#
 
 res0 = [get_interval(
     [3., 2., 2.1],
