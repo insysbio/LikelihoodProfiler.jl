@@ -5,8 +5,8 @@ using RecipesBase
     plotly()
     plot(pi::ParamInterval)
 
-Plots profile `L(theta)` for parameter `theta_num`.
-Also plots `identifiability level`, `identifiability interval`
+Plots profile `L(theta)` for parameter `theta_num`,
+`identifiability level`, `identifiability interval`.
 Use `update_profile_points!(pi::ProfileInterval)` function to refine
 profile points and make your plot more smooth
 """

@@ -8,6 +8,7 @@ makedocs(
     pages = [
     "Home" => "index.md",
     "Methods" => "methods.md",
+    "Visualization" => "visualization.md",
     "API" => "api.md",
     ],
     modules = [LikelihoodProfiler]
