@@ -25,6 +25,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "index.html#Quick-start-1",
+    "page": "Home",
+    "title": "Quick start",
+    "category": "section",
+    "text": "using LikelihoodProfiler\n\n# Likelihood function\nf(x) = 5.0 + (x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2\n\n# Calculate parameters intervals for x[1], x[2], x[3]\nres = [\n    get_interval(\n        [3., 2., 2.1],\n        i,\n        f,\n        :CICO_ONE_PASS;\n        loss_crit = 9.\n    ) for i in 1:3]\n\n# Plot parameter profile x[1]\nusing Plots\nplotly()\nplot(res[1])"
+},
+
+{
     "location": "index.html#Objective-1",
     "page": "Home",
     "title": "Objective",
@@ -94,6 +102,22 @@ var documenterSearchIndex = {"docs": [
     "title": "Methods comparison",
     "category": "section",
     "text": "The next results are generated automatically based on current version."
+},
+
+{
+    "location": "visualization.html#",
+    "page": "Visualization",
+    "title": "Visualization",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "visualization.html#Visualization-1",
+    "page": "Visualization",
+    "title": "Visualization",
+    "category": "section",
+    "text": "LikelihoodProfiler.get_interval function outputs estimated confidence interval along with other data as LikelihoodProfiler.ParamInterval structure.LikelihoodProfiler provides a @recipe for Plots.jl to visualize confidence interval estimation and plot parameter profile based on LikelihoodProfiler.ParamInterval.using LikelihoodProfiler\n\n# Likelihood function\nf(x) = 5.0 + (x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2\n\n# Calculate parameters intervals for x[1], x[2], x[3]\nres = [\n    get_interval(\n        [3., 2., 2.1],\n        i,\n        f,\n        :CICO_ONE_PASS;\n        loss_crit = 9.\n    ) for i in 1:3]\n\n# Plot parameter profile x[1]\nusing Plots\nplotly()\nplot(res[1])"
 },
 
 {
@@ -245,7 +269,7 @@ var documenterSearchIndex = {"docs": [
     "page": "API",
     "title": "RecipesBase.apply_recipe",
     "category": "method",
-    "text": "using Plots\nplotly()\nplot(pi::ParamInterval)\n\nPlots profile L(theta) for parameter theta_num. Also plots identifiability level, identifiability interval Use update_profile_points!(pi::ProfileInterval) function to refine profile points and make your plot more smooth\n\n\n\n\n\n"
+    "text": "using Plots\nplotly()\nplot(pi::ParamInterval)\n\nPlots profile L(theta) for parameter theta_num, identifiability level, identifiability interval. Use update_profile_points!(pi::ProfileInterval) function to refine profile points and make your plot more smooth\n\n\n\n\n\n"
 },
 
 {
