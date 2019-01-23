@@ -6,11 +6,11 @@
 
 **Julia** [download page](https://julialang.org/downloads/).
 
-Currently supported **Julia** versions are 0.6, 0.7
+Currently supported **Julia** versions are 0.7, 1.0
 
 To install the package from `REPL`
 ```
-julia> import Pkg   # if you are on Julia 0.7
+julia> import Pkg   # if you are on Julia 0.7, 1.0
 
 julia> Pkg.add(PackageSpec(url="https://github.com/insysbio/LikelihoodProfiler.jl.git"))
 
@@ -40,6 +40,9 @@ using Plots
 plotly()
 plot(res[1])
 ```
+
+The result is the following:
+![Plot Linear](img/plot_lin.png?raw=true)
 
 ## Objective
 
