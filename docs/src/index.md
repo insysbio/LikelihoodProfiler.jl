@@ -31,7 +31,7 @@ res = [
         [3., 2., 2.1],
         i,
         f,
-        :CICO_ONE_PASS;
+        :LIN_EXTRAPOL;
         loss_crit = 9.
     ) for i in 1:3]
 
@@ -45,12 +45,14 @@ plot(res[1])
 
 ## Objective
 
-The reliability and predictability of a **kinetic systems biology (SB) model** depends on the calibration of model parameters. Experimental data can be insufficient to determine all the parameters unambiguously. This results in “non-identifiable” parameters and parameters identifiable within confidence intervals. The proposed algorithm is a practical implementation of Profile Likelihood [1] method for parameters identification which can be applied to complex SB models. The results of this algorithm can be used to qualify and calibrate parameters or to reduce the model.
+The reliability and predictability of a **kinetic systems biology (SB) model** depends on the calibration of model parameters. Experimental data can be insufficient to determine all the parameters unambiguously. This results in “non-identifiable” parameters and parameters identifiable within confidence intervals. The package includes algorithms for parameters identification using Profile Likelihood [1] method which can be applied to complex SB models. Results of the identifiability analysis can be used to qualify and calibrate parameters or to reduce the model.
 
 
-## Algorithm
+## Methods Overview
 
-The proposed algorithm for **Profile Likelihood** method addresses the disadvantages and restrictions of the root-finding algorithms with regard to the above problem and utilizes the **Inequality-based Constrained Optimization** [2, 3] for efficient determination of confidence intervals and detection of “non-identifiable” parameters. This algorithm does not assume that the likelihood function is differentiable or can be calculated for any given parameters set. This algorithm can be applied to complex kinetic models where function differentiability is not guaranteed and each likelihood estimation is computationally expensive.  The algorithm was tested for the set of kinetic models and it is distributed as a software package based on Julia Programming Language [4]. The package includes tools for **parameters identifiability analysis**, **confidence intervals evaluation** and **results visualization**.
+This packages provides a number of algorithms for [identifiability analysis](https://en.wikipedia.org/wiki/Identifiability_analysis) and confidence intervals evaluation by **Profile Likelihood** method. Along with linear extrapolation (`:LIN_EXTRAPOL`) and quadratic extrapolation (`:QUADR_EXTRAPOL`) the package introduces **Confidence Intervals evaluation by Constrained Optimization** method (`:CICO_ONE_PASS`) developed by the authors of this package.
+`:CICO_ONE_PASS` utilizes the **Inequality-based Constrained Optimization** [2, 3] for efficient determination of confidence intervals and detection of “non-identifiable” parameters. This algorithm does not assume that the likelihood function is differentiable or can be calculated for any given parameters set. This algorithm can be applied to complex kinetic models where function differentiability is not guaranteed and each likelihood estimation is computationally expensive.  
+The package includes tools for **parameters identifiability analysis**, **confidence intervals evaluation** and **results visualization**.
 
 
 ## References

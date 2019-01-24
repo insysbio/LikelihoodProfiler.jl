@@ -6,7 +6,9 @@
 ## :CICO\_ONE\_PASS
 
 The method uses the one-pass calculation of confidence interval endpoint, i.e. one
-optimization is required for single endpoint.
+optimization is required for single endpoint. It utilizes the **Inequality-based Constrained Optimization**
+for efficient determination of confidence intervals and detection of “non-identifiable” parameters. The method
+internally calls [`NLopt`](https://nlopt.readthedocs.io/en/latest/) algorithm to build an **objective function** with [`LN_AUGLAG`](https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/#augmented-lagrangian-algorithm) algorithm. 
 
 ## :LIN_EXTRAPOL
 
