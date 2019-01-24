@@ -41,11 +41,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Methods-Overview-1",
+    "location": "index.html#Package-Overview-1",
     "page": "Home",
-    "title": "Methods Overview",
+    "title": "Package Overview",
     "category": "section",
-    "text": "This packages provides a number of algorithms for identifiability analysis and confidence intervals evaluation by Profile Likelihood method. Along with linear extrapolation (:LIN_EXTRAPOL) and quadratic extrapolation (:QUADR_EXTRAPOL) the package introduces Confidence Intervals evaluation by Constrained Optimization method (:CICO_ONE_PASS) developed by the authors of this package. :CICO_ONE_PASS utilizes the Inequality-based Constrained Optimization [2, 3] for efficient determination of confidence intervals and detection of “non-identifiable” parameters. This algorithm does not assume that the likelihood function is differentiable or can be calculated for any given parameters set. This algorithm can be applied to complex kinetic models where function differentiability is not guaranteed and each likelihood estimation is computationally expensive.   The package includes tools for parameters identifiability analysis, confidence intervals evaluation and results visualization."
+    "text": "This packages provides a number of algorithms for identifiability analysis and confidence intervals evaluation based on Profile Likelihood approach. Along with linear extrapolation (:LIN_EXTRAPOL) and quadratic extrapolation (:QUADR_EXTRAPOL) the package introduces Confidence Intervals evaluation by Constrained Optimization algorithm (:CICO_ONE_PASS) developed by the authors of this package. :CICO_ONE_PASS utilizes the Inequality-based Constrained Optimization [2, 3] for efficient determination of confidence intervals and detection of “non-identifiable” parameters. This algorithm does not assume that the likelihood function is differentiable or can be calculated for any given parameters set. This algorithm can be applied to complex kinetic models where function differentiability is not guaranteed and each likelihood estimation is computationally expensive.  "
 },
 
 {
