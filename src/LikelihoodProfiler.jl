@@ -6,6 +6,8 @@ Two functions are exported from this module for public use:
 
 - [`get_endpoint`](@ref). Calculates endpoint of confidence interval.
 - [`get_interval`](@ref). Calculates confidence interval.
+- [`profile`](@ref). Generates the profile function based on `loss_func`
+- [`update_profile_points!`](@ref). Updates interval by profile points.
 
 """
 module LikelihoodProfiler

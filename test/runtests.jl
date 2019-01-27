@@ -1,4 +1,7 @@
 # push!(LOAD_PATH, "Y:\\")
+# using Pkg
+# Pkg.add("NLopt")
+# Pkg.add("RecipesBase")
 
 using LikelihoodProfiler, Test
 

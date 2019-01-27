@@ -5,7 +5,7 @@ function get_right_endpoint(
     theta_init::Vector{Float64}, # initial point of parameters
     theta_num::Int, # number of parameter to scan
     loss_func::Function, # lambda(theta) - labmbda_min - delta_lambda
-    method::Val{:QUADR_EXTRAPOL}; # function works only for method LIN_INTER
+    method::Val{:QUADR_EXTRAPOL}; # function works only for method QUADR_EXTRAPOL
 
     theta_bounds::Vector{Tuple{Float64,Float64}} = fill(
         (-Inf, Inf), length(theta_init)
