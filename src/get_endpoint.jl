@@ -102,14 +102,10 @@ transformations for faster optimization.
 [`EndPoint`](@ref) object storing confidence endpoint and profile points found on fly.
 
 ## Arguments
-- `theta_init`: starting values of parameter vector ``\\theta``. The starting values
-is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.
+- `theta_init`: starting values of parameter vector ``\\theta``. The starting values is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.
 - `theta_num`: number ``n`` of vector component to compute confidence interval ``\\theta^n``.
-- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of
-which is analyzed. Usually we use log-likelihood for profile analysis
-in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-- `method`: computational method to evaluate interval endpoint. Currently the
-following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
+- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of which is analyzed. Usually we use log-likelihood for profile analysis in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+- `method`: computational method to evaluate interval endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
 - `direction`: `:right` or `:left` endpoint to estimate.
 
 ## Keyword arguments
@@ -251,16 +247,12 @@ Tuple of three values:
 - `method`: this value is always fixed. Implemented methods are: `Val{:CICO_ONE_PASS}`. It is implemented for easy switching between different implemented and future methods.
 
 ## Keyword arguments
-- `theta_bound`: vector of bounds for each component in format `(left_bound, right_bound)`.
-This bounds define the ranges for possible parameter values.
+- `theta_bound`: vector of bounds for each component in format `(left_bound, right_bound)`. This bounds define the ranges for possible parameter values.
 - `scan_bound`: right scan bound for `theta_num` component. It must be within the `theta_bounds` for the scanned component.
 - `scan_tol`: Absolute tolerance of scanned component (stop criterion).
-- `loss_tol`: Absolute tolerance of `loss_func` at `loss_crit` (stop criterion).
-*Restriction*. Currently is not effective for `:CICO_ONE_PASS` methods because of limitation in
-`LN_AUGLAG` interface.
+- `loss_tol`: Absolute tolerance of `loss_func` at `loss_crit` (stop criterion). *Restriction*. Currently is not effective for `:CICO_ONE_PASS` methods because of limitation in `LN_AUGLAG` interface.
 - `local_alg`: algorithm of optimization. Currently the local derivation free algorithms form NLOPT pack were tested. The methods: `:LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS` show good results. Methods: `:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA` is not recommended.
-- `kwargs...`: the additional keyword arguments passed to `get_right_endpoint`
-for specific `method`.
+- `kwargs...`: the additional keyword arguments passed to `get_right_endpoint` for specific `method`.
 """
 function get_right_endpoint
 end

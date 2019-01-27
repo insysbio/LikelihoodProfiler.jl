@@ -36,7 +36,7 @@ end
         method::Symbol
         result::Tuple{EndPoint, EndPoint}
     end
-    
+
 Structure storing result of parameter interval calculation
 """
 struct ParamInterval
@@ -75,38 +75,20 @@ and `loss_func` according to `loss_crit` level.
 `ParamInterval` structure storing all input data and estimated confidence interval.
 
 ## Arguments
-- `theta_init`: starting values of parameter vector ``\\theta``. The starting
-values is not necessary to be the optimum values for `loss_func` but it the value
-of `loss_func` must be lower than `loss_crit`.
+- `theta_init`: starting values of parameter vector ``\\theta``. The starting values is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.
 - `theta_num`: number ``n`` of vector component to compute confidence interval ``\\theta^n``.
-- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of
-which is analyzed. Usually we use log-likelihood for profile analysis
-in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-- `method`: computational method to evaluate interval endpoint. Currently the
- following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
+- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of which is analyzed. Usually we use log-likelihood for profile analysis in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+- `method`: computational method to evaluate interval endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
 
 ## Keyword arguments
-- `loss_crit`: critical level of loss function. The endpoint of CI for selected
-parameter is the value at which profile likelihood meets the value of `loss_crit`.
-- `scale`: vector of scale transformations for each component. Possible values:
-`:direct, :log, :logit`. This option can make optimization much more faster,
-especially for wide `theta_bounds`. The default value is `:direct` (no transformation)
-for all components.
-- `theta_bounds`: vector of bounds for each component in format `(left_border, right_border)`.
-This bounds define the ranges for possible parameter values. The defaults are the non-limited
-values taking into account the `scale`, i.e. ``(0., Inf)`` for `:log` scale.
-- `scan_bounds`: vector of scan bound for `theta_num` component. It must be
-within the `theta_bounds` for the scanned component. The defaults are ``(-9., 9.)``
-for transformed values, i.e. ``(1e-9, 1e9)`` for `:log` scale.
+- `loss_crit`: critical level of loss function. The endpoint of CI for selected parameter is the value at which profile likelihood meets the value of `loss_crit`.
+- `scale`: vector of scale transformations for each component. Possible values: `:direct, :log, :logit`. This option can make optimization much more faster, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all components.
+- `theta_bounds`: vector of bounds for each component in format `(left_border, right_border)`. This bounds define the ranges for possible parameter values. The defaults are the non-limited values taking into account the `scale`, i.e. ``(0., Inf)`` for `:log` scale.
+- `scan_bounds`: vector of scan bound for `theta_num` component. It must be within the `theta_bounds` for the scanned component. The defaults are ``(-9., 9.)`` for transformed values, i.e. ``(1e-9, 1e9)`` for `:log` scale.
 - `scan_tol`: Absolute tolerance of scanned component (stop criterion).
-- `loss_tol`: Absolute tolerance of `loss_func` at `loss_crit` (stop criterion).
-*Restriction*. Currently is not effective for `:CICO_ONE_PASS` methods because of limitation in
-`LN_AUGLAG` interface.
-- `local_alg`: algorithm of optimization. Currently the local derivation free
-algorithms form NLOPT pack were tested. The methods: `:LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS`
-show good results. Methods: `:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA` is not recommended.
-- `kwargs...`: the additional keyword arguments passed to `get_right_endpoint`
-for specific `method`.
+- `loss_tol`: Absolute tolerance of `loss_func` at `loss_crit` (stop criterion). *Restriction*. Currently is not effective for `:CICO_ONE_PASS` methods because of limitation in `LN_AUGLAG` interface.
+- `local_alg`: algorithm of optimization. Currently the local derivation free algorithms form NLOPT pack were tested. The methods: `:LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS` show good results. Methods: `:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA` is not recommended.
+- `kwargs...`: the additional keyword arguments passed to `get_right_endpoint` for specific `method`.
 
 """
 function get_interval(
