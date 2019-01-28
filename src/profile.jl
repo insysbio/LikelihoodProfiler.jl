@@ -11,9 +11,25 @@ using NLopt
         local_alg::Symbol = :LN_NELDERMEAD,
         ftol_abs::Float64 = 1e-3,
         maxeval::Int = 10^5,
-        kwargs...
+        kwargs... # currently not used
         )
-Returns profile function for selected parameter component.
+It generates the profile function based on `loss_func`. Used internally in methods `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
+
+## Return
+Returns profile function for selected parameter component. Each call of the function
+starts optimization.
+
+# Arguments
+- `theta_init`: starting values of parameter vector ``\\theta``.
+- `theta_num`: number ``n`` of vector component to create the profile.
+- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of which is analyzed. Usually we use log-likelihood for profile analysis in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+
+## Keyword arguments
+- `skip_optim` : set `true` if you need marginal profile, i.e. profile without optimization. Default is `false`.
+- `theta_bounds` : vector of bounds for each component in format `(left_border, right_border)`. This bounds define the ranges for possible parameter values.
+- `local_alg` : algorithm of optimization. Currently the local derivation free algorithms form NLOPT pack were tested. The methods: `:LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS` show good results. Methods: `:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA` is not recommended.
+- `ftol_abs` : absolute tolerance criterion for profile function.
+- `maxeval` : maximal number of `loss_func` calls to estimate profile point.
 """
 function profile(
     theta_init::Vector{Float64},

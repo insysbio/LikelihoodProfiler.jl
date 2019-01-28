@@ -95,16 +95,24 @@ function get_pps(ep::EndPoint)
 end
 
 """
-    update_profile_points!(pi::ParamInterval)
+    update_profile_points!(
+        pi::ParamInterval;
+        max_recursions::Int = 2
+        )
 
 Refines profile points to make your plot more smooth. Internally uses
 `adapted_grid` to compute additional profile points.
-See `PlotUtils.adapted_grid`
+See `PlotUtils.adapted_grid`.
+
 ## Arguments
-* `max_recursions`: how many times each interval is allowed to
+- `pi` : `ParamInterval` structure to update.
+- `max_recursions` : how many times each interval is allowed to
 be refined (default: 2).
 """
-function update_profile_points!(pi::ParamInterval; max_recursions::Int = 2)
+function update_profile_points!(
+    pi::ParamInterval;
+    max_recursions::Int = 2
+    )
     for ep in pi.result
         if ep.status != :SCAN_BOUND_REACHED
             ep_start = pi.input.theta_init[pi.input.theta_num]

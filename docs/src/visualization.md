@@ -24,7 +24,7 @@ res = [
         loss_crit = 9.
     ) for i in 1:3]
 
-# Plot parameter profile x[1]
+# Plot parameter profile x[2]
 using Plots
 plotly()
 plot(res[2])
