@@ -42,4 +42,4 @@ notifications:
 after_success:
   - julia -e 'using Pkg; ps=PackageSpec(name="Documenter", version="0.19"); Pkg.add(ps); Pkg.pin(ps)'
   - julia -e 'ENV["DOCUMENTER_DEBUG"] = "true"; cd(Pkg.dir("LikelihoodProfiler")); include(joinpath("docs", "make.jl"))'
-  - julia -e 'cd(Pkg.dir("LikelihoodProfiler")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  - julia -e 'cd(Pkg.dir("LikelihoodProfiler")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
