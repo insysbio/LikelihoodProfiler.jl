@@ -19,7 +19,7 @@ Currently supported **Julia** versions are 0.7, 1.0
 ```
 julia> import Pkg   # if you are on Julia 0.7, 1.0
 
-julia> Pkg.add(PackageSpec(url="https://github.com/insysbio/LikelihoodProfiler.jl.git"))
+julia> Pkg.add("LikelihoodProfiler")
 ```
 
 # Quick start
