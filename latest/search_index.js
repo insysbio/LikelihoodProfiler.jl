@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Installation",
     "category": "section",
-    "text": "Currently supported Julia versions are 0.7, 1.0.To install the package from REPLjulia> import Pkg   # if you are on Julia 0.7, 1.0\n\njulia> Pkg.add(PackageSpec(url=\"https://github.com/insysbio/LikelihoodProfiler.jl.git\"))"
+    "text": "Currently supported Julia versions are 0.7, 1.0.To install the package from REPLjulia> import Pkg   # if you are on Julia 0.7, 1.0\n\njulia> Pkg.add(\"LikelihoodProfiler\")"
 },
 
 {
