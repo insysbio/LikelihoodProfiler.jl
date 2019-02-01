@@ -22,6 +22,23 @@ function get_right_endpoint(
     ftol_abs::Float64 = 1e-3,
     kwargs... # options for local fitter
     )
+    # dim of the theta vector
+    n_theta = length(theta_init)
+    
+    # checking arguments
+    # methods which are not supported
+    if local_alg in [:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA]
+        @warn "Using local_alg = :"*String(local_alg)*" may result in wrong output."
+    end
+    # when using :LN_NELDERMEAD initial parameters should not be zero
+    if local_alg == :LN_NELDERMEAD
+        zeroParameter = [ isapprox(theta_init[i], 0., atol=1e-2) for i in 1:n_theta]
+        if any(zeroParameter)
+            @warn "Close-to-zero parameters found when using :LN_NELDERMEAD."
+            show(findall(zeroParameter))
+        end
+    end
+
     # to count loss function calls inside this function, accumulation
     accum_counter::Int = 0
     # empty container

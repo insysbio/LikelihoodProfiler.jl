@@ -14,7 +14,8 @@ println("Starting tests for get_endpoint")
 @testset "get_endpoint" begin include("test_get_endpoint.jl") end
 
 println("Starting tests for errors")
-@testset "errors" begin include("test_errors.jl") end
+@testset "ERRORS" begin include("test_errors.jl") end
+@testset "ERRORS2" begin include("test_errors2.jl") end
 
 println("Starting tests for profile")
 @testset "profile" begin include("test_profile.jl") end
