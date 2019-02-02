@@ -17,20 +17,6 @@ struct ProfilePoint
     counter::Union{Int, Nothing}
 end
 
-#=
-@recipe function f(::Type{Array{ProfilePoint,1}}, pps::Array{ProfilePoint,1})
-    x = [pps[i].value for i in 1:length(pps)]
-    y = [pps[i].loss for i in 1:length(pps)]
-    plot!(x, y)
-end
-=#
-
-function plot2(pps::Array{ProfilePoint,1})
-    x = [pps[i].value for i in 1:length(pps)]
-    y = [pps[i].loss for i in 1:length(pps)]
-    plot(x, y)
-end
-
 """
     struct EndPoint
         value::Float64
@@ -47,11 +33,4 @@ struct EndPoint
     status::Symbol
     direction::Symbol
     counter::Int
-end
-
-function plot2(ep::EndPoint)
-    # plot profile points
-    p = plot2(ep.profilePoints)
-    # plot endpoint
-    #plot(p, [ep.value], [ep.profilePoints[1].loss], seriestype=:scatter)
 end
