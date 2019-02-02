@@ -1,6 +1,5 @@
 using Plots
 # plotly()
-# include("./cases_func.jl")
 
 method = :LIN_EXTRAPOL
 
