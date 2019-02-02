@@ -80,14 +80,17 @@ function get_right_endpoint(
     (optf, optx, ret) = optimize(opt, theta_init)
 
     if ret == :FORCED_STOP
-        pp = []
+        pp = ProfilePoint[]
         res = (nothing, pp, :SCAN_BOUND_REACHED)
     elseif ret == :FTOL_REACHED
         loss = loss_func(optx)
         pp = [ ProfilePoint(optf, loss, optx, ret, nothing) ]
         res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL)
+    elseif ret == :MAXEVAL_REACHED
+        pp = ProfilePoint[]
+        res = (nothing, pp, :MAX_ITER_REACHED)
     else
-        pp = []
+        pp = ProfilePoint[]
         res = (nothing, pp, :UNKNOWN_STOP)
     end
 

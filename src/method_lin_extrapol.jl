@@ -21,7 +21,7 @@ function get_right_endpoint(
     )
     # dim of the theta vector
     n_theta = length(theta_init)
-    
+
     # checking arguments
     # methods which are not supported
     if local_alg in [:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA]
@@ -73,11 +73,11 @@ function get_right_endpoint(
 
         if x_2 >= scan_bound && point_2.loss < 0.
             return (nothing, pps, :SCAN_BOUND_REACHED) # break
-        elseif isapprox(point_2.loss, 0., atol = loss_tol)
-            return (x_2, pps, :BORDER_FOUND_BY_LOSS_TOL) # break
         # no checking for the first iteration
         elseif iteration_count>1 && isapprox((x_2 - x_1) * point_2.loss / (point_2.loss - point_1.loss), 0., atol = scan_tol)
             return (x_2, pps, :BORDER_FOUND_BY_SCAN_TOL) # break
+        elseif isapprox(point_2.loss, 0., atol = loss_tol)
+            return (x_2, pps, :BORDER_FOUND_BY_LOSS_TOL) # break
         elseif point_2.ret == :MAXEVAL_REACHED
             return (nothing, pps, :MAX_ITER_REACHED) # break
         end

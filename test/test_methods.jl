@@ -115,8 +115,7 @@ for method = methods_list
               [3., 4, 1.1, 10.],
               i,
               (x::Vector{Float64}) -> f_4p_2im(x) - 9.,
-              Val(method),
-              loss_tol = 1e-12
+              Val(method)
           ) for i in 1:4]
           @test isapprox(res0[1][1], 5., atol=1e-2)
           @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
