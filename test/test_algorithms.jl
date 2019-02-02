@@ -1,10 +1,12 @@
 # :LN_COBYLA
+method = :CICO_ONE_PASS
+
 @testset "f_3p_1im restricted :LN_COBYLA" begin
     res0 = [get_right_endpoint(
         [3., 8., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im(x) - 9.,
-        Val(:CICO_ONE_PASS);
+        Val(method);
         scan_bound = 4.,
         local_alg = :LN_COBYLA
     ) for i in 1:3]
@@ -18,7 +20,7 @@ end
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x) - 9.,
-        Val(:CICO_ONE_PASS);
+        Val(method);
         local_alg = :LN_COBYLA
     ) for i in 1:3]
     @test isapprox(res0[1][1], 5., atol=1e-2)
@@ -33,7 +35,7 @@ end
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x) - 9.,
-        Val(:CICO_ONE_PASS);
+        Val(method);
         scan_bound = [4.,10.,10.][i],
         local_alg = :LN_COBYLA
     ) for i in 1:3]
@@ -49,7 +51,7 @@ end
         [3., 8., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im(x) - 9.,
-        Val(:CICO_ONE_PASS);
+        Val(method);
         scan_bound = 4.,
         local_alg = :LN_PRAXIS
     ) for i in 1:3]
@@ -63,7 +65,7 @@ end
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x) - 9.,
-        Val(:CICO_ONE_PASS);
+        Val(method);
         local_alg = :LN_PRAXIS
     ) for i in 1:3]
     @test isapprox(res0[1][1], 5., atol=1e-2)
@@ -78,7 +80,7 @@ end
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x) - 9.,
-        Val(:CICO_ONE_PASS);
+        Val(method);
         scan_bound = [4.,10.,10.][i],
         local_alg = :LN_PRAXIS
     ) for i in 1:3]

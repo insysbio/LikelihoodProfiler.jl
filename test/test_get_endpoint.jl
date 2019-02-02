@@ -1,9 +1,11 @@
+method = :CICO_ONE_PASS
+
 @testset "default options" begin
     res0 = [get_endpoint(
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x),
-        :CICO_ONE_PASS;
+        method;
         loss_crit = 9.
     ) for i in 1:3]
 
@@ -25,7 +27,7 @@ end
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x),
-        :CICO_ONE_PASS,
+        method,
         :left;
         loss_crit = 9.,
     ) for i in 1:3]
@@ -48,7 +50,7 @@ end
         [3., 2., 2.1],
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x),
-        :CICO_ONE_PASS,
+        method,
         :right;
         loss_crit = 9.,
         scale = [:log, :direct, :log]

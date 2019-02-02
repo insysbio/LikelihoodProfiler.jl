@@ -133,7 +133,7 @@ function get_endpoint(
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3,
     local_alg::Symbol = :LN_NELDERMEAD,
-    kwargs... # options for local fitter
+    kwargs... # other options for get_right_endpoint
     )
     isLeft = direction == :left
 

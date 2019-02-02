@@ -6,28 +6,26 @@
 using LikelihoodProfiler, Test
 
 include("./cases_func.jl")
+methods_list = [:CICO_ONE_PASS, :LIN_EXTRAPOL, :QUADR_EXTRAPOL]
 
 println("Starting tests for get_interval")
 @testset "get_interval" begin include("test_get_interval.jl") end
 
 println("Starting tests for get_endpoint")
 @testset "get_endpoint" begin include("test_get_endpoint.jl") end
+@testset "get_endpoint CICO_ONE_PASS" begin include("test_get_endpoint.jl") end
+@testset "get_endpoint errors and warnings" begin include("test_get_endpoint_errors.jl") end
 
-println("Starting tests for errors")
-@testset "ERRORS" begin include("test_errors.jl") end
-@testset "ERRORS2" begin include("test_errors2.jl") end
+println("Starting tests for all all methods of get_right_endpoint")
+@testset "get_right_endpoint methods" begin include("test_methods.jl") end
+@testset "get_right_endpoint CICO_ONE_PASS" begin include("test_cico_one_pass.jl") end
+@testset "get_right_endpoint methods errors and warnings" begin include("test_methods_errors.jl") end
 
 println("Starting tests for profile")
 @testset "profile" begin include("test_profile.jl") end
 
-println("Starting tests for CICO")
-@testset "CICO_ONE_PASS" begin include("test_cico_one_pass.jl") end
+println("Starting tests for different fitting alg")
+@testset "local_alg" begin include("test_algorithms.jl") end
 
-println("Starting tests for CICO different fitting alg")
-@testset "CICO_ONE_PASS_ALG" begin include("test_cico_one_pass_algorithms.jl") end
-
-println("Starting tests for LIN_EXTRAPOL")
-@testset "LIN_EXTRAPOL" begin include("test_lin_extrapol.jl") end
-
-println("Starting tests for QUADR_EXTRAPOL")
-@testset "QUADR_EXTRAPOL" begin include("test_quadr_extrapol.jl") end
+println("Starting tests for Plot @recepie")
+@testset "PLOT_INTERVAL" begin include("test_plots.jl") end

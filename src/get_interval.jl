@@ -108,9 +108,9 @@ function get_interval(
         scale[theta_num]
         ),
     scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3, # i do not know how to use it
+    loss_tol::Float64 = 1e-3,
     local_alg::Symbol = :LN_NELDERMEAD,
-    kwargs... # options for local fitter
+    kwargs... # other options for get_right_endpoint
     )
     # both endpoints
     endpoints = [get_endpoint(
