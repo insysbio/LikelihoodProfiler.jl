@@ -225,14 +225,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "api.html#LikelihoodProfiler.adapted_grid2-Tuple{Any,Tuple{Real,Real}}",
-    "page": "API",
-    "title": "LikelihoodProfiler.adapted_grid2",
-    "category": "method",
-    "text": "adapted_grid2(f, minmax::Tuple{Number, Number}; max_recursions = 7)\n\nComputes a grid x on the interval [minmax[1], minmax[2]] so that plot(f, x) gives a smooth \"nice\" plot. The method used is to create an initial uniform grid (21 points) and refine intervals where the second derivative is approximated to be large. When an interval becomes \"straight enough\" it is no longer divided. Functions are never evaluated exactly at the end points of the intervals. The parameter max_recusions computes how many times each interval is allowed to be refined.\n\n\n\n\n\n"
-},
-
-{
     "location": "api.html#LikelihoodProfiler.logistic10-Tuple{Float64}",
     "page": "API",
     "title": "LikelihoodProfiler.logistic10",
