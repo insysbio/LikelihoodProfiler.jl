@@ -1,4 +1,3 @@
-using NLopt
 
 """
     function profile(

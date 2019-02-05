@@ -1,4 +1,3 @@
-using RecipesBase
 
 """
     using Plots
@@ -141,7 +140,7 @@ function update_profile_endpoint!(
     pps_arr::Vector{ProfilePoint},
     interval::Tuple{Float64,Float64},
     init_params::Vector{Float64},
-    id::Int64,
+    id::Int,
     loss_func::Function,
     fit_alg::Symbol,
     bounds::Vector{Tuple{Float64,Float64}},
@@ -182,11 +181,12 @@ function update_profile_endpoint!(
     end
 
     # adapted_grid
-    adapted_grid2(profile_func,interval; max_recursions = max_recursions)
+    adapted_grid(profile_func,interval; max_recursions = max_recursions)
     return nothing
 end
 
 # deprecated
+#=
 function get_adapted_grid(
     interval::Tuple{Float64,Float64},
     init_params::Vector{Float64},
@@ -231,3 +231,4 @@ function get_adapted_grid(
     # adapted_grid
     adapted_grid2(profile_func,interval; max_recursions = max_recursions)
 end
+=#

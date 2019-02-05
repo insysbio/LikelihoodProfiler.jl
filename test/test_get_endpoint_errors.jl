@@ -1,6 +1,6 @@
-method = :CICO_ONE_PASS
 
 @testset "wrong theta_init" begin
+    method = :CICO_ONE_PASS
     @test_throws ArgumentError get_endpoint(
         [-10., 2., 2.1],
         1,
@@ -11,6 +11,7 @@ method = :CICO_ONE_PASS
 end
 
 @testset "wrong scan_bound" begin
+    method = :CICO_ONE_PASS
     @test_throws ArgumentError get_endpoint(
         [3., 2., 2.1],
         1,
@@ -23,6 +24,7 @@ end
 end
 
 @testset "wrong scan_bound and theta_init" begin
+    method = :CICO_ONE_PASS
     @test_throws ArgumentError get_endpoint(
         [3., 2., 2.1],
         1,
@@ -34,6 +36,7 @@ end
 end
 
 @testset "wrong theta_init in log scale" begin
+    method = :CICO_ONE_PASS
     @test_throws ArgumentError get_endpoint(
         [3., 2., -1],
         1,
@@ -45,6 +48,7 @@ end
 end
 
 @testset "wrong theta_bounds in log scale" begin
+    method = :CICO_ONE_PASS
     @test_throws ArgumentError get_endpoint(
         [3., 2., 2.],
         3,
