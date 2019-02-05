@@ -17,6 +17,7 @@ platform:
 branches:
   only:
     - master
+    - dev
     #- /release-.*/
 
 notifications:
