@@ -1,6 +1,6 @@
-method = :CICO_ONE_PASS
 
 @testset "default options" begin
+    method = :CICO_ONE_PASS
     res0 = [get_endpoint(
         [3., 2., 2.1],
         i,
@@ -23,6 +23,7 @@ method = :CICO_ONE_PASS
 end
 
 @testset ":left" begin
+    method = :CICO_ONE_PASS
     res0 = [get_endpoint(
         [3., 2., 2.1],
         i,
@@ -46,6 +47,7 @@ end
 end
 
 @testset ":log" begin
+    method = :CICO_ONE_PASS
     res0 = [get_endpoint(
         [3., 2., 2.1],
         i,

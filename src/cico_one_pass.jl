@@ -1,4 +1,3 @@
-using NLopt
 
 # evaluate right bound of scan_func
 function get_right_endpoint(

@@ -1,7 +1,7 @@
 # :LN_COBYLA
-method = :CICO_ONE_PASS
 
 @testset "f_3p_1im restricted :LN_COBYLA" begin
+    method = :CICO_ONE_PASS
     res0 = [get_right_endpoint(
         [3., 8., 2.1],
         i,
@@ -16,6 +16,7 @@ method = :CICO_ONE_PASS
 end
 
 @testset "f_3p_1im_dep :LN_COBYLA" begin
+    method = :CICO_ONE_PASS
     res0 = [get_right_endpoint(
         [3., 2., 2.1],
         i,
@@ -31,6 +32,7 @@ end
 end
 
 @testset "f_3p_1im_dep scan_bound :LN_COBYLA" begin
+    method = :CICO_ONE_PASS
     res0 = [get_right_endpoint(
         [3., 2., 2.1],
         i,
@@ -47,6 +49,7 @@ end
 
 # :LN_PRAXIS
 @testset "f_3p_1im restricted :LN_PRAXIS" begin
+    method = :CICO_ONE_PASS
     res0 = [get_right_endpoint(
         [3., 8., 2.1],
         i,
@@ -61,6 +64,7 @@ end
 end
 
 @testset "f_3p_1im_dep :LN_PRAXIS" begin
+    method = :CICO_ONE_PASS
     res0 = [get_right_endpoint(
         [3., 2., 2.1],
         i,
@@ -76,6 +80,7 @@ end
 end
 
 @testset "f_3p_1im_dep scan_bound :LN_PRAXIS" begin
+    method = :CICO_ONE_PASS
     res0 = [get_right_endpoint(
         [3., 2., 2.1],
         i,
