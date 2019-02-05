@@ -140,7 +140,7 @@ function update_profile_endpoint!(
     pps_arr::Vector{ProfilePoint},
     interval::Tuple{Float64,Float64},
     init_params::Vector{Float64},
-    id::Int64,
+    id::Int,
     loss_func::Function,
     fit_alg::Symbol,
     bounds::Vector{Tuple{Float64,Float64}},
