@@ -64,7 +64,7 @@ for method = methods_list
               Val(method);
               scan_bound = 4.
           ) for i in 1:3]
-          @test res0[2][3] == :SCAN_BOUND_REACHED
+          @test res0[1][3] == :SCAN_BOUND_REACHED
           @test res0[2][3] == :SCAN_BOUND_REACHED
           @test res0[3][3] == :SCAN_BOUND_REACHED
       end
