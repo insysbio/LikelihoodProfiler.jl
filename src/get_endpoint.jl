@@ -166,6 +166,8 @@ function get_endpoint(
 
     # set counter in the scope
     counter::Int = 0
+    # set supreme, maximal or minimal value of scanned parameter inside critical
+    supreme_gd = nothing
 
     # transforming
     theta_init_gd = scaling.(theta_init, scale)
@@ -174,10 +176,19 @@ function get_endpoint(
         theta_g = copy(theta_gd)
         if isLeft theta_g[theta_num] *= -1 end # change direction
         theta = unscaling.(theta_g, scale)
+        # calculate function
+        loss_norm = loss_func(theta) - loss_crit
+
         # update counter
         counter += 1
-        # calculate function
-        loss_func(theta) - loss_crit
+        # update supreme ?
+        update_supreme = (loss_norm < 0.) &&
+            (isnothing(supreme_gd) || (theta_gd[theta_num] > supreme_gd))
+        if update_supreme
+            supreme_gd = theta_gd[theta_num]
+        end
+
+        return loss_norm
     end
     theta_bounds_gd = scaling.(theta_bounds, scale)
     if isLeft theta_bounds_gd[theta_num] = (-1*theta_bounds_gd[theta_num][2], -1*theta_bounds_gd[theta_num][1]) end # change direction
@@ -199,7 +210,7 @@ function get_endpoint(
     )
 
     # transforming back
-    if (isLeft && typeof(optf_gd)!==Nothing) optf_gd *= -1 end # change direction
+    if (isLeft && !isnothing(optf_gd)) optf_gd *= -1 end # change direction
     optf = unscaling(optf_gd, scale[theta_num])
     temp_fun = (pp::ProfilePoint) -> begin
         if isLeft pp.params[theta_num] *= -1 end # change direction
@@ -212,8 +223,11 @@ function get_endpoint(
         )
     end
     pps = [ temp_fun(pp_gd[i]) for i in 1:length(pp_gd) ]
+    # transforming supreme back
+    if (isLeft && !isnothing(supreme_gd)) supreme_gd *= -1 end # change direction
+    supreme = unscaling(supreme_gd, scale[theta_num])
 
-    EndPoint(optf, pps, status, direction, counter)
+    EndPoint(optf, pps, status, direction, counter, supreme)
 end
 
 """

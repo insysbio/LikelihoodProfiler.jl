@@ -24,6 +24,7 @@ end
         status::Symbol
         direction::Symbol
         counter::Int
+        supreme::Union{Float64, Nothing}
     end
 Structure storing end point for confidence interval.
 """
@@ -33,4 +34,5 @@ struct EndPoint
     status::Symbol
     direction::Symbol
     counter::Int
+    supreme::Union{Float64, Nothing}
 end
