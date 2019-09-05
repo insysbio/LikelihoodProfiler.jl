@@ -183,7 +183,7 @@ function get_endpoint(
         counter += 1
         # update supreme ?
         update_supreme = (loss_norm < 0.) &&
-            (isnothing(supreme_gd) || (theta_gd[theta_num] > supreme_gd))
+            (typeof(supreme_gd)==Nothing || (theta_gd[theta_num] > supreme_gd))
         if update_supreme
             supreme_gd = theta_gd[theta_num]
         end
@@ -210,7 +210,7 @@ function get_endpoint(
     )
 
     # transforming back
-    if (isLeft && !isnothing(optf_gd)) optf_gd *= -1 end # change direction
+    if (isLeft && typeof(optf_gd)!==Nothing) optf_gd *= -1 end # change direction
     optf = unscaling(optf_gd, scale[theta_num])
     temp_fun = (pp::ProfilePoint) -> begin
         if isLeft pp.params[theta_num] *= -1 end # change direction
@@ -224,7 +224,7 @@ function get_endpoint(
     end
     pps = [ temp_fun(pp_gd[i]) for i in 1:length(pp_gd) ]
     # transforming supreme back
-    if (isLeft && !isnothing(supreme_gd)) supreme_gd *= -1 end # change direction
+    if (isLeft && typeof(supreme_gd)!==Nothing) supreme_gd *= -1 end # change direction
     supreme = unscaling(supreme_gd, scale[theta_num])
 
     EndPoint(optf, pps, status, direction, counter, supreme)
