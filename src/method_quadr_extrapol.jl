@@ -83,7 +83,7 @@ function get_right_endpoint(
         elseif isapprox(point_3.loss, 0., atol = loss_tol)
             return (x_3, pps, :BORDER_FOUND_BY_LOSS_TOL) # break
         elseif point_3.ret == :MAXEVAL_REACHED
-            return (nothing, pps, :MAX_ITER_REACHED) # break
+            return (nothing, pps, :MAX_ITER_STOP) # break
         end
 
         # next step

@@ -79,17 +79,30 @@ function profile(
             theta_init_rest = copy(theta_init_i)
             deleteat!(theta_init_rest, theta_num)
             # get rest of loss_func
+            forced_msg::Symbol = :EMPTY
             loss_func_rest = (theta_rest::Array{Float64, 1}, g::Array{Float64, 1}) -> begin
                 theta_full = copy(theta_rest)
                 splice!(theta_full, theta_num:(theta_num-1), x)
+                try
+                    loss = loss_func(theta_full)
+                catch e
+                    forced_msg = :LOSS_ERROR
+                    @warn "Error when call loss_func($theta_full)"
+                    throw(e)
+                end
                 counter += 1 # update counter
-                loss_func(theta_full)
+
+                return loss
             end
             # set optimizer
             min_objective!(opt, loss_func_rest)
             maxeval!(opt, maxeval)
             # start optimization
             (loss, theta_opt, ret) = optimize(opt, theta_init_rest)
+            if (ret == :FORCED_STOP && forced_msg == :LOSS_ERROR)
+                # throw(ErrorException("Error when call loss_func."))
+                ret = :LOSS_ERROR_STOP
+            end
             splice!(theta_opt, theta_num:(theta_num-1), x)
             # return
             ProfilePoint(

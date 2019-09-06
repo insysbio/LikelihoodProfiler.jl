@@ -2,7 +2,7 @@
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://insysbio.github.io/LikelihoodProfiler.jl/latest)
 [![Travis](https://travis-ci.org/insysbio/LikelihoodProfiler.jl.svg?branch=master)](https://travis-ci.org/insysbio/LikelihoodProfiler.jl)
-[![AppVeyor](https://ci.appveyor.com/api/projects/status/8qdhx23slm9qc0m2?svg=true)](https://ci.appveyor.com/project/ivborissov/likelihoodprofiler-jl)
+[![AppVeyor](https://ci.appveyor.com/api/projects/status/github/insysbio/LikelihoodProfiler.jl?branch=master&svg=true)](https://ci.appveyor.com/project/metelkin/likelihoodprofiler-jl)
 [![Coverage Status](https://coveralls.io/repos/github/insysbio/LikelihoodProfiler.jl/badge.svg?branch=master)](https://coveralls.io/github/insysbio/LikelihoodProfiler.jl?branch=master)
 [![GitHub release](https://img.shields.io/github/release/insysbio/LikelihoodProfiler.jl.svg)](https://github.com/insysbio/LikelihoodProfiler.jl/releases/)
 [![GitHub license](https://img.shields.io/github/license/insysbio/LikelihoodProfiler.jl.svg)](https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/LICENSE)

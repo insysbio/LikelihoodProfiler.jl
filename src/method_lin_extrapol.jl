@@ -71,15 +71,20 @@ function get_right_endpoint(
         push!(pps, point_2)
         accum_counter += point_2.counter # update counter
 
-        if x_2 >= scan_bound && point_2.loss < 0.
-            return (nothing, pps, :SCAN_BOUND_REACHED) # break
+        if point_2.ret == :MAXEVAL_REACHED
+            return (nothing, pps, :MAX_ITER_STOP)
+        elseif point_2.ret == :LOSS_ERROR_STOP
+            return (nothing, pps, :LOSS_ERROR_STOP)
+        elseif point_2.ret == :FORCED_STOP
+            # this part is not normally reached, just for case
+            throw(ErrorException("No interpretation of the optimization results."))
+        elseif x_2 >= scan_bound && point_2.loss < 0. # successfull result
+            return (nothing, pps, :SCAN_BOUND_REACHED)
         # no checking for the first iteration
-        elseif iteration_count>1 && isapprox((x_2 - x_1) * point_2.loss / (point_2.loss - point_1.loss), 0., atol = scan_tol)
-            return (x_2, pps, :BORDER_FOUND_BY_SCAN_TOL) # break
-        elseif isapprox(point_2.loss, 0., atol = loss_tol)
-            return (x_2, pps, :BORDER_FOUND_BY_LOSS_TOL) # break
-        elseif point_2.ret == :MAXEVAL_REACHED
-            return (nothing, pps, :MAX_ITER_REACHED) # break
+        elseif iteration_count>1 && isapprox((x_2 - x_1) * point_2.loss / (point_2.loss - point_1.loss), 0., atol = scan_tol) # successfull result
+            return (x_2, pps, :BORDER_FOUND_BY_SCAN_TOL)
+        elseif isapprox(point_2.loss, 0., atol = loss_tol) # successfull result
+            return (x_2, pps, :BORDER_FOUND_BY_LOSS_TOL)
         end
 
         # next step
