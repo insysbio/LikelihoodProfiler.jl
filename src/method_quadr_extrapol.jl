@@ -74,7 +74,11 @@ function get_right_endpoint(
         push!(pps, point_3)
         accum_counter += point_3.counter # update counter
 
-        if x_3 >= scan_bound && point_3.loss < 0.
+        if point_3.ret == :MAXEVAL_REACHED
+            return (nothing, pps, :MAX_ITER_STOP) # break
+        elseif point_3.ret == :FORCED_STOP
+            return (nothing, pps, :LOSS_ERROR_STOP)
+        elseif x_3 >= scan_bound && point_3.loss < 0.
             return (nothing, pps, :SCAN_BOUND_REACHED) # break
         # no checking for the first and second iterations
         # elseif iteration_count>2 && isapprox(x_3, x_2, atol = scan_tol)
@@ -82,8 +86,7 @@ function get_right_endpoint(
             return (x_3, pps, :BORDER_FOUND_BY_SCAN_TOL) # break
         elseif isapprox(point_3.loss, 0., atol = loss_tol)
             return (x_3, pps, :BORDER_FOUND_BY_LOSS_TOL) # break
-        elseif point_3.ret == :MAXEVAL_REACHED
-            return (nothing, pps, :MAX_ITER_STOP) # break
+        else
         end
 
         # next step

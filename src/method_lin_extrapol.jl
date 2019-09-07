@@ -73,11 +73,8 @@ function get_right_endpoint(
 
         if point_2.ret == :MAXEVAL_REACHED
             return (nothing, pps, :MAX_ITER_STOP)
-        elseif point_2.ret == :LOSS_ERROR_STOP
-            return (nothing, pps, :LOSS_ERROR_STOP)
         elseif point_2.ret == :FORCED_STOP
-            # this part is not normally reached, just for case
-            throw(ErrorException("No interpretation of the optimization results."))
+            return (nothing, pps, :LOSS_ERROR_STOP)
         elseif x_2 >= scan_bound && point_2.loss < 0. # successfull result
             return (nothing, pps, :SCAN_BOUND_REACHED)
         # no checking for the first iteration

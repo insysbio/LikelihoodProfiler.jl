@@ -42,20 +42,19 @@ function get_right_endpoint(
     ftol_abs!(local_opt, scan_tol) #ftol_abs
 
     # Constraints function
-    forced_msg::Symbol = :EMPTY
+    out_of_bound::Bool = false
     function constraints_func(x, g)
         # this part is necessary to understand the difference between
         # "stop out of bounds" and "stop because of function call error"
         try
             loss = loss_func(x)
         catch e
-            forced_msg = :LOSS_ERROR
             @warn "Error when call loss_func($x)"
             throw(e)
         end
 
         if (loss < 0.) && (scan_func(x) > scan_bound)
-            forced_msg = :OUT_OF_BOUND
+            out_of_bound = true
             throw(ForcedStop("Out of the scan bound but in ll constraint."))
         #elseif isapprox(loss, 0., atol=loss_tol)
             #@warn "loss_tol reached... but..."
@@ -89,15 +88,14 @@ function get_right_endpoint(
     # start optimization
     (optf, optx, ret) = optimize(opt, theta_init)
 
-    if (ret == :FORCED_STOP && forced_msg == :LOSS_ERROR)
-        pp = [ ProfilePoint(optf, loss, optx, :LOSS_ERROR_STOP, nothing) ]
-        #println(points)
+    if (ret == :FORCED_STOP && !out_of_bound)
+        pp = ProfilePoint[]
         res = (nothing, pp, :LOSS_ERROR_STOP)
     elseif ret == :MAXEVAL_REACHED
-        pp = [ ProfilePoint(optf, loss, optx, ret, nothing) ]
+        pp = ProfilePoint[]
         res = (nothing, pp, :MAX_ITER_STOP)
-    elseif (ret == :FORCED_STOP && forced_msg == :OUT_OF_BOUND) # successfull result
-        pp = [ ProfilePoint(optf, loss, optx, :FORCED_STOP, nothing) ]
+    elseif (ret == :FORCED_STOP && out_of_bound) # successfull result
+        pp = ProfilePoint[]
         res = (nothing, pp, :SCAN_BOUND_REACHED)
     elseif ret == :FTOL_REACHED # successfull result
         loss = loss_func(optx)
