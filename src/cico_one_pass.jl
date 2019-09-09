@@ -71,10 +71,6 @@ function get_right_endpoint(
         opt,
         (x, g) -> scan_func(x)
         )
-    lb = [theta_bounds[i][1] for i in 1:n_theta] # minimum.(theta_bounds)
-    ub = [theta_bounds[i][2] for i in 1:n_theta] # maximum.(theta_bounds)
-    lower_bounds!(opt, lb)
-    upper_bounds!(opt, ub)
     local_optimizer!(opt, local_opt)
     maxeval!(opt, max_iter)
 
@@ -84,6 +80,16 @@ function get_right_endpoint(
         constraints_func,
         loss_tol
     )
+    [ inequality_constraint!(
+        opt,
+        (x, g) -> x[i] - theta_bounds[i][2],
+        0.
+    ) for i in 1:n_theta ]
+    [ inequality_constraint!(
+        opt,
+        (x, g) -> theta_bounds[i][1] - x[i],
+        0.
+    ) for i in 1:n_theta ]
 
     # start optimization
     (optf, optx, ret) = optimize(opt, theta_init)
