@@ -29,3 +29,6 @@ println("Starting tests for different fitting alg")
 
 println("Starting tests for Plot @recipe")
 @testset "PLOT_INTERVAL" begin include("test_plots.jl") end
+
+println("Starting tests for loss error")
+@testset "LOSS_ERROR" begin include("test_loss_error.jl") end
