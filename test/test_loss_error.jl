@@ -14,7 +14,7 @@ end
     res0 = get_endpoint(
         [3., 4.],
         1,
-        (x::Vector{Float64}) -> err_fun(x),
+        err_fun,
         :CICO_ONE_PASS;
         loss_crit = 9.
     )
@@ -25,12 +25,24 @@ end
     @test typeof(res0.supreme) == Float64
 end
 
+@testset "test profile error" begin
+    err_func = err_fun_generate()
+    prof = profile(
+        [3., 4.],
+        1,
+        err_func
+    )
+    res0 = prof(5.)
+    @test res0.ret == :FORCED_STOP
+    @test res0.counter == 5
+end
+
 @testset "loss error in :LIN_EXTRAPOL" begin
     err_fun = err_fun_generate()
     res0 = get_endpoint(
         [3., 4.],
         1,
-        (x::Vector{Float64}) -> err_fun(x),
+        err_fun,
         :LIN_EXTRAPOL;
         loss_crit = 9.
     )
@@ -48,7 +60,7 @@ end
     res0 = get_endpoint(
         [3., 4.],
         1,
-        (x::Vector{Float64}) -> err_fun(x),
+        err_fun,
         :QUADR_EXTRAPOL;
         loss_crit = 9.
     )
