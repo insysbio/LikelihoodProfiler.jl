@@ -2,11 +2,23 @@
 
 **LikelihoodProfiler** is a [Julia](https://julialang.org/downloads/) package for **identifiability analysis** and **confidence intervals** evaluation.
 
+## Cases of usage LikelihoodProfiler.jl
+ Case | Ref
+ ----|----
+ PK model with saturation in elimination | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/LikelihoodProfiler.jl/master?filepath=%2Fnotebook%2Fpk_saturation.ipynb)
+
 ## Installation
 
-To install the package from `REPL`
+
+```julia
+julia> ]
+
+julia> add LikelihoodProfiler
 ```
-julia> import Pkg   # if you are on Julia <=0.7
+
+if you are on Julia <=0.7
+```julia
+julia> import Pkg
 
 julia> Pkg.add("LikelihoodProfiler")
 ```
