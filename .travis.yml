@@ -17,8 +17,6 @@ branches:
   only:
   - master
   - dev
-#git:
-#  depth: 99999999
 
 ## uncomment and modify the following lines to manually install system packages
 #addons:

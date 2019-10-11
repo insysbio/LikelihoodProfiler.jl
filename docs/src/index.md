@@ -4,11 +4,9 @@
 
 ## Installation
 
-Currently supported **Julia** versions are 0.7, 1.0.
-
 To install the package from `REPL`
 ```
-julia> import Pkg   # if you are on Julia 0.7, 1.0
+julia> import Pkg   # if you are on Julia <=0.7
 
 julia> Pkg.add("LikelihoodProfiler")
 ```

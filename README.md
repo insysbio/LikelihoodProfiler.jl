@@ -14,13 +14,19 @@ See [documentation](https://insysbio.github.io/LikelihoodProfiler.jl/latest/).
 
 # Installation
 
-Currently supported **Julia** versions are 0.7, 1.0
+```julia
+julia> ]
 
+julia> add LikelihoodProfiler
 ```
-julia> import Pkg   # if you are on Julia 0.7, 1.0
+
+if you are on Julia <=0.7
+```julia
+julia> import Pkg
 
 julia> Pkg.add("LikelihoodProfiler")
 ```
+
 
 # Quick start
 
