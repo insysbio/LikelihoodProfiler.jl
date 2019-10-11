@@ -17,11 +17,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "index.html#Cases-of-usage-LikelihoodProfiler.jl-1",
+    "page": "Home",
+    "title": "Cases of usage LikelihoodProfiler.jl",
+    "category": "section",
+    "text": "Case Ref\nPK model with saturation in elimination (Image: Binder)"
+},
+
+{
     "location": "index.html#Installation-1",
     "page": "Home",
     "title": "Installation",
     "category": "section",
-    "text": "Currently supported Julia versions are 0.7, 1.0.To install the package from REPLjulia> import Pkg   # if you are on Julia 0.7, 1.0\n\njulia> Pkg.add(\"LikelihoodProfiler\")"
+    "text": "julia> ]\n\njulia> add LikelihoodProfilerif you are on Julia <=0.7julia> import Pkg\n\njulia> Pkg.add(\"LikelihoodProfiler\")"
 },
 
 {
@@ -189,7 +197,7 @@ var documenterSearchIndex = {"docs": [
     "page": "API",
     "title": "LikelihoodProfiler.EndPoint",
     "category": "type",
-    "text": "struct EndPoint\n    value::Float64\n    profilePoints::Array{ProfilePoint, 1}\n    status::Symbol\n    direction::Symbol\n    counter::Int\nend\n\nStructure storing end point for confidence interval.\n\n\n\n\n\n"
+    "text": "struct EndPoint\n    value::Float64                        # value of endpoint or nothing\n    profilePoints::Array{ProfilePoint, 1} # vector of profile points\n    status::Symbol                        # result of analysis\n    direction::Symbol                     # :right or :left\n    counter::Int                          # number of loss_func() calls to calculate the endpoint\n    supreme::Union{Float64, Nothing}      # maximal value inside profile interval\nend\n\nStructure storing one endpoint for confidence interval.\n\nstatus values - :BORDERFOUNDBYSCANTOL, :BORDERFOUNDLOSSTOL,  :SCANBOUNDREACHED, :MAXITERSTOP, :LOSSERROR_STOP\n\n\n\n\n\n"
 },
 
 {
@@ -213,7 +221,7 @@ var documenterSearchIndex = {"docs": [
     "page": "API",
     "title": "LikelihoodProfiler.ProfilePoint",
     "category": "type",
-    "text": "struct ProfilePoint\n    value::Float64\n    loss::Float64\n    params::Array{Float64, 1}\n    ret::Symbol\n    counter::Union{Int, Nothing}\nend\n\nStructure storing one point from profile function.\n\n\n\n\n\n"
+    "text": "struct ProfilePoint\n    value::Float64               # x value of profile point\n    loss::Float64                # y value of profile point (loss function at value)\n    params::Array{Float64, 1}    # vector of optimal values of loss_func arguments\n    ret::Symbol                  # return value from NLOpt.optimize()\n    counter::Union{Int, Nothing} # number of loss_func() calls to calculate the value\nend\n\nStructure storing one point from profile function. ret values - :FORCEDSTOP, :MAXEVALREACHED, :FTOL_REACHED\n\n\n\n\n\n"
 },
 
 {
@@ -221,7 +229,7 @@ var documenterSearchIndex = {"docs": [
     "page": "API",
     "title": "LikelihoodProfiler.LikelihoodProfiler",
     "category": "module",
-    "text": "Main module for LikelihoodProfiler.jl.\n\nTwo functions are exported from this module for public use:\n\nget_endpoint. Calculates endpoint of confidence interval.\nget_interval. Calculates confidence interval.\nprofile. Generates the profile function based on loss_func\nupdate_profile_points!. Updates interval by profile points.\n\n\n\n\n\n"
+    "text": "Main module for LikelihoodProfiler.jl.\n\nFour functions are exported from this module for public use:\n\nget_endpoint. Calculates endpoint of confidence interval.\nget_interval. Calculates confidence interval.\nprofile. Generates the profile function based on loss_func\nupdate_profile_points!. Updates interval by profile points.\n\n\n\n\n\n"
 },
 
 {
