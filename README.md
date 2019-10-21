@@ -12,7 +12,7 @@
  Case | Ref
  ----|----
  PK model with saturation in elimination | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/LikelihoodProfiler.jl/master?filepath=%2Fnotebook%2Fpk_saturation.ipynb)
-
+ Method comparison | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/LikelihoodProfiler.jl/master?filepath=notebook%2FDerivative-free%20algs%20comparison.ipynb)
 
 **LikelihoodProfiler** is a [Julia language](https://julialang.org/downloads/) package for [identifiability analysis](https://en.wikipedia.org/wiki/Identifiability_analysis) and confidence intervals evaluation.
 
