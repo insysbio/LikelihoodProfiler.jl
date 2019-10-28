@@ -6,21 +6,15 @@
  Case | Ref
  ----|----
  PK model with saturation in elimination | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/LikelihoodProfiler.jl/master?filepath=%2Fnotebook%2Fpk_saturation.ipynb)
-
+ Local optim methods comparison | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/LikelihoodProfiler.jl/master?filepath=notebook%2FDerivative-free%20algs%20comparison.ipynb)
+ 
 ## Installation
 
 
 ```julia
 julia> ]
 
-julia> add LikelihoodProfiler
-```
-
-if you are on Julia <=0.7
-```julia
-julia> import Pkg
-
-julia> Pkg.add("LikelihoodProfiler")
+(v1.2) pkg> add LikelihoodProfiler
 ```
 
 ## Quick start

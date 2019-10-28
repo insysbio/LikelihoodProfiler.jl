@@ -4,9 +4,8 @@ os:
   - linux
   - osx
 julia:
-  - 0.7
-  - 1.0
   - 1.1
+  - 1.2
   - nightly
 matrix:
   allow_failures:
@@ -18,20 +17,15 @@ branches:
   - master
   - dev
 
-## uncomment and modify the following lines to manually install system packages
-#addons:
-#  apt: # apt-get for linux
-#    packages:
-#    - gfortran
-#before_script: # homebrew for mac
-#  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
-
-## uncomment the following lines to override the default test script
-#script:
-#  - julia -e 'Pkg.clone(pwd()); Pkg.build("LikelihoodProfiler"); Pkg.test("LikelihoodProfiler"; coverage=true)'
-
+jobs:
+  include:
+    - stage: "Documentation"
+      julia: 1.1
+      os: linux
+      script:
+        - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));
+                                               Pkg.instantiate()'
+        - julia --project=docs/ docs/make.jl
+      after_success: skip
 after_success:
-# push coverage results to Codecov
-#  - julia -e 'cd(Pkg.dir("LikelihoodProfiler")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-  - julia -e 'ENV["TRAVIS_JULIA_VERSION"] != "0.7" && ENV["TRAVIS_OS_NAME"] != "linux" && exit(); using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
-  - julia -e 'ENV["TRAVIS_JULIA_VERSION"] != "0.7" && ENV["TRAVIS_OS_NAME"] != "linux" && exit(); using Pkg; ps=Pkg.PackageSpec(name="Documenter", version="0.19"); Pkg.add(ps); Pkg.pin(ps); include(joinpath("docs", "make.jl"))'
+  - julia -e 'ENV["TRAVIS_JULIA_VERSION"] != "1.1" && ENV["TRAVIS_OS_NAME"] != "linux" && exit(); using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
