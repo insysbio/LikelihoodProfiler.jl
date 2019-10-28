@@ -60,7 +60,7 @@ The package introduces several original algorithms taking into account the follo
 
 This algorithms can be applied to complex kinetic models where function differentiability is not guaranteed and each likelihood estimation is computationally expensive.  
 
-The package introduces original "one-pass" algorithm: **Confidence Intervals evaluation by Constrained Optimization** [6]  (`:CICO_ONE_PASS`) developed by the authors of this package. `:CICO_ONE_PASS` utilizes the **Inequality-based Constrained Optimization** [3-4] for efficient determination of confidence intervals and detection of “non-identifiable” parameters.  
+The package introduces original "one-pass" algorithm: **Confidence Intervals evaluation by Constrained Optimization** [6]  `:CICO_ONE_PASS` developed by the authors of this package. `:CICO_ONE_PASS` utilizes the **Inequality-based Constrained Optimization** [3-4] for efficient determination of confidence intervals and detection of “non-identifiable” parameters.  
 
 The "multi-pass" methods use extrapolation/interpolation of likelihood points to the critical level: linear (`:LIN_EXTRAPOL`) and quadratic (`:QUADR_EXTRAPOL`) approaches. They are also effective for both identifiable and non-identifiable parameters.
 
