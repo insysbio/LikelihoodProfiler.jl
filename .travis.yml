@@ -16,6 +16,7 @@ branches:
   only:
   - master
   - dev
+  - /^v\d+\.\d+\.\d+.*$/
 
 jobs:
   include:
