@@ -14,6 +14,7 @@ See [documentation](https://insysbio.github.io/LikelihoodProfiler.jl/latest/).
 
 ## Cases
 Cases notebooks have been removed to separate repository: <https://github.com/insysbio/likelihoodprofiler-cases>
+
  Case | Ref
  ----|----
  PK model with saturation in elimination | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/likelihoodprofiler-cases/master?filepath=notebook/pk_saturation.ipynb)
