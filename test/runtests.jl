@@ -1,4 +1,5 @@
-# push!(LOAD_PATH, "Y:\\")
+#push!(LOAD_PATH, "C:\\Users\\evgen\\Documents")
+# ] activate .
 # using Pkg
 # Pkg.add("NLopt")
 # Pkg.add("RecipesBase")
@@ -32,3 +33,6 @@ println("Starting tests for Plot @recipe")
 
 println("Starting tests for loss error")
 @testset "LOSS_ERROR" begin include("test_loss_error.jl") end
+
+println("Starting tests for boxing")
+@testset "boxing" begin include("test_boxing.jl") end

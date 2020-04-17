@@ -38,5 +38,6 @@ export get_right_endpoint,
     ParamInterval,
     get_interval,
     profile,
-    update_profile_points!
+    update_profile_points!,
+    boxing
 end
