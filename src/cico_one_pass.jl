@@ -110,7 +110,7 @@ function get_right_endpoint(
         res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL)
     else
         # this part is not normally reached, just for case
-        throw(ErrorException("No interpretation of the optimization results."))
+        throw(ErrorException("No interpretation of the optimization results: $ret"))
         # do not throw
         #pp = ProfilePoint[]
         #res = (nothing, pp, :UNKNOWN_STOP)
