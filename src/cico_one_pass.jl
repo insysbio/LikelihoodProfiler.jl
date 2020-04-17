@@ -14,7 +14,7 @@ function get_right_endpoint(
     loss_tol::Float64 = 1e-3, # i do not know how to implement it it
     # good results for :LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS,
     # errors in :LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA
-    box_theta::Bool = true, # if true loss_tol cannot be caculated out of theta_bounds
+    box_theta::Bool = false, # if true loss_func cannot be caculated out of theta_bounds
     local_alg::Symbol = :LN_NELDERMEAD,
     # options for local fitter :max_iter
     max_iter::Int = 10^5,
@@ -92,7 +92,7 @@ function get_right_endpoint(
         0.
     ) for i in 1:n_theta ]
 
-    # start optimization
+    # start optimization: (max scan_func, optimal params, code)
     (optf, optx, ret) = optimize(opt, theta_init)
 
     if (ret == :FORCED_STOP && !out_of_bound)
@@ -131,7 +131,7 @@ function get_right_endpoint(
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3,
-    box_theta::Bool = true, # if true loss_tol cannot be caculated out of theta_bounds
+    box_theta::Bool = false, # if true loss_tol cannot be caculated out of theta_bounds
     local_alg::Symbol = :LN_NELDERMEAD,
     kwargs... # options for local fitter
     )

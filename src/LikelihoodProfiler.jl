@@ -20,6 +20,7 @@ import PlotUtils.adapted_grid
 # include
 include("structures.jl")
 include("get_endpoint.jl")
+include("get_endpoint_func.jl")
 include("get_interval.jl")
 include("cico_one_pass.jl")
 include("method_lin_extrapol.jl")
