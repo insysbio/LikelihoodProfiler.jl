@@ -1,6 +1,5 @@
 #push!(LOAD_PATH, "C:\\Users\\evgen\\Documents")
 # ] activate .
-# using Pkg
 # Pkg.add("NLopt")
 # Pkg.add("RecipesBase")
 

@@ -26,8 +26,8 @@ end
         #scan_bound = 5.
     )
 
-    @test isapprox(res0[1], 5., atol=1e-2)
-    @test res0[3] == :BORDER_FOUND_BY_SCAN_TOL
+    @test isapprox(res0.value, 5., atol=1e-2)
+    @test res0.status == :BORDER_FOUND_BY_SCAN_TOL
 
     res1 = get_endpoint(
         [10.0],
@@ -42,6 +42,6 @@ end
         #scan_bound = 5.
     )
 
-    @test isapprox(res1[1], 1., atol=1e-2)
-    @test res1[3] == :BORDER_FOUND_BY_SCAN_TOL
+    @test isapprox(res1.value, 1., atol=1e-2)
+    @test res1.status == :BORDER_FOUND_BY_SCAN_TOL
 end
