@@ -7,6 +7,7 @@
         (x::Vector{Float64}) -> f_1p(x) - 9.,
         Val(:CICO_ONE_PASS)
     ) for i in 1:1]
+
     @test isapprox(res0[1][1], 5., atol=1e-2)
     @test res0[1][3] == :BORDER_FOUND_BY_SCAN_TOL
 end
@@ -17,24 +18,30 @@ end
         (x::Vector{Float64}) -> x[1],
         (x::Vector{Float64}) -> f_1p(x),
         :CICO_ONE_PASS,
-        :left;
+        :right;
 
         loss_crit = 9.,
-        scale = [:log], # not working
+        scale = [:log],
         #theta_bounds = [(0., 45.)],
         #scan_bound = 5.
     )
+
+    @test isapprox(res0[1], 5., atol=1e-2)
+    @test res0[3] == :BORDER_FOUND_BY_SCAN_TOL
 
     res1 = get_endpoint(
         [10.0],
         (x::Vector{Float64}) -> x[1],
         (x::Vector{Float64}) -> f_1p(x),
         :CICO_ONE_PASS,
-        :right;
+        :left;
 
         loss_crit = 9.,
-        scale = [:log], # not working
+        scale = [:log],
         #theta_bounds = [(0., 45.)],
         #scan_bound = 5.
     )
+
+    @test isapprox(res1[1], 1., atol=1e-2)
+    @test res1[3] == :BORDER_FOUND_BY_SCAN_TOL
 end

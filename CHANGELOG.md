@@ -1,5 +1,13 @@
 # Change Log
 
+## 0.3.1
+
+- handling errors in loss function
+- add :LOSS_ERROR_STOP
+- fix bug in constraint for :CICO
+- repository structure: add manifest file
+- documentation updates
+
 ## 0.3.0
 
 - add case: PK model with saturation
