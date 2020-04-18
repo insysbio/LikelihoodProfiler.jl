@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.4.0 - support for CB
+
+- changes in get_right_endpoint for :CICO_ONE_PASS to use function scan_loss_func(x::Vector{Float64})
+- add get_endpoint for functions (works for CICO only)
+
+
 ## 0.3.2 - experimental
 
 An experimental version includes a draft version of `get_endpoint()` for calculating confidence bands (CB).

@@ -1,9 +1,8 @@
 
-# evaluate right bound of scan_func
+# evaluate right bound of scan_val
 function get_right_endpoint(
     theta_init::Vector{Float64}, # initial point of parameters
-    scan_func::Function, # h(theta) function for predictions or parameter
-    loss_func::Function, # lambda(theta) - labmbda_min - delta_lambda
+    scan_loss_func::Function, # function returns tuple of scan value, loss value: (h, lambda)
     method::Val{:CICO_ONE_PASS}; # function works only for method ONE_PASS;
 
     theta_bounds::Vector{Tuple{Float64,Float64}} = fill(
@@ -14,7 +13,7 @@ function get_right_endpoint(
     loss_tol::Float64 = 1e-3, # i do not know how to implement it it
     # good results for :LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS,
     # errors in :LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA
-    box_theta::Bool = false, # EXPERMENTAL, if true loss_func cannot be caculated out of theta_bounds
+    box_theta::Bool = false, # EXPERMENTAL, if true scan_loss_func cannot be caculated out of theta_bounds
     local_alg::Symbol = :LN_NELDERMEAD,
     # options for local fitter :max_iter
     max_iter::Int = 10^5,
@@ -41,36 +40,40 @@ function get_right_endpoint(
     local_opt = Opt(local_alg, n_theta)
     ftol_abs!(local_opt, scan_tol) #ftol_abs
 
-    # Constraints function: loss_func <= 0
+    # Constraints function: loss_val <= 0
     out_of_bound::Bool = false
-    function constraints_func(x, g)
+    function constraints_func(x::Vector{Float64}, g)
         try
             boxed_theta = box_theta ? boxing(x, theta_bounds) : x
-            loss = loss_func(boxed_theta)
+            (scan_val, loss_val) = scan_loss_func(boxed_theta)          # call 1
         catch e
-            @warn "Error when call loss_func($x)"
+            @warn "Error when call scan_loss_func($x)"
             throw(e)
         end
 
         # this part is necessary to understand the difference between
         # "stop out of bounds" and "stop because of function call error"
-        if (loss < 0.) && (scan_func(x) > scan_bound)
+        if (loss_val < 0.) && (scan_val > scan_bound)
             out_of_bound = true
             throw(ForcedStop("Out of the scan bound but in ll constraint."))
-        #elseif isapprox(loss, 0., atol=loss_tol)
+        #elseif isapprox(loss_val, 0., atol=loss_tol)
             #@warn "loss_tol reached... but..."
-            #return loss
+            #return loss_val
         end
 
-        return loss
+        return loss_val
     end
 
-    # constraint for scan_func
+    # condition for scan_val
     opt = Opt(:LN_AUGLAG, n_theta)
     ftol_abs!(opt, scan_tol)
     max_objective!(
         opt,
-        (x, g) -> scan_func(x)
+        function(x::Vector{Float64}, g)
+            boxed_theta = box_theta ? boxing(x, theta_bounds) : x
+            (scan_val, loss_val) = scan_loss_func(boxed_theta)          # call 2
+            scan_val
+        end
         )
     local_optimizer!(opt, local_opt)
     maxeval!(opt, max_iter)
@@ -92,7 +95,7 @@ function get_right_endpoint(
         0.
     ) for i in 1:n_theta ]
 
-    # start optimization: (max scan_func, optimal params, code)
+    # start optimization: (max scan_val, optimal params, code)
     (optf, optx, ret) = optimize(opt, theta_init)
 
     if (ret == :FORCED_STOP && !out_of_bound)
@@ -105,8 +108,9 @@ function get_right_endpoint(
         pp = ProfilePoint[]
         res = (nothing, pp, :SCAN_BOUND_REACHED)
     elseif ret == :FTOL_REACHED # successfull result
-        loss = loss_func(optx)
-        pp = [ ProfilePoint(optf, loss, optx, ret, nothing) ]
+        boxed_theta = box_theta ? boxing(optx, theta_bounds) : optx
+        (scan_val, loss_val) = scan_loss_func(boxed_theta)              # call 3
+        pp = [ ProfilePoint(optf, loss_val, boxed_theta, ret, nothing) ]
         res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL)
     else
         # this part is not normally reached, just for case
@@ -140,14 +144,13 @@ function get_right_endpoint(
         throw(DomainError(theta_num, "theta_num exceed theta dimention"))
     end
 
-    function scan_func(theta::Vector{Float64})
-        theta[theta_num]
+    function scan_loss_func(theta::Vector{Float64})
+        (theta[theta_num], loss_func(theta))
     end
 
     get_right_endpoint(
         theta_init,
-        scan_func,
-        loss_func,
+        scan_loss_func,
         method;
 
         theta_bounds = theta_bounds,

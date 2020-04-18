@@ -3,8 +3,7 @@
 @testset "f_1p" begin
     res0 = [get_right_endpoint(
         [3.0],
-        (x::Vector{Float64}) -> x[i],
-        (x::Vector{Float64}) -> f_1p(x) - 9.,
+        (x::Vector{Float64}) -> (x[i], f_1p(x)-9.),
         Val(:CICO_ONE_PASS)
     ) for i in 1:1]
 
@@ -15,8 +14,7 @@ end
 @testset "get endpoint for fun" begin
     res0 = get_endpoint(
         [10.0],
-        (x::Vector{Float64}) -> x[1],
-        (x::Vector{Float64}) -> f_1p(x),
+        (x::Vector{Float64}) -> (x[1], f_1p(x)),
         :CICO_ONE_PASS,
         :right;
 
@@ -31,8 +29,7 @@ end
 
     res1 = get_endpoint(
         [10.0],
-        (x::Vector{Float64}) -> x[1],
-        (x::Vector{Float64}) -> f_1p(x),
+        (x::Vector{Float64}) -> (x[1], f_1p(x)),
         :CICO_ONE_PASS,
         :left;
 
