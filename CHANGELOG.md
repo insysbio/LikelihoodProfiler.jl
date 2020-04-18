@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.3.2 - experimental
+
+An experimental version includes a draft version of `get_endpoint()` for calculating confidence bands (CB).
+
 ## 0.3.1
 
 - handling errors in loss function
