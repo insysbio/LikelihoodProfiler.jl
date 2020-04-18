@@ -69,14 +69,19 @@ function get_endpoint(
         theta_g = copy(theta_gd)
         theta = unscaling.(theta_g, scale)
         (scan_val, loss_val) = scan_loss_func(theta)
-        # TODO: supreme value here
-        # TODO: transformed by scan_scale
+        scan_val_gd = isLeft ? (-1)*scan_val : scan_val
 
         # update counter
         counter += 1
+        # update supreme
+        update_supreme = (loss_val  < loss_crit) &&
+            (typeof(supreme_gd) == Nothing || (scan_val_gd > supreme_gd))
+        if update_supreme
+            supreme_gd = scan_val_gd
+        end
 
         (
-            isLeft ? (-1)*scan_val : scan_val,
+            scan_val_gd,
             loss_val - loss_crit
         )
     end
@@ -113,7 +118,7 @@ function get_endpoint(
     end
     pps = [ temp_fun(pp_gd[i]) for i in 1:length(pp_gd) ]
     # transforming supreme back
-    # if (isLeft && typeof(supreme_gd)!==Nothing) supreme_gd *= -1 end # change direction
+    if (isLeft && typeof(supreme_gd)!==Nothing) supreme_gd *= -1 end # change direction
     supreme = unscaling(supreme_gd, scan_scale)
 
     if (isLeft && typeof(optf_gd)!==Nothing) optf_gd *= -1 end # change direction
