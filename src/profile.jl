@@ -86,7 +86,8 @@ function profile(
                 try
                     loss = loss_func(theta_full)
                 catch e
-                    @warn "Error when call loss_func($theta_full)"
+                    msg = e.msg
+                    @warn "Error when call loss_func($theta_full). $msg"
                     throw(e)
                 end
                 counter += 1 # update counter

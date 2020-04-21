@@ -47,7 +47,8 @@ function get_right_endpoint(
             boxed_theta = box_theta ? boxing(x, theta_bounds) : x
             (scan_val, loss_val) = scan_loss_func(boxed_theta)          # call 1
         catch e
-            @warn "Error when call scan_loss_func($x)"
+            msg = e.msg
+            @warn "Error when call scan_loss_func($x) for loss_val. $msg"
             throw(e)
         end
 
@@ -100,7 +101,7 @@ function get_right_endpoint(
 
     if (ret == :FORCED_STOP && !out_of_bound)
         pp = ProfilePoint[]
-        res = (nothing, pp, :LOSS_ERROR_STOP)
+        res = (nothing, pp, :LOSS_ERROR_STOP) # is it better to throw error here?
     elseif ret == :MAXEVAL_REACHED
         pp = ProfilePoint[]
         res = (nothing, pp, :MAX_ITER_STOP)
