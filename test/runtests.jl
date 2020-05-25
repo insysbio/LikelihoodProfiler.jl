@@ -27,6 +27,9 @@ println("Starting tests for profile")
 println("Starting tests for different fitting alg")
 @testset "local_alg" begin include("test_algorithms.jl") end
 
+println("Starting tests for gradient-based fitting alg")
+@testset "local_alg" begin include("test_grad_algs.jl") end
+
 println("Starting tests for Plot @recipe")
 @testset "PLOT_INTERVAL" begin include("test_plots.jl") end
 

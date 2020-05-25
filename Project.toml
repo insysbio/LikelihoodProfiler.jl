@@ -8,6 +8,8 @@ repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
 version = "0.3.0"
 
 [deps]
+Calculus = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
 PlotUtils = "995b91a9-d308-5afd-9ec6-746e21dbc043"

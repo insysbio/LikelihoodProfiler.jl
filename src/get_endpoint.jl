@@ -62,6 +62,8 @@ function unscaling(x::Float64, scale::Symbol = :direct)
     end
 end
 
+unscaling(x::T, scale::Symbol) where T <: ForwardDiff.Dual = x
+
 scaling(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = scaling.(x_tup, scale)
 
 unscaling(x_tup::Tuple{Float64,Float64}, scale::Symbol = :direct) = unscaling.(x_tup, scale)
@@ -172,7 +174,7 @@ function get_endpoint(
     # transforming
     theta_init_gd = scaling.(theta_init, scale)
     if isLeft theta_init_gd[theta_num] *= -1 end # change direction
-    function loss_func_gd(theta_gd::Vector{Float64})
+    function loss_func_gd(theta_gd::Vector)
         theta_g = copy(theta_gd)
         if isLeft theta_g[theta_num] *= -1 end # change direction
         theta = unscaling.(theta_g, scale)

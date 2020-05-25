@@ -42,7 +42,11 @@ function get_right_endpoint(
 
     # Constraints function: loss_val <= 0
     out_of_bound::Bool = false
-    function constraints_func(x::Vector{Float64}, g)
+    function constraints_func(x, g)
+        if length(g)>0
+            Calculus.finite_difference!(x->scan_loss_func(x)[2],x,g,:central)
+            #ForwardDiff.gradient!(g, x->scan_loss_func(x)[2], x)
+        end
         try
             boxed_theta = box_theta ? boxing(x, theta_bounds) : x
             (scan_val, loss_val) = scan_loss_func(boxed_theta)          # call 1
@@ -70,7 +74,13 @@ function get_right_endpoint(
     ftol_abs!(opt, scan_tol)
     max_objective!(
         opt,
-        function(x::Vector{Float64}, g)
+        function(x, g)
+
+            if length(g)>0
+                Calculus.finite_difference!(x->scan_loss_func(x)[1],x,g,:central)
+                #ForwardDiff.gradient!(g, x->scan_loss_func(x)[1], x)
+            end
+
             boxed_theta = box_theta ? boxing(x, theta_bounds) : x
             (scan_val, loss_val) = scan_loss_func(boxed_theta)          # call 2
             scan_val
@@ -85,20 +95,38 @@ function get_right_endpoint(
         constraints_func,
         loss_tol
     )
+
+    function left_bound_func(x,grad,theta_bounds,i)
+        if length(grad)>0
+            #grad .= zeros(length(grad))
+            grad[i] = -1.0
+        end
+        theta_bounds[i][1] - x[i]
+    end
+
+    function right_bound_func(x,grad,theta_bounds,i)
+        if length(grad)>0
+            #grad .= zeros(length(grad))
+            grad[i] = 1.0
+        end
+        x[i] - theta_bounds[i][2]
+    end
+
     [ inequality_constraint!(
         opt,
-        (x, g) -> x[i] - theta_bounds[i][2],
+        (x, g) -> right_bound_func(x,g,theta_bounds,i),
         0.
     ) for i in 1:n_theta ]
+
     [ inequality_constraint!(
         opt,
-        (x, g) -> theta_bounds[i][1] - x[i],
+        (x, g) -> left_bound_func(x,g,theta_bounds,i),
         0.
     ) for i in 1:n_theta ]
 
     # start optimization: (max scan_val, optimal params, code)
     (optf, optx, ret) = optimize(opt, theta_init)
-
+    #@show (optf, optx, ret)
     if (ret == :FORCED_STOP && !out_of_bound)
         pp = ProfilePoint[]
         res = (nothing, pp, :LOSS_ERROR_STOP) # is it better to throw error here?
@@ -145,7 +173,7 @@ function get_right_endpoint(
         throw(DomainError(theta_num, "theta_num exceed theta dimention"))
     end
 
-    function scan_loss_func(theta::Vector{Float64})
+    function scan_loss_func(theta)
         (theta[theta_num], loss_func(theta))
     end
 

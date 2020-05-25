@@ -65,7 +65,8 @@ function get_endpoint(
     # transforming theta
     theta_init_gd = scaling.(theta_init, scale)
     # transforming scan fun
-    function scan_loss_func_gd(theta_gd::Vector{Float64})
+    function scan_loss_func_gd(theta_gd)
+        #@show theta_gd
         theta_g = copy(theta_gd)
         theta = unscaling.(theta_g, scale)
         (scan_val, loss_val) = scan_loss_func(theta)
