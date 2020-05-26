@@ -129,8 +129,8 @@ end
     @test isapprox(grad_res[alg][2].result[2].value, 2.0+2.0*sqrt(2.), atol=1e-2)
     @test grad_res[alg][2].result[1].status == :BORDER_FOUND_BY_SCAN_TOL
     @test grad_res[alg][2].result[2].status == :BORDER_FOUND_BY_SCAN_TOL
-    @test_broken grad_res[alg][3].result[1].status == :SCAN_BOUND_REACHED
-    @test_broken grad_res[alg][3].result[2].status == :SCAN_BOUND_REACHED
+    @test grad_res[alg][3].result[1].status == :SCAN_BOUND_REACHED
+    @test grad_res[alg][3].result[2].status == :SCAN_BOUND_REACHED
 end
 
 @testset "LD_TNEWTON" begin
@@ -165,8 +165,8 @@ end
     @test isapprox(grad_res[alg][2].result[2].value, 2.0+2.0*sqrt(2.), atol=1e-2)
     @test grad_res[alg][2].result[1].status == :BORDER_FOUND_BY_SCAN_TOL
     @test grad_res[alg][2].result[2].status == :BORDER_FOUND_BY_SCAN_TOL
-    @test_broken grad_res[alg][3].result[1].status == :SCAN_BOUND_REACHED
-    @test_broken grad_res[alg][3].result[2].status == :SCAN_BOUND_REACHED
+    @test grad_res[alg][3].result[1].status == :SCAN_BOUND_REACHED
+    @test grad_res[alg][3].result[2].status == :SCAN_BOUND_REACHED
 end
 
 @testset "LD_VAR1" begin
