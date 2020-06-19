@@ -94,7 +94,7 @@ function get_endpoint(
     if isLeft scan_bound_gd *= -1 end # change direction
 
     # calculate endpoint using base method
-    (optf_gd, pp_gd, status) = get_right_endpoint(
+    (optf_gd, pp_gd, status, iter) = get_right_endpoint(
         theta_init_gd,
         scan_loss_func_gd,
         Val(method);
@@ -126,5 +126,5 @@ function get_endpoint(
     # optf = unscaling(optf_gd, scan_scale)
     optf = optf_gd
 
-    EndPoint(optf, pps, status, direction, counter, supreme)
+    EndPoint(optf, pps, status, direction, iter, supreme)
 end

@@ -198,7 +198,7 @@ function get_endpoint(
     if isLeft scan_bound_gd *= -1 end # change direction
 
     # calculate endpoint using base method
-    (optf_gd, pp_gd, status) = get_right_endpoint(
+    (optf_gd, pp_gd, status, iter) = get_right_endpoint(
         theta_init_gd,
         theta_num,
         loss_func_gd,
@@ -229,7 +229,7 @@ function get_endpoint(
     if (isLeft && typeof(supreme_gd)!==Nothing) supreme_gd *= -1 end # change direction
     supreme = unscaling(supreme_gd, scale[theta_num])
 
-    EndPoint(optf, pps, status, direction, counter, supreme)
+    EndPoint(optf, pps, status, direction, iter, supreme)
 end
 
 """

@@ -125,28 +125,30 @@ function get_right_endpoint(
     ) for i in 1:n_theta ]
 
     # start optimization: (max scan_val, optimal params, code)
+
     (optf, optx, ret) = optimize(opt, theta_init)
+    #@show opt.numevals
     #@show (optf, optx, ret)
     if (ret == :FORCED_STOP && !out_of_bound)
         pp = ProfilePoint[]
-        res = (nothing, pp, :LOSS_ERROR_STOP) # is it better to throw error here?
+        res = (nothing, pp, :LOSS_ERROR_STOP, opt.numevals) # is it better to throw error here?
     elseif ret == :MAXEVAL_REACHED
         pp = ProfilePoint[]
-        res = (nothing, pp, :MAX_ITER_STOP)
+        res = (nothing, pp, :MAX_ITER_STOP, opt.numevals)
     elseif (ret == :FORCED_STOP && out_of_bound) # successfull result
         pp = ProfilePoint[]
-        res = (nothing, pp, :SCAN_BOUND_REACHED)
+        res = (nothing, pp, :SCAN_BOUND_REACHED, opt.numevals)
     elseif ret == :FTOL_REACHED # successfull result
         boxed_theta = box_theta ? boxing(optx, theta_bounds) : optx
         (scan_val, loss_val) = scan_loss_func(boxed_theta)              # call 3
         pp = [ ProfilePoint(optf, loss_val, boxed_theta, ret, nothing) ]
-        res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL)
+        res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL, opt.numevals)
     else
         # this part is not normally reached, just for case
-        throw(ErrorException("No interpretation of the optimization results: $ret"))
+        #@throw(ErrorException("No interpretation of the optimization results: $ret"))
         # do not throw
-        #pp = ProfilePoint[]
-        #res = (nothing, pp, :UNKNOWN_STOP)
+        pp = ProfilePoint[]
+        res = (nothing, pp, :UNKNOWN_STOP, opt.numevals)
     end
 
     return res
