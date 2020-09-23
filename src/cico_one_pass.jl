@@ -2,7 +2,8 @@
 # evaluate right bound of scan_val
 function get_right_endpoint(
     theta_init::Vector{Float64}, # initial point of parameters
-    scan_loss_func::Function, # function returns tuple of scan value, loss value: (h, lambda)
+    scan_func, # function returns scan value
+    loss_func, # function returns loss value
     method::Val{:CICO_ONE_PASS}; # function works only for method ONE_PASS;
 
     theta_bounds::Vector{Tuple{Float64,Float64}} = fill(
@@ -13,12 +14,12 @@ function get_right_endpoint(
     loss_tol::Float64 = 1e-3, # i do not know how to implement it it
     # good results for :LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS,
     # errors in :LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA
-    box_theta::Bool = false, # EXPERMENTAL, if true scan_loss_func cannot be caculated out of theta_bounds
+    box_theta::Bool = false, # EXPERMENTAL
     local_alg::Symbol = :LN_NELDERMEAD,
     # options for local fitter :max_iter
     max_iter::Int = 10^5,
     kwargs...
-    )
+)
     # dim of the theta vector
     n_theta = length(theta_init)
 
@@ -44,15 +45,16 @@ function get_right_endpoint(
     out_of_bound::Bool = false
     function constraints_func(x, g)
         if length(g)>0
-            Calculus.finite_difference!(x->scan_loss_func(x)[2],x,g,:central)
-            #ForwardDiff.gradient!(g, x->scan_loss_func(x)[2], x)
+            Calculus.finite_difference!(loss_func,x,g,:central)
+            #ForwardDiff.gradient!(g, loss_func, x)
         end
         try
             boxed_theta = box_theta ? boxing(x, theta_bounds) : x
-            (scan_val, loss_val) = scan_loss_func(boxed_theta)          # call 1
+            scan_val = scan_func(boxed_theta)
+            loss_val = loss_func(boxed_theta)
         catch e
             msg = e.msg
-            @warn "Error when call scan_loss_func($x) for loss_val. $msg"
+            @warn "Error when call loss_func($x) for loss_val. $msg"
             throw(e)
         end
 
@@ -77,25 +79,26 @@ function get_right_endpoint(
         function(x, g)
 
             if length(g)>0
-                Calculus.finite_difference!(x->scan_loss_func(x)[1],x,g,:central)
-                #ForwardDiff.gradient!(g, x->scan_loss_func(x)[1], x)
+                Calculus.finite_difference!(scan_func,x,g,:central)
+                #ForwardDiff.gradient!(g,scan_func, x)
             end
 
             boxed_theta = box_theta ? boxing(x, theta_bounds) : x
-            (scan_val, loss_val) = scan_loss_func(boxed_theta)          # call 2
-            scan_val
+            scan_func(boxed_theta)
         end
         )
     local_optimizer!(opt, local_opt)
     maxeval!(opt, max_iter)
 
     # inequality constraints
-    inequality_constraint!(
+    equality_constraint!(
         opt,
         constraints_func,
         loss_tol
     )
-
+    #opt.lower_bounds = [tb[1] for tb in theta_bounds]
+    #opt.upper_bounds = [tb[2] for tb in theta_bounds]
+    #=   
     function left_bound_func(x,grad,theta_bounds,i)
         if length(grad)>0
             #grad .= zeros(length(grad))
@@ -123,32 +126,33 @@ function get_right_endpoint(
         (x, g) -> left_bound_func(x,g,theta_bounds,i),
         0.
     ) for i in 1:n_theta ]
-
+    
     # start optimization: (max scan_val, optimal params, code)
-
+=#
     (optf, optx, ret) = optimize(opt, theta_init)
     #@show opt.numevals
     #@show (optf, optx, ret)
     if (ret == :FORCED_STOP && !out_of_bound)
         pp = ProfilePoint[]
-        res = (nothing, pp, :LOSS_ERROR_STOP, opt.numevals) # is it better to throw error here?
+        res = (nothing, pp, :LOSS_ERROR_STOP) # is it better to throw error here?
     elseif ret == :MAXEVAL_REACHED
         pp = ProfilePoint[]
-        res = (nothing, pp, :MAX_ITER_STOP, opt.numevals)
+        res = (nothing, pp, :MAX_ITER_STOP)
     elseif (ret == :FORCED_STOP && out_of_bound) # successfull result
         pp = ProfilePoint[]
-        res = (nothing, pp, :SCAN_BOUND_REACHED, opt.numevals)
+        res = (nothing, pp, :SCAN_BOUND_REACHED)
     elseif ret == :FTOL_REACHED # successfull result
         boxed_theta = box_theta ? boxing(optx, theta_bounds) : optx
-        (scan_val, loss_val) = scan_loss_func(boxed_theta)              # call 3
+        scan_val = scan_func(boxed_theta)
+        loss_val = loss_func(boxed_theta)              # call 3
         pp = [ ProfilePoint(optf, loss_val, boxed_theta, ret, nothing) ]
-        res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL, opt.numevals)
+        res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL)
     else
         # this part is not normally reached, just for case
         #@throw(ErrorException("No interpretation of the optimization results: $ret"))
         # do not throw
         pp = ProfilePoint[]
-        res = (nothing, pp, :UNKNOWN_STOP, opt.numevals)
+        res = (nothing, pp, :UNKNOWN_STOP)
     end
 
     return res
@@ -175,13 +179,10 @@ function get_right_endpoint(
         throw(DomainError(theta_num, "theta_num exceed theta dimention"))
     end
 
-    function scan_loss_func(theta)
-        (theta[theta_num], loss_func(theta))
-    end
-
     get_right_endpoint(
         theta_init,
-        scan_loss_func,
+        (theta)->theta[theta_num],
+        loss_func,
         method;
 
         theta_bounds = theta_bounds,
