@@ -80,6 +80,9 @@ function get_right_endpoint(
         constraints_func,
         loss_tol
     )
+    opt.lower_bounds = [tb[1] for tb in theta_bounds]
+    opt.upper_bounds = [tb[2] for tb in theta_bounds]
+    #=
     [ inequality_constraint!(
         opt,
         (x, g) -> x[i] - theta_bounds[i][2],
@@ -90,7 +93,7 @@ function get_right_endpoint(
         (x, g) -> theta_bounds[i][1] - x[i],
         0.
     ) for i in 1:n_theta ]
-
+=#
     # start optimization
     (optf, optx, ret) = optimize(opt, theta_init)
 
