@@ -1,6 +1,12 @@
 # Change Log
 
-## 0.3.0
+## 0.3.2
+
+- box constraints in CICO
+- move Jupiter notebook to another repos insysbio/likelihoodprofiler-cases
+- update docs and readme
+
+## 0.3.1
 
 - add case: PK model with saturation
 - handling errors in loss function

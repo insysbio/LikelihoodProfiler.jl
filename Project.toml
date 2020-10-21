@@ -1,11 +1,11 @@
 name = "LikelihoodProfiler"
 uuid = "934dfcd9-de73-50b3-9b48-36c923fd8802"
-keywords = ["package", "management"]
+keywords = ["package", "identifiability", "modeling"]
 license = "MIT"
-desc = "The next-generation Julia package manager."
+desc = "practical identifiability analysis and confidence intervals evaluation"
 authors = ["borisov <iv.borissov@gmail.com>", "metelkin <evgeny.metelkin@gmail.com>"]
 repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
-version = "0.3.0"
+version = "0.3.2"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"

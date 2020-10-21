@@ -42,10 +42,10 @@ f(x) = 5.0 + (x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2
 # Calculate parameters intervals for first parameter component, x[1]
 res_1 = get_interval(
   [3., 2., 2.1], # starting point
-  1,             # parameter component
+  1,             # parameter component to analyze
   f,             # profile function
   :LIN_EXTRAPOL; # method
-  loss_crit = 9. # critical level
+  loss_crit = 9. # critical level of loss function
   )
 #
 
