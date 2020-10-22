@@ -6,8 +6,7 @@ os:
   - osx
   
 julia:
-  - 1.1
-  - 1.2
+  - 1.5
   - nightly
 
 notifications:
@@ -24,12 +23,12 @@ jobs:
     - julia: nightly
   include:
     - stage: "Documentation"
-      julia: 1.1
+      julia: 1.5
       os: linux
       script:
-        - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+        - julia --project=docs/ -e 'using Pkg; Pkg.instantiate(); Pkg.add(PackageSpec(path=pwd()))'
         - julia --project=docs/ docs/make.jl
       after_success: skip
 
 after_success:
-  - julia -e 'if ( ENV["TRAVIS_JULIA_VERSION"] != "1.1" || ENV["TRAVIS_OS_NAME"] != "linux" || ENV["TRAVIS_BRANCH"] != "master" ) exit() end; using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  - julia -e 'if ( ENV["TRAVIS_OS_NAME"] != "linux" || ENV["TRAVIS_BRANCH"] != "master" ) exit() end; using Pkg; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
