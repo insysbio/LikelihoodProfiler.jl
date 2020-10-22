@@ -1,5 +1,5 @@
 name = "LikelihoodProfiler"
-uuid = "934dfcd9-de73-50b3-9b48-36c923fd8802"
+uuid = "93acb638-a083-5915-8dce-d129bc6a3f59"
 keywords = ["package", "identifiability", "modeling"]
 license = "MIT"
 desc = "practical identifiability analysis and confidence intervals evaluation"
