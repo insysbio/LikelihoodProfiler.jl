@@ -22,6 +22,8 @@ Cases notebooks have been removed to separate repository: <https://github.com/in
  TGF-β Signaling Pathway Model | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/likelihoodprofiler-cases/master?filepath=notebook/TGFb_pathway.ipynb)
  SIR Model. A simple model used as an exercise in identifiability analysis. | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/likelihoodprofiler-cases/master?filepath=notebook/SIR%20Model.ipynb)
  Cancer Taxol Treatment Model  | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/likelihoodprofiler-cases/master?filepath=notebook/taxol_treatment.ipynb)
+ STAT5 Dimerization Model  | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/likelihoodprofiler-cases/master?filepath=notebook/STAT5%20Dimerization.ipynb)
+ 
 
 # Installation
 
