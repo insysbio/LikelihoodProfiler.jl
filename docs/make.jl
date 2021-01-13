@@ -5,10 +5,10 @@ makedocs(
     modules = [LikelihoodProfiler],
     sitename = "LikelihoodProfiler.jl",
     pages = [
-    "Home" => "index.md",
-    "Methods" => "methods.md",
-    "Visualization" => "visualization.md",
-    "API" => "api.md",
+        "Home" => "index.md",
+        "Methods" => "methods.md",
+        "Visualization" => "visualization.md",
+        "API" => "api.md",
     ],
 )
 
