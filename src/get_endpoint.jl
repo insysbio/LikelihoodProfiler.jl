@@ -196,7 +196,7 @@ function get_endpoint(
     if isLeft theta_bounds_gd[theta_num] = (-1*theta_bounds_gd[theta_num][2], -1*theta_bounds_gd[theta_num][1]) end # change direction
     scan_bound_gd = scaling(scan_bound, scale[theta_num])
     if isLeft scan_bound_gd *= -1 end # change direction
-
+    
     # calculate endpoint using base method
     (optf_gd, pp_gd, status) = get_right_endpoint(
         theta_init_gd,

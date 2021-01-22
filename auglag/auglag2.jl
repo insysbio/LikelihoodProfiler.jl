@@ -1,3 +1,5 @@
+### !!! Current version of auglag code
+
 using NLopt, LinearAlgebra
 
 # structure representing NLModel
@@ -12,6 +14,30 @@ struct PLModel{SF,LF,T}
     #nvar::Int
 end
 
+function plmodel(loss_func, x0; kwargs...)
+  [plmodel(i, loss_func,x0; kwargs...) for i in eachindex(x0)]
+end
+
+function plmodel(id::Int, loss_func, x0;
+  lbounds=fill(-1e9,length(x0)), ubounds=fill(1e9,length(x0)), scan_range=(-100,100), crit_level=9.0)
+
+  @assert loss_func(x0)<crit_level "Check x0 and crit_level: loss_func(x0) should be < crit_level"
+  @assert lbounds[id] < scan_range[1] && scan_range[2] < ubounds[id] "scan_range should be inside of feasible are. Check lbounds and ubounds for $id parameter"
+  
+  x0 .= promote_type(x0)
+  T = eltype(x0)
+
+  PLModel(
+    x->x[id],
+    loss_func,
+    x0,
+    eltype(lbounds) == T ? lbounds : T.(lbounds),
+    eltype(ubounds) == T ? ubounds : T.(ubounds),
+    T.(scan_range),
+    typeof(crit_level) ==T ? crit_level : T(crit_level)
+  )
+end
+
 # structure holding Lagrangian related data
 mutable struct Auglag{F1,F2,T}
     scan_func::F1
@@ -23,7 +49,7 @@ mutable struct Auglag{F1,F2,T}
     #direction::Int
 end
 
-obj(auglag::Auglag, direction) = (x,g) -> direction*auglag.scan_func(x) + 
+obj(auglag::Auglag, direction) = (x,g) -> direction*auglag.scan_func(x) - 
   auglag.λ*auglag.constr_func(x) + 
     0.5*auglag.μ*(auglag.constr_func(x))^2
 
@@ -32,9 +58,13 @@ init_μ!(auglag::Auglag, μ) = auglag.μ = μ
 update_λ!(auglag::Auglag, x) = auglag.λ = auglag.λ-auglag.μ*auglag.constr_func(x)
 update_μ!(auglag::Auglag) = auglag.μ = 100*auglag.μ
 
+
+identify_auglag(model_vec::Vector{M}; kwargs...) where M <: PLModel = 
+  [identify_auglag(m; kwargs...) for m in model_vec]
+
 function identify_auglag(
-  model::PLModel,
-  subsolver::Symbol = :LN_NELDERMEAD;
+  model::PLModel;
+  subsolver::Symbol = :LN_NELDERMEAD,
   max_time::Real = 30.0,
   max_eval::Int = 10000,
   #atol::Real = 1e-8, 
@@ -53,7 +83,7 @@ function identify_auglag(
   η_final = constr_tol
   ω_final = converge_tol
 
-  # Starting values as in Nocedal
+  # Starting values as in Nocedal p.520
   μ₀ = 10.
   ω₀ = ω_final # 1/μ₀ # not implemented
   η₀ = 1/μ₀^0.1
@@ -65,13 +95,13 @@ function identify_auglag(
   constr_func(x) = model.loss_func(x) - model.crit_level
   auglag = Auglag(model.scan_func, constr_func, λ₀, μ₀)
 
-  ep_lower = identify_endpoint(auglag, x0, :lower, η₀, ω₀, η_final, ω_final, model.scan_range;
+  ep_lower = identify_endpoint(auglag, copy(x0), :lower, η₀, ω₀, η_final, ω_final, model.scan_range;
     alg=subsolver, lb=lbounds, ub=ubounds, max_time=max_time, max_eval=max_eval) # can be changed in Julia 1.5.3
 
   init_λ!(auglag, λ₀)
   init_μ!(auglag, μ₀)
 
-  ep_upper = identify_endpoint(auglag, x0, :upper, η₀, ω₀, η_final, ω_final, model.scan_range;
+  ep_upper = identify_endpoint(auglag, copy(x0), :upper, η₀, ω₀, η_final, ω_final, model.scan_range;
     alg=subsolver, lb=lbounds, ub=ubounds, max_time=max_time, max_eval=max_eval) # can be changed in Julia 1.5.3
 
   return (ep_lower, ep_upper)
@@ -137,7 +167,7 @@ function identify_endpoint(auglag, x, ep_type, η, ω, η_final, ω_final, scan_
       end
 
       # Test identifiability
-      if normcf ≤ η
+      if normcf ≤ η && (scan_range[1] ≤ scan_val ≤ scan_range[2])
         # test for convergence
         if normcf ≤ η_final  # && normgp ≤ ϵd gradient projection method not implemented
           ep = scan_val
@@ -189,5 +219,3 @@ function subproblem_opt(lagrange_obj, x;
   return (optf, optx, ret, opt.numevals)
 end
 
-# tests
-model_1p = PLModel((x)->x[1], (x)->5.0 + (x[1]-3.0)^2, [3.],[-1e-9],[1e9], (-100.,100.), 9.0)
