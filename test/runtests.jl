@@ -21,6 +21,9 @@ println("Starting tests for all all methods of get_right_endpoint")
 @testset "get_right_endpoint CICO_ONE_PASS" begin include("test_cico_one_pass.jl") end
 @testset "get_right_endpoint methods errors and warnings" begin include("test_methods_errors.jl") end
 
+println("Starting tests for gradient-based algorithms")
+@testset "gradient-based algorithms" begin include("test_grad_algs.jl") end
+
 println("Starting tests for profile")
 @testset "profile" begin include("test_profile.jl") end
 

@@ -1,22 +1,22 @@
 """
-    logit10(x::Float64)
+    logit10(x::Real)
 Function transforming interval [0,1] to [-Inf, Inf] using logit transformation.
 """
-function logit10(x::Float64)
+function logit10(x::Real)
     log10(x / (1.0 - x))
 end
 
 """
-    logistic10(x::Float64)
+    logistic10(x::Real)
 Function transforming interval [-Inf, Inf] to [0,1] using logistic transformation.
 Inverse function for [`logit10`](@ref).
 """
-function logistic10(x::Float64)
+function logistic10(x::Real)
     exp10(x) / (exp10(x) + 1.0)
 end
 
 """
-    scaling(x::Float64, scale::Symbol = :direct)
+    scaling(x::Real, scale::Symbol = :direct)
 Transforms values from specific scale to range [-Inf, Inf] based on option.
 
 ## Return
@@ -26,7 +26,7 @@ Transformed value.
 * `x`: input value.
 * `scale`: transformation type: `:direct, :log, :logit`.
 """
-function scaling(x::Float64, scale::Symbol = :direct)
+function scaling(x::Real, scale::Symbol = :direct)
     if scale == :direct
         return x
     elseif scale == :log
@@ -39,7 +39,7 @@ function scaling(x::Float64, scale::Symbol = :direct)
 end
 
 """
-    unscaling(x::Float64, scale::Symbol = :direct)
+    unscaling(x::Real, scale::Symbol = :direct)
 Transforms values from [-Inf, Inf] to specific scale based on option. Inverse function
 for [`scaling`](@ref).
 
@@ -50,7 +50,7 @@ Transformed value.
 * `x`: input value.
 * `scale`: transformation type: `:direct, :log, :logit`.
 """
-function unscaling(x::Float64, scale::Symbol = :direct)
+function unscaling(x::Real, scale::Symbol = :direct)
     if scale == :direct
         return x
     elseif scale == :log
@@ -172,7 +172,7 @@ function get_endpoint(
     # transforming
     theta_init_gd = scaling.(theta_init, scale)
     if isLeft theta_init_gd[theta_num] *= -1 end # change direction
-    function loss_func_gd(theta_gd::Vector{Float64})
+    function loss_func_gd(theta_gd)
         theta_g = copy(theta_gd)
         if isLeft theta_g[theta_num] *= -1 end # change direction
         theta = unscaling.(theta_g, scale)

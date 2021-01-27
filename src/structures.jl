@@ -35,10 +35,10 @@ status values - :BORDER_FOUND_BY_SCAN_TOL, :BORDER_FOUND_LOSS_TOL,
  :SCAN_BOUND_REACHED, :MAX_ITER_STOP, :LOSS_ERROR_STOP
 """
 struct EndPoint
-    value::Union{Float64, Nothing}
+    value::Union{Real, Nothing}
     profilePoints::Array{ProfilePoint, 1}
     status::Symbol
     direction::Symbol
     counter::Int
-    supreme::Union{Float64, Nothing}
+    supreme::Union{Real, Nothing}
 end

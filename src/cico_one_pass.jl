@@ -1,4 +1,3 @@
-
 # evaluate right bound of scan_func
 function get_right_endpoint(
     theta_init::Vector{Float64}, # initial point of parameters
@@ -43,7 +42,9 @@ function get_right_endpoint(
 
     # Constraints function
     out_of_bound::Bool = false
-    function constraints_func(x, g)
+
+    function constraints_func(x, g) # testing grad methods
+    #function constraints_func(x) # testing grad methods    
         # this part is necessary to understand the difference between
         # "stop out of bounds" and "stop because of function call error"
         try
@@ -52,31 +53,59 @@ function get_right_endpoint(
             @warn "Error when call loss_func($x)"
             throw(e)
         end
-
+        #println("constr")
+        #@show (x,g)
+        #@show (loss)
         if (loss < 0.) && (scan_func(x) > scan_bound)
             out_of_bound = true
-            throw(ForcedStop("Out of the scan bound but in ll constraint."))
+            throw(NLopt.ForcedStop())
         #elseif isapprox(loss, 0., atol=loss_tol)
             #@warn "loss_tol reached... but..."
             #return loss
+        elseif length(g) > 0
+            try ForwardDiff.gradient!(g, loss_func, x)
+            catch e
+                @show e 
+            end
+            #Calculus.finite_difference!(loss_func,x,g,:central)
+            #g .= Zygote.gradient(loss_func,x)[1]
         end
-
+        
         return loss
+    end
+
+    function obj_func(x,g)
+        #println("obj")
+        #@show (x,g)
+        if length(g) > 0
+            try ForwardDiff.gradient!(g, scan_func, x)
+            catch e
+                @show e 
+            end
+            #Calculus.finite_difference!(scan_func,x,g,:central)
+            #g .= Zygote.gradient(scan_func,x)[1]
+        end
+        
+        scan_func(x)
     end
 
     # constrain optimizer
     opt = Opt(:LN_AUGLAG, n_theta)
     ftol_abs!(opt, scan_tol)
+
     max_objective!(
         opt,
-        (x, g) -> scan_func(x)
+        obj_func
+        #NLoptAdapter(scan_func,theta_init)
         )
+        
     local_optimizer!(opt, local_opt)
     maxeval!(opt, max_iter)
 
     # inequality constraints
     inequality_constraint!(
         opt,
+        #NLoptAdapter(constraints_func,theta_init),
         constraints_func,
         loss_tol
     )
@@ -112,10 +141,10 @@ function get_right_endpoint(
         res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL)
     else
         # this part is not normally reached, just for case
-        throw(ErrorException("No interpretation of the optimization results."))
+        #throw(ErrorException("No interpretation of the optimization results."))
         # do not throw
-        #pp = ProfilePoint[]
-        #res = (nothing, pp, :UNKNOWN_STOP)
+        pp = ProfilePoint[]
+        res = (nothing, pp, :UNKNOWN_STOP)
     end
 
     return res
@@ -141,9 +170,7 @@ function get_right_endpoint(
         throw(DomainError(theta_num, "theta_num exceed theta dimention"))
     end
 
-    function scan_func(theta::Vector{Float64})
-        theta[theta_num]
-    end
+    scan_func(theta::Vector) = theta[theta_num]
 
     get_right_endpoint(
         theta_init,
