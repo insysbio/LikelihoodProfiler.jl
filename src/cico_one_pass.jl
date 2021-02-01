@@ -56,6 +56,7 @@ function get_right_endpoint(
         #println("constr")
         #@show (x,g)
         #@show (loss)
+        #@show scan_bound
         if (loss < 0.) && (scan_func(x) > scan_bound)
             out_of_bound = true
             throw(NLopt.ForcedStop())

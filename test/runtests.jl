@@ -35,3 +35,6 @@ println("Starting tests for Plot @recipe")
 
 println("Starting tests for loss error")
 @testset "LOSS_ERROR" begin include("test_loss_error.jl") end
+
+println("Starting tests for bands")
+@testset "Bands" begin include("test_bands.jl") end
