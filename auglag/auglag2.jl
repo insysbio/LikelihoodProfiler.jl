@@ -53,6 +53,10 @@ obj(auglag::Auglag, direction) = (x,g) -> direction*auglag.scan_func(x) -
   auglag.λ*auglag.constr_func(x) + 
     0.5*auglag.μ*(auglag.constr_func(x))^2
 
+obj_ineq(auglag::Auglag, direction) = (x,g) -> direction*auglag.scan_func(x) - 
+    auglag.λ*auglag.constr_func(x) + 
+      0.5*auglag.μ*(auglag.constr_func(x))^2
+
 init_λ!(auglag::Auglag, λ) = auglag.λ = λ
 init_μ!(auglag::Auglag, μ) = auglag.μ = μ
 update_λ!(auglag::Auglag, x) = auglag.λ = auglag.λ-auglag.μ*auglag.constr_func(x)
