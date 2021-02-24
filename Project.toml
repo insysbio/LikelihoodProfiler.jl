@@ -5,7 +5,7 @@ license = "MIT"
 desc = "practical identifiability analysis and confidence intervals evaluation"
 authors = ["borisov <iv.borissov@gmail.com>", "metelkin <evgeny.metelkin@gmail.com>"]
 repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
-version = "0.3.3"
+version = "0.4.0"
 
 [deps]
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
