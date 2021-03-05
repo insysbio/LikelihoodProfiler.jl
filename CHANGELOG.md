@@ -1,5 +1,17 @@
 # Change Log
 
+## 0.4.0
+
+- supporting gradient methods of fitting: :LD_MMA :LD_SLSQP :LD_CCSAQ
+- add `get_endpoint()`, `get_interval()` methods for `scan_func::Function` to calculate Confidence Bands (CB)
+- Multiple auto-test updates
+- Migration from Travis to GH Actions
+
+## 0.3.3
+
+- NLOpt update to v0.6
+- minor compatibility and CI/CD updates
+
 ## 0.3.2
 
 - box constraints in CICO

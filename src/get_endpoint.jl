@@ -255,22 +255,22 @@ end
         kwargs...
         )
 
-Calculates right or left endpoint of CI for parameter component. It is a wripper
-of `get_right_endpoint` functions for selection of direction and using different
-transformations for faster optimization.
+    Calculates right or left endpoint of CI for parameter component. It is a wripper
+    of `get_right_endpoint` functions for selection of direction and using different
+    transformations for faster optimization.
 
-## Return
-[`EndPoint`](@ref) object storing confidence endpoint and profile points found on fly.
+    ## Return
+    [`EndPoint`](@ref) object storing confidence endpoint and profile points found on fly.
 
-## Arguments
-- `theta_init`: starting values of parameter vector ``\\theta``. The starting values is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.
-- `scan_func`: scan function of parameters vector.
-- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of which is analyzed. Usually we use log-likelihood for profile analysis in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-- `method`: computational method to evaluate interval endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
-- `direction`: `:right` or `:left` endpoint to estimate.
+    ## Arguments
+    - `theta_init`: starting values of parameter vector ``\\theta``. The starting values is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.
+    - `scan_func`: scan function of parameters vector.
+    - `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of which is analyzed. Usually we use log-likelihood for profile analysis in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+    - `method`: computational method to evaluate interval endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
+    - `direction`: `:right` or `:left` endpoint to estimate.
 
-## Keyword arguments
-see [`get_interval`](@ref)
+    ## Keyword arguments
+    see [`get_interval`](@ref)
 
 """
 function get_endpoint(
