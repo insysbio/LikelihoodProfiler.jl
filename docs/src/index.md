@@ -2,8 +2,8 @@
 
 **LikelihoodProfiler** is a [Julia](https://julialang.org/downloads/) package for **identifiability analysis** and **confidence intervals** evaluation.
 
-## Cases
-Cases notebooks have been removed to separate repository: <https://github.com/insysbio/likelihoodprofiler-cases>
+## Use cases
+Notebooks with use cases can be found in a separate repository: <https://github.com/insysbio/likelihoodprofiler-cases>
 
  Case | Ref
  ----|----
@@ -33,10 +33,10 @@ f(x) = 5.0 + (x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2
 # Calculate parameters intervals for first parameter component, x[1]
 res_1 = get_interval(
   [3., 2., 2.1], # starting point
-  1,             # parameter component
+  1,             # index of parameter
   f,             # profile function
   :LIN_EXTRAPOL; # method
-  loss_crit = 9. # critical level
+  loss_crit = 9. # likelihood confidence level
   )
 #
 
@@ -50,16 +50,16 @@ plot(res_1)
 
 ## Intro
 
-The reliability and predictability of a **kinetic systems biology (SB) and systems pharmacology (SP) model** depends on the calibration of model parameters. Taking into account the lacking of data and the experimental variability the value of any parameter determined unambiguously. This results in characterization of parameter by "confidence intervals" or even "non-identifiable" parameters when the confidence interval is open. The package includes algorithms to perform practical identifiability analysis and evaluation confidence intervals using Profile Likelihood [2] which can be applied to complex SB/SP models. Results of the identifiability analysis can be used to qualify and calibrate parameters or to reduce the model.
+The reliability and predictability of a **kinetic systems biology (SB) and systems pharmacology (SP) model** depends on the calibration of model parameters. Experimental data can be insufficient to determine all the parameters unambiguously. This results in "non-identifiable" parameters and parameters identifiable within confidence intervals (CIs). The algorithms included in **LikelihoodProfiler** implement Profile Likelihood (PL) [2] method for parameters identification and can be applied to complex SB models. The results of the algorithms can be used to qualify and calibrate parameters or to reduce the model.
 
 ## Objective
 
-The package introduces several original algorithms taking into account the following points:
+The package introduces several original algorithms. The default algorithm `:CICO_ONE_PASS` has been developed in accordance with the following principles:
 
-- This algorithm does not assume that the likelihood function is differentiable at any point. This allows using derivation free and global methods of optimization which do not require the calculation of gradients.
-- The calculation of likelihood function is the most computationally expensive operation within the others. It becomes critical for large dynamic model used nowadays in systems biology.
-- The algorithm should calculate the confidence endpoint with the selected tolerance and must be optimal regarding likelihood function calls. The intermediate (non-endpoint) profile points is not important.
-- The algorithm should be stable for calculation both finite and infinite intervals. They should stop immediately (with the corresponding status) if parameter is not identifiable.
+- The algorithms don't require the likelihood function to be differentiable. Hence, derivative-free or global optimization methods can be used to estimate CI endpoints.
+- The algorithms are designed to obtain CI endpoints and avoid the calculation of profiles as the most computationally expensive part of the analysis. 
+- CI endpoints are estimates with some preset tolerance. Reasonable tolerance setup can also reduce the number of likelihood function calls and speed up the computations. 
+- The algorithm are applicable for both finite and infinite CI.
 
 ## Methods overview
 
@@ -67,7 +67,7 @@ This algorithms can be applied to complex kinetic models where function differen
 
 The package introduces original "one-pass" algorithm: **Confidence Intervals evaluation by Constrained Optimization** [6]  `:CICO_ONE_PASS` developed by the authors of this package. `:CICO_ONE_PASS` utilizes the **Inequality-based Constrained Optimization** [3-4] for efficient determination of confidence intervals and detection of “non-identifiable” parameters.  
 
-The "multi-pass" methods use extrapolation/interpolation of likelihood points to the critical level: linear (`:LIN_EXTRAPOL`) and quadratic (`:QUADR_EXTRAPOL`) approaches. They are also effective for both identifiable and non-identifiable parameters.
+The "multi-pass" methods use extrapolation/interpolation of profile likelihood points: linear (`:LIN_EXTRAPOL`) and quadratic (`:QUADR_EXTRAPOL`) approaches. They are also efficient for both identifiable and non-identifiable parameters.
 
 ## References
 

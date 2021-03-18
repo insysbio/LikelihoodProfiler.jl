@@ -7,12 +7,12 @@
 [![GitHub license](https://img.shields.io/github/license/insysbio/LikelihoodProfiler.jl.svg)](https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/LICENSE)
 [![DOI:10.1371/journal.pcbi.1008495](https://zenodo.org/badge/DOI/10.1371/journal.pcbi.1008495.svg)](https://doi.org/10.1371/journal.pcbi.1008495)
 
-**LikelihoodProfiler** is a [Julia language](https://julialang.org/downloads/) package for [identifiability analysis](https://en.wikipedia.org/wiki/Identifiability_analysis) and confidence intervals evaluation.
+**LikelihoodProfiler** is a [Julia language](https://julialang.org/downloads/) package for [identifiability analysis](https://en.wikipedia.org/wiki/Identifiability_analysis) and confidence intervals estimation.
 
 See [documentation](https://insysbio.github.io/LikelihoodProfiler.jl/latest/).
 
-## Cases
-Cases notebooks have been removed to separate repository: <https://github.com/insysbio/likelihoodprofiler-cases>
+## Use cases
+Notebooks with use cases can be found in a separate repository: <https://github.com/insysbio/likelihoodprofiler-cases>
 
  Case | Ref
  ----|----
@@ -29,7 +29,7 @@ Cases notebooks have been removed to separate repository: <https://github.com/in
 ```julia
 julia> ]
 
-(v1.2) pkg> add LikelihoodProfiler
+(v1.5) pkg> add LikelihoodProfiler
 ```
 
 ## Quick start
@@ -62,7 +62,7 @@ plot(res_1)
 
 [MIT](./LICENSE) Public license
 
-## How to site
+## How to cite
 
 **Borisov I, Metelkin E** (2020) *Confidence intervals by constrained optimization—An algorithm and software package for practical identifiability analysis in systems biology.* PLoS Comput Biol 16(12): e1008495.
 

@@ -1,11 +1,11 @@
 # Visualization
 
-[`LikelihoodProfiler.get_interval`](@ref) function outputs estimated
+[`LikelihoodProfiler.get_interval`](@ref) function returns estimated
 confidence interval along with other data as
 [`LikelihoodProfiler.ParamInterval`](@ref) structure.
 
 **LikelihoodProfiler** provides a `@recipe` for **Plots.jl** to visualize
-confidence interval estimation and plot parameter profile based on
+confidence interval estimation and plot parameter's profile based on
 [`LikelihoodProfiler.ParamInterval`](@ref).
 
 ```
@@ -32,7 +32,7 @@ plot(res[2])
 
 ![](https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/img/plot_cico.png?raw=true)
 
-To make a smooth plot compute more profile points using [`LikelihoodProfiler.update_profile_points!`](@ref) which internally uses [`PlotUtils.adapted_grid`](https://github.com/JuliaPlots/PlotUtils.jl/blob/master/src/adapted_grid.jl)
+To make a smooth plot one can compute more profile points with [`LikelihoodProfiler.update_profile_points!`](@ref) which internally uses [`PlotUtils.adapted_grid`](https://github.com/JuliaPlots/PlotUtils.jl/blob/master/src/adapted_grid.jl)
 
 ```
 update_profile_points!(res[2])

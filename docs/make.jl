@@ -1,13 +1,15 @@
 
-using Documenter, LikelihoodProfiler
+using LikelihoodProfiler
+using Documenter
 
 makedocs(
     modules = [LikelihoodProfiler],
-    sitename = "LikelihoodProfiler.jl",
+    sitename = "LikelihoodProfiler Documentation",
     pages = [
         "Home" => "index.md",
         "Methods" => "methods.md",
         "Visualization" => "visualization.md",
+        "Optimizers" => "optimizers.md",
         "API" => "api.md",
     ],
 )

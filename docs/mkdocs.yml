@@ -1,6 +1,6 @@
 site_name:        LikelihoodProfiler.jl
 repo_url:         https://github.com/insysbio/LikelihoodProfiler.jl
-site_description: A Julia package for identifiability analysis and confidence intervals evaluation.
+site_description: A Julia package for identifiability analysis and confidence intervals estimation.
 site_author:      InSysBio
 
 theme: readthedocs
