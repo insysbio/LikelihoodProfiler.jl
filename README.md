@@ -1,8 +1,7 @@
 # LikelihoodProfiler
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://insysbio.github.io/LikelihoodProfiler.jl/latest)
-[![Travis](https://travis-ci.org/insysbio/LikelihoodProfiler.jl.svg?branch=master)](https://travis-ci.org/insysbio/LikelihoodProfiler.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/ntk7f1lpjct58n6t/branch/master?svg=true)](https://ci.appveyor.com/project/metelkin/likelihoodprofiler-jl/branch/master)
+[![Build status](https://github.com/insysbio/LikelihoodProfiler.jl/workflows/CI/badge.svg)](https://github.com/insysbio/LikelihoodProfiler.jl/actions)
 [![Coverage Status](https://coveralls.io/repos/github/insysbio/LikelihoodProfiler.jl/badge.svg?branch=master)](https://coveralls.io/github/insysbio/LikelihoodProfiler.jl?branch=master)
 [![GitHub release](https://img.shields.io/github/release/insysbio/LikelihoodProfiler.jl.svg)](https://github.com/insysbio/LikelihoodProfiler.jl/releases/)
 [![GitHub license](https://img.shields.io/github/license/insysbio/LikelihoodProfiler.jl.svg)](https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/LICENSE)
@@ -22,6 +21,8 @@ Cases notebooks have been removed to separate repository: <https://github.com/in
  TGF-β Signaling Pathway Model | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/likelihoodprofiler-cases/master?filepath=notebook/TGFb_pathway.ipynb)
  SIR Model. A simple model used as an exercise in identifiability analysis. | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/likelihoodprofiler-cases/master?filepath=notebook/SIR%20Model.ipynb)
  Cancer Taxol Treatment Model  | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/likelihoodprofiler-cases/master?filepath=notebook/taxol_treatment.ipynb)
+ STAT5 Dimerization Model  | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/insysbio/likelihoodprofiler-cases/master?filepath=notebook/STAT5%20Dimerization.ipynb)
+ 
 
 # Installation
 
@@ -42,10 +43,10 @@ f(x) = 5.0 + (x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2
 # Calculate parameters intervals for first parameter component, x[1]
 res_1 = get_interval(
   [3., 2., 2.1], # starting point
-  1,             # parameter component
+  1,             # parameter component to analyze
   f,             # profile function
   :LIN_EXTRAPOL; # method
-  loss_crit = 9. # critical level
+  loss_crit = 9. # critical level of loss function
   )
 #
 

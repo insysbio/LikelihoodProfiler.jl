@@ -1,5 +1,6 @@
 # Change Log
 
+<<<<<<< HEAD
 ## 0.4.0 - support for CB
 
 - changes in get_right_endpoint for :CICO_ONE_PASS to use function scan_loss_func(x::Vector{Float64})
@@ -19,6 +20,15 @@ An experimental version includes a draft version of `get_endpoint()` for calcula
 - documentation updates
 
 ## 0.3.0
+=======
+## 0.3.2
+
+- box constraints in CICO
+- move Jupiter notebook to another repos insysbio/likelihoodprofiler-cases
+- update docs and readme
+
+## 0.3.1
+>>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
 
 - add case: PK model with saturation
 - handling errors in loss function

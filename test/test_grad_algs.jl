@@ -1,8 +1,13 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
 ### Gradient-based optimization tests
 # The following NLopt gradient -based algorithms are compared
 grad_algorithms = [
     :LD_MMA, # Method of Moving Asymptotes
     :LD_SLSQP, # Sequential Least-Squares Quadratic Programming
+<<<<<<< HEAD
     :LD_LBFGS, # Low-storage BFGS
     :LD_TNEWTON_PRECOND_RESTART, # Preconditioned truncated Newton
     :LD_TNEWTON_PRECOND, # Same without restarting
@@ -186,3 +191,16 @@ end
     @test grad_res[alg][3].result[1].status == :SCAN_BOUND_REACHED
     @test grad_res[alg][3].result[2].status == :SCAN_BOUND_REACHED
 end
+=======
+    :LD_CCSAQ, # Conservative convex separable approximation
+    #:LD_LBFGS, # Low-storage BFGS
+    #:LD_TNEWTON_PRECOND_RESTART, # Preconditioned truncated Newton
+    #:LD_TNEWTON_PRECOND, # Same without restarting
+    #:LD_TNEWTON_RESTART, # Same without preconditioning
+    #:LD_TNEWTON, # Same without restarting or preconditioning
+    #:LD_VAR2, # Shifted limited-memory variable-metric (rank 2)
+    #:LD_VAR1  # Shifted limited-memory variable-metric (rank 1)
+]
+
+[test_alg(alg; bounds=(-1e10,1e10)) for alg in grad_algorithms]
+>>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
