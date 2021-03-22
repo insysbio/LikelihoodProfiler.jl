@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-
-# evaluate right bound of scan_val
-=======
 # evaluate right bound of scan_func
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
 function get_right_endpoint(
     theta_init::Vector{Float64}, # initial point of parameters
     scan_func, # function returns scan value
@@ -47,19 +42,11 @@ function get_right_endpoint(
 
     # Constraints function: loss_val <= 0
     out_of_bound::Bool = false
-<<<<<<< HEAD
-    function constraints_func(x, g)
-        if length(g)>0
-            Calculus.finite_difference!(loss_func,x,g,:central)
-            #ForwardDiff.gradient!(g, loss_func, x)
-        end
-=======
 
     function constraints_func(x, g) # testing grad methods
     #function constraints_func(x) # testing grad methods    
         # this part is necessary to understand the difference between
         # "stop out of bounds" and "stop because of function call error"
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
         try
             boxed_theta = box_theta ? boxing(x, theta_bounds) : x
             scan_val = scan_func(boxed_theta)
@@ -69,23 +56,6 @@ function get_right_endpoint(
             @warn "Error when call loss_func($x) for loss_val. $msg"
             throw(e)
         end
-<<<<<<< HEAD
-
-        # this part is necessary to understand the difference between
-        # "stop out of bounds" and "stop because of function call error"
-        if (loss_val < 0.) && (scan_val > scan_bound)
-            out_of_bound = true
-            throw(ForcedStop("Out of the scan bound but in ll constraint."))
-        #elseif isapprox(loss_val, 0., atol=loss_tol)
-            #@warn "loss_tol reached... but..."
-            #return loss_val
-        end
-
-        return loss_val
-    end
-
-    # condition for scan_val
-=======
         #println("constr")
         #@show (x,g)
         #@show (loss)
@@ -124,27 +94,13 @@ function get_right_endpoint(
     end
 
     # constrain optimizer
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
     opt = Opt(:LN_AUGLAG, n_theta)
     ftol_abs!(opt, scan_tol)
 
     max_objective!(
         opt,
-<<<<<<< HEAD
-        function(x, g)
-
-            if length(g)>0
-                Calculus.finite_difference!(scan_func,x,g,:central)
-                #ForwardDiff.gradient!(g,scan_func, x)
-            end
-
-            boxed_theta = box_theta ? boxing(x, theta_bounds) : x
-            scan_func(boxed_theta)
-        end
-=======
         obj_func
         #NLoptAdapter(scan_func,theta_init)
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
         )
         
     local_optimizer!(opt, local_opt)
@@ -157,31 +113,9 @@ function get_right_endpoint(
         constraints_func,
         loss_tol
     )
-<<<<<<< HEAD
-    #opt.lower_bounds = [tb[1] for tb in theta_bounds]
-    #opt.upper_bounds = [tb[2] for tb in theta_bounds]
-    #=   
-    function left_bound_func(x,grad,theta_bounds,i)
-        if length(grad)>0
-            #grad .= zeros(length(grad))
-            grad[i] = -1.0
-        end
-        theta_bounds[i][1] - x[i]
-    end
-
-    function right_bound_func(x,grad,theta_bounds,i)
-        if length(grad)>0
-            #grad .= zeros(length(grad))
-            grad[i] = 1.0
-        end
-        x[i] - theta_bounds[i][2]
-    end
-
-=======
     opt.lower_bounds = [tb[1] for tb in theta_bounds]
     opt.upper_bounds = [tb[2] for tb in theta_bounds]
     #=
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
     [ inequality_constraint!(
         opt,
         (x, g) -> right_bound_func(x,g,theta_bounds,i),
@@ -193,14 +127,8 @@ function get_right_endpoint(
         (x, g) -> left_bound_func(x,g,theta_bounds,i),
         0.
     ) for i in 1:n_theta ]
-<<<<<<< HEAD
-    
-    # start optimization: (max scan_val, optimal params, code)
-=#
-=======
 =#
     # start optimization
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
     (optf, optx, ret) = optimize(opt, theta_init)
     #@show opt.numevals
     #@show (optf, optx, ret)
@@ -221,11 +149,7 @@ function get_right_endpoint(
         res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL)
     else
         # this part is not normally reached, just for case
-<<<<<<< HEAD
-        #@throw(ErrorException("No interpretation of the optimization results: $ret"))
-=======
         #throw(ErrorException("No interpretation of the optimization results."))
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
         # do not throw
         pp = ProfilePoint[]
         res = (nothing, pp, :UNKNOWN_STOP)
@@ -255,11 +179,8 @@ function get_right_endpoint(
         throw(DomainError(theta_num, "theta_num exceed theta dimention"))
     end
 
-<<<<<<< HEAD
-=======
     scan_func(theta::Vector) = theta[theta_num]
 
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
     get_right_endpoint(
         theta_init,
         (theta)->theta[theta_num],

@@ -39,10 +39,5 @@ println("Starting tests for Plot @recipe")
 println("Starting tests for loss error")
 @testset "LOSS_ERROR" begin include("test_loss_error.jl") end
 
-<<<<<<< HEAD
-println("Starting tests for boxing")
-@testset "boxing" begin include("test_boxing.jl") end
-=======
 println("Starting tests for bands")
 @testset "Bands" begin include("test_bands.jl") end
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c

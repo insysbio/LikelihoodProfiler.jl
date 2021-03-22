@@ -1,23 +1,3 @@
-<<<<<<< HEAD
-
-# not working correction needed
-res1 = get_endpoint(
-    [3.0],
-    f_1p,
-    (x)->x[1]^2,
-    :CICO_ONE_PASS,
-    :left;
-    loss_crit = 8.
-)
-
-res1 = get_endpoint(
-    [3.0],
-    (x::Vector{Float64}) -> (log10(x[1]^2), f_1p(x)),
-    :CICO_ONE_PASS,
-    :left;
-    loss_crit = 8.
-)
-=======
 res1 = get_interval(
     [3.0],
     (x)->x[1]^2,
@@ -56,4 +36,3 @@ res3 = get_interval(
 )
 @test isapprox(res3.result[1].value, 2*log10(3-sqrt(3)),atol=1e-2)
 @test isapprox(res3.result[2].value, 2*log10(3+sqrt(3)),atol=1e-2)
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c

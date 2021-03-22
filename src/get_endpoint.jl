@@ -174,11 +174,7 @@ function get_endpoint(
     # transforming
     theta_init_gd = scaling.(theta_init, scale)
     if isLeft theta_init_gd[theta_num] *= -1 end # change direction
-<<<<<<< HEAD
-    function loss_func_gd(theta_gd::Vector)
-=======
     function loss_func_gd(theta_gd)
->>>>>>> e5d7fed7750e5a0face3309d580270df3da06a1c
         theta_g = copy(theta_gd)
         if isLeft theta_g[theta_num] *= -1 end # change direction
         theta = unscaling.(theta_g, scale)

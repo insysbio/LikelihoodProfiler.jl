@@ -18,9 +18,9 @@ The following keyword arguments are available to the constructors for constraine
   •    y0: An inital estimate to the Lagrangian multipliers (default: zeros)
  =#
 
-using NLPModels, Percival
+ using ADNLPModels, Percival
 
-f0(x) = x[1]
+f0(x) = -x[1]
 f1(x) = -x[1]^2
 f2(x) = log10(x[1]^2)
 x01 = [3.0]
@@ -30,17 +30,19 @@ uvar1 = [1e9]
 lvar2 = [1e-9,1e-9,1e-9]
 uvar2 = [1e9,1e9,1e9]
 lcon = [-Inf]
-ucon = [0.]
-c1(x) = [(x[1]-3.0)^2-4.0]
-c2(x) =[(x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2 - 4.0]
+ucon = [4.0]
+c1(x) = [(x[1]-3.0)^2]
+c2(x) =[(x[1]-3.0)^2 + (x[1]-x[2]-1.0)^2 + 0*x[3]^2]
 
-m0 = ADNLPModel(f0, x01, lvar1, uvar1, c1, lcon, ucon)
-m1 = ADNLPModel(f1, x0, lvar, uvar, c1, lcon, ucon)
-m2 = ADNLPModel(f2, x0, lvar, uvar, c1, lcon, ucon)
+m0 = ADNLPModel(f0, x01, c1, lcon, ucon)
+m1 = ADNLPModel(f1, x01, c1, lcon, ucon)
+m2 = ADNLPModel(f2, x01, c1, lcon, ucon)
 
-output1 = percival(m0,subsolver=:LN_NELDERMEAD)
-output2 = percival(m2, subsolver=:nelder_mead)
+output0 = percival(m0,subsolver=:LN_COBYLA)
+output1 = percival(m1,subsolver=:LN_SBPLX)
+output2 = percival(m2,subsolver=:LD_LBFGS)
 
+println(output0)
 println(output1)
 println(output2)
 
