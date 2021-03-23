@@ -1,20 +1,20 @@
 """
     struct ParamIntervalInput
         theta_init::Vector{Float64} # initial parameters vector
-        theta_num::Int # number of the parameter for analysis
+        theta_num::Int # number of the parameter for identifiability analysis
         scan_func::Function # scan function
         loss_func::Function # loss function
         loss_crit::Float64 # loss function maximum value, "identifiability level"
         scale::Vector{Symbol}
         theta_bounds::Vector{Tuple{Float64, Float64}} # search bounds for id parameter
         scan_bounds::Tuple{Float64,Float64}
-        scan_tol::Float64 # fitting tolerance for local optimizer (default - 1e-3)
+        scan_tol::Float64 # fitting tolerance for local optimizer (default - `1e-3`)
         loss_tol::Float64 # constraints tolerance
-        local_alg::Symbol # local fitting algorithm (default - :LN_NELDERMEAD)
+        local_alg::Symbol # local fitting algorithm (default - `:LN_NELDERMEAD`)
         fitter_options::Any
     end
 
-Structure storing input data for parameter interval calculation
+Structure storing input data for parameter identification
 """
 struct ParamIntervalInput
     theta_init::Vector{Float64} # initial parameters vector
@@ -39,7 +39,7 @@ end
         result::Tuple{EndPoint, EndPoint}
     end
 
-Structure storing result of parameter interval calculation
+Structure storing result of parameter identification
 """
 struct ParamInterval
     input::ParamIntervalInput
@@ -70,27 +70,26 @@ end
         local_alg::Symbol = :LN_NELDERMEAD,
         kwargs...
         )
-Computes confidence interval for single component `theta_num` of parameter vector
-and `loss_func` according to `loss_crit` level.
+Computes confidence interval for single component `theta_num` of parameter vector.
 
 ## Return
 `ParamInterval` structure storing all input data and estimated confidence interval.
 
 ## Arguments
-- `theta_init`: starting values of parameter vector ``\\theta``. The starting values is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.
-- `theta_num`: number ``n`` of vector component to compute confidence interval ``\\theta^n``.
-- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of which is analyzed. Usually we use log-likelihood for profile analysis in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-- `method`: computational method to evaluate interval endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
+- `theta_init`: starting values of parameter vector ``\\theta``. The starting values should not necessary be the optimum values of `loss_func` but `loss_func(theta_init)` should be lower than `loss_crit`.
+- `theta_num`: index of vector component for identification: `theta_init(theta_num)`.
+- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+- `method`: computational method to estimate confidence interval's endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
 
 ## Keyword arguments
-- `loss_crit`: critical level of loss function. The endpoint of CI for selected parameter is the value at which profile likelihood meets the value of `loss_crit`.
-- `scale`: vector of scale transformations for each component. Possible values: `:direct, :log, :logit`. This option can make optimization much more faster, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all components.
-- `theta_bounds`: vector of bounds for each component in format `(left_border, right_border)`. This bounds define the ranges for possible parameter values. The defaults are the non-limited values taking into account the `scale`, i.e. ``(0., Inf)`` for `:log` scale.
-- `scan_bounds`: vector of scan bound for `theta_num` component. It must be within the `theta_bounds` for the scanned component. The defaults are ``(-9., 9.)`` for transformed values, i.e. ``(1e-9, 1e9)`` for `:log` scale.
-- `scan_tol`: Absolute tolerance of scanned component (stop criterion).
-- `loss_tol`: Absolute tolerance of `loss_func` at `loss_crit` (stop criterion). *Restriction*. Currently is not effective for `:CICO_ONE_PASS` methods because of limitation in `LN_AUGLAG` interface.
-- `local_alg`: algorithm of optimization. Currently the local derivation free algorithms form NLOPT pack were tested. The methods: `:LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS` show good results. Methods: `:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA` is not recommended.
-- `kwargs...`: the additional keyword arguments passed to `get_right_endpoint` for specific `method`.
+- `loss_crit`: critical level of loss function. Confidence interval's endpoint value is the intersection point of profile likelihood and `loss_crit` level.
+- `scale`: vector of scale transformations for each parameters' component. Possible values: `:direct, :log, :logit`. This option can speed up the optimization, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all parameters.
+- `theta_bounds`: vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
+- `scan_bounds`: scan bounds tuple for `theta_num` parameter. Should be within the `theta_bounds` for `theta_num` parameter. Default is `(1e-9,1e9)`.
+- `scan_tol`: Absolute tolerance for `theta_num` parameter used as termination criterion.  
+- `loss_tol`: Absolute tolerance controlling `loss_func` closenes to `loss_crit` (termination criterion). Currently doesn't work for `:CICO_ONE_PASS` method because of limitation in `LN_AUGLAG` interface.
+- `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package. 
+- `kwargs...`: the additional `method` specific keyword arguments.
 
 """
 function get_interval(
@@ -177,27 +176,26 @@ end
         local_alg::Symbol = :LN_NELDERMEAD,
         kwargs...
         )
-Computes confidence interval for scan_func
-and `loss_func` according to `loss_crit` level.
+Computes confidence interval for function of parameters `scan_func`.
 
 ## Return
 `ParamInterval` structure storing all input data and estimated confidence interval.
 
 ## Arguments
-- `theta_init`: starting values of parameter vector ``\\theta``. The starting values is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.
+- `theta_init`: starting values of parameter vector ``\\theta``. The starting values should not necessary be the optimum values of `loss_func` but `loss_func(theta_init)` should be lower than `loss_crit`.
 - `scan_func`: scan function of parameters.
 - `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of which is analyzed. Usually we use log-likelihood for profile analysis in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-- `method`: computational method to evaluate interval endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
+- `method`: computational method to estimate confidence interval's endpoint. Currently supports only `:CICO_ONE_PASS` method.
 
 ## Keyword arguments
-- `loss_crit`: critical level of loss function. The endpoint of CI for selected parameter is the value at which profile likelihood meets the value of `loss_crit`.
-- `scale`: vector of scale transformations for each component. Possible values: `:direct, :log, :logit`. This option can make optimization much more faster, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all components.
-- `theta_bounds`: vector of bounds for each component in format `(left_border, right_border)`. This bounds define the ranges for possible parameter values. The defaults are the non-limited values taking into account the `scale`, i.e. ``(0., Inf)`` for `:log` scale.
-- `scan_bounds`: vector of scan bound for `scan_func` values. It must be within the `theta_bounds` for the scan function. The defaults are ``(-9., 9.)`` for transformed values, i.e. ``(1e-9, 1e9)`` for `:log` scale.
-- `scan_tol`: Absolute tolerance of scanned component (stop criterion).
-- `loss_tol`: Absolute tolerance of `loss_func` at `loss_crit` (stop criterion). *Restriction*. Currently is not effective for `:CICO_ONE_PASS` methods because of limitation in `LN_AUGLAG` interface.
-- `local_alg`: algorithm of optimization. Currently the local derivation free algorithms form NLOPT pack were tested. The methods: `:LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS` show good results. Methods: `:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA` is not recommended.
-- `kwargs...`: the additional keyword arguments passed to `get_right_endpoint` for specific `method`.
+- `loss_crit`: critical level of loss function. Confidence interval's endpoint value is the intersection point of profile likelihood and `loss_crit` level.
+- `scale`: vector of scale transformations for each parameters' component. Possible values: `:direct, :log, :logit`. This option can speed up the optimization, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all parameters.
+- `theta_bounds`: vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
+- `scan_bounds`: scan bounds tuple for `scan_func` values. Default is `(1e-9, 1e9)` .
+- `scan_tol`: Absolute tolerance for `theta_num` parameter used as termination criterion.  
+- `loss_tol`: Absolute tolerance controlling `loss_func` closenes to `loss_crit` (termination criterion). Currently doesn't work for `:CICO_ONE_PASS` method because of limitation in `LN_AUGLAG` interface.
+- `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package. 
+- `kwargs...`: the additional `method` specific keyword arguments.
 """
 function get_interval(
     theta_init::Vector{Float64},

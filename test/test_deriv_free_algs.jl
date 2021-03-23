@@ -1,4 +1,4 @@
-
+using LikelihoodProfiler
 ### Derivative free optimization tests
 # The following NLopt derivative-free algorithms are compared
 dfo_algorithms = [

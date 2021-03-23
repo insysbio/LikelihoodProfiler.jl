@@ -4,10 +4,10 @@ Main module for `LikelihoodProfiler.jl`.
 
 Four functions are exported from this module for public use:
 
-- [`get_endpoint`](@ref). Calculates endpoint of confidence interval.
-- [`get_interval`](@ref). Calculates confidence interval.
+- [`get_endpoint`](@ref). Computes lower or upper endpoints of confidence interval.
+- [`get_interval`](@ref). Computes confidence interval.
 - [`profile`](@ref). Generates the profile function based on `loss_func`
-- [`update_profile_points!`](@ref). Updates interval by profile points.
+- [`update_profile_points!`](@ref). Updates confidence interval with likelihood profile points.
 
 """
 module LikelihoodProfiler

@@ -94,18 +94,16 @@ unscaling(::Nothing, ::Symbol) = nothing
         kwargs...
         )
 
-Calculates right or left endpoint of CI for parameter component. It is a wripper
-of `get_right_endpoint` functions for selection of direction and using different
-transformations for faster optimization.
+Calculates confidence interval's right or left endpoints for a given parameter `theta_num`.
 
 ## Return
-[`EndPoint`](@ref) object storing confidence endpoint and profile points found on fly.
+[`EndPoint`](@ref) object storing confidence interval's endpoint and intermediate profile points.
 
 ## Arguments
-- `theta_init`: starting values of parameter vector ``\\theta``. The starting values is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.
-- `theta_num`: number ``n`` of vector component to compute confidence interval ``\\theta^n``.
-- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of which is analyzed. Usually we use log-likelihood for profile analysis in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-- `method`: computational method to evaluate interval endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
+- `theta_init`: starting values of parameter vector ``\\theta``. The starting values should not necessary be the optimum values of `loss_func` but `loss_func(theta_init)` should be lower than `loss_crit`.
+- `theta_num`: index of vector component for identification: `theta_init(theta_num)`.
+- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+- `method`: computational method to estimate confidence interval's endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
 - `direction`: `:right` or `:left` endpoint to estimate.
 
 ## Keyword arguments
@@ -230,7 +228,6 @@ function get_endpoint(
     EndPoint(optf, pps, status, direction, counter, supreme)
 end
 
-
 """
     function get_endpoint(
         theta_init::Vector{Float64},
@@ -247,7 +244,7 @@ end
             ),
         scan_bound::Float64 = unscaling(
             (direction==:left) ? -9.0 : 9.0,
-            :direct
+            scale[theta_num]
             ),
         scan_tol::Float64 = 1e-3,
         loss_tol::Float64 = 1e-3,
@@ -255,22 +252,20 @@ end
         kwargs...
         )
 
-    Calculates right or left endpoint of CI for parameter component. It is a wripper
-    of `get_right_endpoint` functions for selection of direction and using different
-    transformations for faster optimization.
+Calculates confidence interval's right or left endpoints for a function of parameters `scan_func`.
 
-    ## Return
-    [`EndPoint`](@ref) object storing confidence endpoint and profile points found on fly.
+## Return
+[`EndPoint`](@ref) object storing confidence interval's endpoint and intermediate profile points.
 
-    ## Arguments
-    - `theta_init`: starting values of parameter vector ``\\theta``. The starting values is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.
-    - `scan_func`: scan function of parameters vector.
-    - `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` the profile of which is analyzed. Usually we use log-likelihood for profile analysis in form ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-    - `method`: computational method to evaluate interval endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
-    - `direction`: `:right` or `:left` endpoint to estimate.
+## Arguments
+- `theta_init`: starting values of parameter vector ``\\theta``. The starting values should not necessary be the optimum values of `loss_func` but `loss_func(theta_init)` should be lower than `loss_crit`.
+- `scan_func`: function of parameters.
+- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+- `method`: computational method to estimate confidence interval's endpoint. Currently the only supported method is: `:CICO_ONE_PASS`.
+- `direction`: `:right` or `:left` endpoint to estimate.
 
-    ## Keyword arguments
-    see [`get_interval`](@ref)
+## Keyword arguments
+see [`get_interval`](@ref)
 
 """
 function get_endpoint(
@@ -393,45 +388,4 @@ function get_endpoint(
     optf = optf_gd
 
     EndPoint(optf, pps, status, direction, counter, supreme)
-end
-
-"""
-    function get_right_endpoint(
-        theta_init::Vector{Float64},
-        theta_num::Int,
-        loss_func::Function,
-        method::Val{:CICO_ONE_PASS};
-
-        theta_bounds::Vector{Tuple{Float64,Float64}} = fill(
-            (-Inf, Inf), length(theta_init)
-            ),
-        scan_bound::Float64 = 9.0,
-        scan_tol::Float64 = 1e-3,
-        loss_tol::Float64 = 0.,
-        local_alg::Symbol = :LN_NELDERMEAD,
-        kwargs...
-        )
-Interface for current and future methods for endpoint estimation.
-
-## Return
-Tuple of three values:
-- Right end point value: `::Float64`.
-- Profile points estimated on fly: `::Array{ ProfilePoint, 1}`, see [`ProfilePoint`](@ref).
-- Status of sulution: `::Symbol`. One of values: `:BORDER_FOUND_BY_SCAN_TOL`, `:SCAN_BOUND_REACHED`.
-
-## Arguments
-- `theta_init`: starting values of parameter vector ``\\theta``. The starting values is not necessary to be the optimum values for `loss_func` but it the value of `loss_func` must be lower than `loss_crit`.
-- `theta_num`: number ``n`` of vector component to compute confidence interval ``\\theta^n``.
-- `loss_func`: loss function the profile of which is analyzed, see [`get_interval`](@ref). In this `function loss` crit is always equal 0 for code simplification.
-- `method`: this value is always fixed. Implemented methods are: `Val{:CICO_ONE_PASS}`. It is implemented for easy switching between different implemented and future methods.
-
-## Keyword arguments
-- `theta_bound`: vector of bounds for each component in format `(left_bound, right_bound)`. This bounds define the ranges for possible parameter values.
-- `scan_bound`: right scan bound for `theta_num` component. It must be within the `theta_bounds` for the scanned component.
-- `scan_tol`: Absolute tolerance of scanned component (stop criterion).
-- `loss_tol`: Absolute tolerance of `loss_func` at `loss_crit` (stop criterion). *Restriction*. Currently is not effective for `:CICO_ONE_PASS` methods because of limitation in `LN_AUGLAG` interface.
-- `local_alg`: algorithm of optimization. Currently the local derivation free algorithms form NLOPT pack were tested. The methods: `:LN_NELDERMEAD, :LN_COBYLA, :LN_PRAXIS` show good results. Methods: `:LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA` is not recommended.
-- `kwargs...`: the additional keyword arguments passed to `get_right_endpoint` for specific `method`.
-"""
-function get_right_endpoint
 end

@@ -1,7 +1,6 @@
 
 """
     using Plots
-    plotly()
     plot(pi::ParamInterval)
 
 Plots profile `L(theta)` for parameter `theta_num`,
@@ -105,8 +104,7 @@ See `PlotUtils.adapted_grid`.
 
 ## Arguments
 - `pi` : `ParamInterval` structure to update.
-- `max_recursions` : how many times each interval is allowed to
-be refined (default: 2).
+- `max_recursions` : how many times each interval is allowed to be refined (default: 2).
 """
 function update_profile_points!(
     pi::ParamInterval;
