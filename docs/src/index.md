@@ -1,6 +1,6 @@
 # Overview
 
-**LikelihoodProfiler** is a [Julia](https://julialang.org/downloads/) package for **identifiability analysis** and **confidence intervals** evaluation.
+**LikelihoodProfiler** is a [Julia](https://julialang.org/downloads/) package for **identifiability analysis** and **confidence intervals** estimation.
 
 ## Use cases
 Notebooks with use cases can be found in a separate repository: <https://github.com/insysbio/likelihoodprofiler-cases>
