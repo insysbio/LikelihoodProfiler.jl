@@ -1,5 +1,7 @@
 # Change Log
 
+- add support of :FAILURE return code
+
 ## 0.4.0
 
 - supporting gradient methods of fitting: :LD_MMA :LD_SLSQP :LD_CCSAQ

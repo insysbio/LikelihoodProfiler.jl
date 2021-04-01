@@ -5,6 +5,7 @@ grad_algorithms = [
     :LD_MMA, # Method of Moving Asymptotes
     :LD_SLSQP, # Sequential Least-Squares Quadratic Programming
     :LD_CCSAQ, # Conservative convex separable approximation
+    # errors
     #:LD_LBFGS, # Low-storage BFGS
     #:LD_TNEWTON_PRECOND_RESTART, # Preconditioned truncated Newton
     #:LD_TNEWTON_PRECOND, # Same without restarting

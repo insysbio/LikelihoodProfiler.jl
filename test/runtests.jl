@@ -38,3 +38,6 @@ println("Starting tests for loss error")
 
 println("Starting tests for bands")
 @testset "Bands" begin include("test_bands.jl") end
+
+# experimental tests
+#include("test_deriv_free_algs.jl")

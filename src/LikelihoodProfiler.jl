@@ -39,4 +39,4 @@ export get_right_endpoint,
     get_interval,
     profile,
     update_profile_points!
-end
+end #module
