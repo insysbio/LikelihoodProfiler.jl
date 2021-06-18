@@ -11,12 +11,12 @@ profile points and make your plot more smooth
 @recipe function f(pi::ParamInterval)
     # get points for plot
     xs, ys = get_grid(pi)
-    xlabel --> "theta"
-    ylabel --> "L(theta)"
+    xguide --> "theta"
+    yguide --> "L(theta)"
 
     if length(xs) > 1
         @series begin
-            label --> "Theta parameter profile points"
+            label --> "CI endpoint"
             seriestype --> :line
             linestyle --> :dot
             markershape --> :circle
