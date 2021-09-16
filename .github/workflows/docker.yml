@@ -20,6 +20,5 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
       - run: docker build -t insysbio/likelihoodprofiler .
-      - run: docker run insysbio/likelihoodprofiler "JULIA_DEBUG=all /usr/bin/julia -e 'import Pkg; Pkg.test(string(:LikelihoodProfiler))'"
-      - if: success() && github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'schedule')
+      - if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'schedule')
         run: docker push insysbio/likelihoodprofiler
