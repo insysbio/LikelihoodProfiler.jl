@@ -1,9 +1,7 @@
 name: DockerIMG
 on:
-  pull_request:
   push:
-    branches:
-      - master
+    tags: [v*]
 
 jobs:
   DockerIMG:
