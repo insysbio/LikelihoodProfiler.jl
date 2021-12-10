@@ -20,7 +20,7 @@ ForwardDiff = "0.9.0, 0.10.0"
 NLopt = "0.6"
 PlotUtils = "1.0.7"
 RecipesBase = "1.1.0"
-julia = "1.2"
+julia = "1.6"
 
 [extras]
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
