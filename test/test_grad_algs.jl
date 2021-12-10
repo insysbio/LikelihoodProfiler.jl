@@ -2,7 +2,7 @@
 ### Gradient-based optimization tests
 # The following NLopt gradient -based algorithms are compared
 grad_algorithms = [
-    :LD_MMA, # Method of Moving Asymptotes
+    #:LD_MMA, # Method of Moving Asymptotes #tmp removed from tests
     :LD_SLSQP, # Sequential Least-Squares Quadratic Programming
     :LD_CCSAQ, # Conservative convex separable approximation
     # errors
