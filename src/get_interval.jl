@@ -68,6 +68,7 @@ end
         scan_tol::Float64 = 1e-3,
         loss_tol::Float64 = 1e-3,
         local_alg::Symbol = :LN_NELDERMEAD,
+        autodiff::Bool = true,
         kwargs...
         )
 Computes confidence interval for single component `theta_num` of parameter vector.
@@ -89,6 +90,7 @@ Computes confidence interval for single component `theta_num` of parameter vecto
 - `scan_tol`: Absolute tolerance for `theta_num` parameter used as termination criterion.  
 - `loss_tol`: Absolute tolerance controlling `loss_func` closenes to `loss_crit` (termination criterion). Currently doesn't work for `:CICO_ONE_PASS` method because of limitation in `LN_AUGLAG` interface.
 - `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package. 
+- `autodiff` : whether to use automatic differentiation with gradient-based algorithms. Default is `true`.
 - `kwargs...`: the additional `method` specific keyword arguments.
 
 """
@@ -174,6 +176,7 @@ end
         scan_tol::Float64 = 1e-3,
         loss_tol::Float64 = 1e-3,
         local_alg::Symbol = :LN_NELDERMEAD,
+        autodiff::Bool = true,
         kwargs...
         )
 Computes confidence interval for function of parameters `scan_func`.
@@ -195,6 +198,7 @@ Computes confidence interval for function of parameters `scan_func`.
 - `scan_tol`: Absolute tolerance for `theta_num` parameter used as termination criterion.  
 - `loss_tol`: Absolute tolerance controlling `loss_func` closenes to `loss_crit` (termination criterion). Currently doesn't work for `:CICO_ONE_PASS` method because of limitation in `LN_AUGLAG` interface.
 - `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package. 
+- `autodiff` : whether to use automatic differentiation with gradient-based algorithms. Default is `true`.
 - `kwargs...`: the additional `method` specific keyword arguments.
 """
 function get_interval(

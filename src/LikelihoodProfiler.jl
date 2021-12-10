@@ -13,6 +13,7 @@ Four functions are exported from this module for public use:
 module LikelihoodProfiler
 
 using NLopt, ForwardDiff
+using Calculus
 using LinearAlgebra
 using RecipesBase
 import PlotUtils.adapted_grid

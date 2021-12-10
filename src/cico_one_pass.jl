@@ -18,6 +18,7 @@ function get_right_endpoint(
     # options for local fitter :max_iter
     max_iter::Int = 10^5,
     ftol_abs::Float64 = 1e-3,
+    autodiff::Bool = true,
     kwargs...
     )
     # dim of the theta vector
@@ -60,12 +61,16 @@ function get_right_endpoint(
             #@warn "loss_tol reached... but..."
             #return loss
         elseif length(g) > 0
+          if autodiff 
             try ForwardDiff.gradient!(g, loss_func, x)
             catch e
-                @show e 
+              @warn "autodiff gradient is not available, switching to finite difference mode"
+              Calculus.finite_difference!(loss_func,x,g,:central)
             end
-            #Calculus.finite_difference!(loss_func,x,g,:central)
             #g .= Zygote.gradient(loss_func,x)[1]
+          else
+            Calculus.finite_difference!(loss_func,x,g,:central)
+          end
         end
         
         return loss
@@ -73,15 +78,18 @@ function get_right_endpoint(
 
     function obj_func(x,g)
         if length(g) > 0
+          if autodiff
             try ForwardDiff.gradient!(g, scan_func, x)
             catch e
-                @show e 
+              @warn "autodiff gradient is not available, switching to finite difference mode"
+              Calculus.finite_difference!(scan_func,x,g,:central)
             end
-            #Calculus.finite_difference!(scan_func,x,g,:central)
             #g .= Zygote.gradient(scan_func,x)[1]
+          else
+            Calculus.finite_difference!(scan_func,x,g,:central)
+          end
         end
-        
-        scan_func(x)
+        return scan_func(x)
     end
 
     # constrain optimizer

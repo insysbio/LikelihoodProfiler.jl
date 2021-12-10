@@ -8,6 +8,7 @@ repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
 version = "0.4.0"
 
 [deps]
+Calculus = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
@@ -15,10 +16,10 @@ PlotUtils = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [compat]
+ForwardDiff = "0.9.0, 0.10.0"
 NLopt = "0.6"
 PlotUtils = "1.0.7"
 RecipesBase = "1.1.0"
-ForwardDiff = "0.9.0, 0.10.0"
 julia = "1.2"
 
 [extras]
