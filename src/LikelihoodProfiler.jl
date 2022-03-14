@@ -17,6 +17,7 @@ using Calculus
 using LinearAlgebra
 using RecipesBase
 import PlotUtils.adapted_grid
+using ProgressMeter
 
 # include
 include("structures.jl")

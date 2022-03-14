@@ -131,6 +131,7 @@ function get_endpoint(
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3,
     local_alg::Symbol = :LN_NELDERMEAD,
+    silent::Bool = false,
     kwargs... # other options for get_right_endpoint
     )
     isLeft = direction == :left
@@ -167,7 +168,10 @@ function get_endpoint(
     # set supreme, maximal or minimal value of scanned parameter inside critical
     supreme_gd = nothing
 
-    # transforming
+    # progress info
+    prog = ProgressUnknown("$direction CP counter:"; spinner=false, enabled=!silent, showspeed=true)
+
+    # transforming loss
     theta_init_gd = scaling.(theta_init, scale)
     if isLeft theta_init_gd[theta_num] *= -1 end # change direction
     function loss_func_gd(theta_gd)
@@ -185,6 +189,9 @@ function get_endpoint(
         if update_supreme
             supreme_gd = theta_gd[theta_num]
         end
+        # display current
+        supreme = unscaling(supreme_gd, scale[theta_num])
+        ProgressMeter.update!(prog, counter, spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; showvalues = [(:supreme,round(supreme; sigdigits=4))])
 
         return loss_norm
     end
@@ -224,6 +231,7 @@ function get_endpoint(
     # transforming supreme back
     if (isLeft && typeof(supreme_gd)!==Nothing) supreme_gd *= -1 end # change direction
     supreme = unscaling(supreme_gd, scale[theta_num])
+    ProgressMeter.finish!(prog)
 
     EndPoint(optf, pps, status, direction, counter, supreme)
 end

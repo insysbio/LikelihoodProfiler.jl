@@ -1,3 +1,13 @@
+#=
+get_endpoint(
+        [3., 2., 2.1],
+        1,
+        (x::Vector{Float64}) -> begin sleep(0.01); f_3p_1im_dep(x) end,
+        method;
+        loss_crit = 9.,
+        silent = false
+    )
+=#
 
 @testset "default options" begin
     method = :CICO_ONE_PASS
