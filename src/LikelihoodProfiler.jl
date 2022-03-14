@@ -27,6 +27,7 @@ include("method_lin_extrapol.jl")
 include("method_quadr_extrapol.jl")
 include("profile.jl")
 include("plot_interval.jl")
+include("show.jl")
 
 # export
 export get_right_endpoint,

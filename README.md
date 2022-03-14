@@ -66,4 +66,4 @@ plot(res_1)
 
 **Borisov I, Metelkin E** (2020) *Confidence intervals by constrained optimization—An algorithm and software package for practical identifiability analysis in systems biology.* PLoS Comput Biol 16(12): e1008495.
 
-Ref: <https://doi.org/10.1371/journal.pcbi.1008495/>
+Ref: <https://doi.org/10.1371/journal.pcbi.1008495>
