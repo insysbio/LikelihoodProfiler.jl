@@ -190,7 +190,11 @@ function get_endpoint(
             supreme_gd = theta_gd[theta_num]
         end
         # display current
-        supreme = unscaling(supreme_gd, scale[theta_num])
+        supreme = if (isLeft && typeof(supreme_gd)!==Nothing) 
+            unscaling(-supreme_gd, scale[theta_num])
+        else
+            unscaling(supreme_gd, scale[theta_num])
+        end
         ProgressMeter.update!(prog, counter, spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; showvalues = [(:supreme,round(supreme; sigdigits=4))])
 
         return loss_norm
@@ -229,8 +233,11 @@ function get_endpoint(
     end
     pps = [ temp_fun(pp_gd[i]) for i in 1:length(pp_gd) ]
     # transforming supreme back
-    if (isLeft && typeof(supreme_gd)!==Nothing) supreme_gd *= -1 end # change direction
-    supreme = unscaling(supreme_gd, scale[theta_num])
+    supreme = if (isLeft && typeof(supreme_gd)!==Nothing) 
+        unscaling(-supreme_gd, scale[theta_num])
+    else
+        unscaling(supreme_gd, scale[theta_num])
+    end
     ProgressMeter.finish!(prog)
 
     EndPoint(optf, pps, status, direction, counter, supreme)
