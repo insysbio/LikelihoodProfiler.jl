@@ -10,7 +10,7 @@ function get_right_endpoint(
         ),
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3, # we have no ideas how to implement loss_tol
+    loss_tol::Float64 = 1e-3, # we have no ideas how to implement loss_tol, currently it is in `inequality_constraint!`
     # better results for LN_NELDERMEAD, :LD_MMA, :LD_SLSQP, :LD_CCSAQ
     # worse results for :LN_COBYLA, :LN_PRAXIS
     # errors for :LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA
