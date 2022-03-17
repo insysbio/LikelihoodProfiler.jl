@@ -84,7 +84,7 @@ Computes confidence interval for single component `theta_num` of parameter vecto
 
 ## Keyword arguments
 - `loss_crit`: critical level of loss function. Confidence interval's endpoint value is the intersection point of profile likelihood and `loss_crit` level.
-- `scale`: vector of scale transformations for each parameters' component. Possible values: `:direct, :log, :logit`. This option can speed up the optimization, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all parameters.
+- `scale`: vector of scale transformations for each parameters' component. Possible values: `:direct` (`:lin`), `:log`, `:logit`. This option can speed up the optimization, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all parameters.
 - `theta_bounds`: vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
 - `scan_bounds`: scan bounds tuple for `theta_num` parameter. Should be within the `theta_bounds` for `theta_num` parameter. Default is `(1e-9,1e9)`.
 - `scan_tol`: Absolute tolerance for `theta_num` parameter used as termination criterion.  
@@ -192,7 +192,7 @@ Computes confidence interval for function of parameters `scan_func`.
 
 ## Keyword arguments
 - `loss_crit`: critical level of loss function. Confidence interval's endpoint value is the intersection point of profile likelihood and `loss_crit` level.
-- `scale`: vector of scale transformations for each parameters' component. Possible values: `:direct, :log, :logit`. This option can speed up the optimization, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all parameters.
+- `scale`: vector of scale transformations for each parameters' component. Possible values: `:direct` (`:lin`), `:log`, `:logit`. This option can speed up the optimization, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all parameters.
 - `theta_bounds`: vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
 - `scan_bounds`: scan bounds tuple for `scan_func` values. Default is `(1e-9, 1e9)` .
 - `scan_tol`: Absolute tolerance for `theta_num` parameter used as termination criterion.  

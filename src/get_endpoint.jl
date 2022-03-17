@@ -24,10 +24,10 @@ Transformed value.
 
 ## Arguments
 * `x`: input value.
-* `scale`: transformation type: `:direct, :log, :logit`.
+* `scale`: transformation type: `:direct` (`:lin`), `:log`, `:logit`.
 """
 function scaling(x::Real, scale::Symbol = :direct)
-    if scale == :direct
+    if scale == :direct || scale == :lin
         return x
     elseif scale == :log
         return log10(x)
@@ -48,10 +48,10 @@ Transformed value.
 
 ## Arguments
 * `x`: input value.
-* `scale`: transformation type: `:direct, :log, :logit`.
+* `scale`: transformation type: `:direct` (`:lin`), `:log`, `:logit`.
 """
 function unscaling(x::Real, scale::Symbol = :direct)
-    if scale == :direct
+    if scale == :direct || scale == :lin
         return x
     elseif scale == :log
         return exp10(x)
@@ -94,21 +94,20 @@ unscaling(::Nothing, ::Symbol) = nothing
         kwargs...
         )
 
-Calculates confidence interval's right or left endpoints for a given parameter `theta_num`.
+    Calculates confidence interval's right or left endpoints for a given parameter `theta_num`.
 
-## Return
-[`EndPoint`](@ref) object storing confidence interval's endpoint and intermediate profile points.
+    ## Return
+    [`EndPoint`](@ref) object storing confidence interval's endpoint and intermediate profile points.
 
-## Arguments
-- `theta_init`: starting values of parameter vector ``\\theta``. The starting values should not necessary be the optimum values of `loss_func` but `loss_func(theta_init)` should be lower than `loss_crit`.
-- `theta_num`: index of vector component for identification: `theta_init(theta_num)`.
-- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-- `method`: computational method to estimate confidence interval's endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
-- `direction`: `:right` or `:left` endpoint to estimate.
+    ## Arguments
+    - `theta_init`: starting values of parameter vector ``\\theta``. The starting values should not necessary be the optimum values of `loss_func` but `loss_func(theta_init)` should be lower than `loss_crit`.
+    - `theta_num`: index of vector component for identification: `theta_init(theta_num)`.
+    - `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+    - `method`: computational method to estimate confidence interval's endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
+    - `direction`: `:right` or `:left` endpoint to estimate.
 
-## Keyword arguments
-see [`get_interval`](@ref)
-
+    ## Keyword arguments
+    see [`get_interval`](@ref)
 """
 function get_endpoint(
     theta_init::Vector{Float64},
@@ -118,7 +117,7 @@ function get_endpoint(
     direction::Symbol = :right;
 
     loss_crit::Float64 = 0.0,
-    # :direct, :log, :logit
+    # :direct, :lin, :log, :logit
     scale::Vector{Symbol} = fill(:direct, length(theta_init)),
     theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
         fill((-Inf, Inf), length(theta_init)),
@@ -291,7 +290,7 @@ function get_endpoint(
     direction::Symbol = :right;
 
     loss_crit::Float64 = 0.0,
-    # :direct, :log, :logit
+    # :direct, :lin, :log, :logit
     scale::Vector{Symbol} = fill(:direct, length(theta_init)),
     theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
         fill((-Inf, Inf), length(theta_init)),
