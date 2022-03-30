@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.5.0
+
+- use `:lin` as a synonym of `:direct`
+- julia 1.7 compatibility
+- progress info
+- `autodiff` argument in `get_right_endpoint`
+- `show` method for `Endpoint`, `ParamInterval`
 - add support of :FAILURE return code
 
 ## 0.4.0

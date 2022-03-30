@@ -27,7 +27,7 @@ end
 
 @testset "test profile error" begin
     err_func = err_fun_generate()
-    prof = profile(
+    prof = LikelihoodProfiler._profile(
         [3., 4.],
         1,
         err_func

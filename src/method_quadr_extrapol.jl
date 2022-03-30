@@ -42,7 +42,7 @@ function get_right_endpoint(
     # empty container
     pps = ProfilePoint[]
 
-    prof = profile(
+    prof = _profile(
         theta_init,
         theta_num,
         loss_func;

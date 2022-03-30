@@ -1,35 +1,5 @@
 
-"""
-    function profile(
-        theta_init::Vector{Float64},
-        theta_num::Int,
-        loss_func::Function;
-
-        skip_optim::Bool = false,
-        theta_bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(theta_init)),
-        local_alg::Symbol = :LN_NELDERMEAD,
-        ftol_abs::Float64 = 1e-3,
-        maxeval::Int = 10^5,
-        kwargs... # currently not used
-        )
-Generates the profile function based on `loss_func`. Used internally in methods `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
-
-## Return
-Returns profile function for selected parameter.
-
-# Arguments
-- `theta_init`: starting values of parameter vector ``\\theta``. 
-- `theta_num`: index of vector component for identification: `theta_init(theta_num)`.
-- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-
-## Keyword arguments
-- `skip_optim` : set `true` if you need marginal profile, i.e. profile without optimization. Default is `false`.
-- `theta_bounds`: vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
-- `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package.
-- `ftol_abs` : absolute tolerance criterion for profile function.
-- `maxeval` : maximal number of `loss_func` evaluations to estimate profile point.
-"""
-function profile(
+function _profile(
     theta_init::Vector{Float64},
     theta_num::Int,
     loss_func::Function;
@@ -40,10 +10,10 @@ function profile(
     local_alg::Symbol = :LN_NELDERMEAD,
     ftol_abs::Float64 = 1e-3,
     kwargs...
-    )
+)
     theta_length = length(theta_init)
 
-    # set indexes
+    # remove target parameter from the list
     indexes_rest = [i for i in 1:theta_length]
     deleteat!(indexes_rest, theta_num)
     # set bounds
@@ -108,4 +78,59 @@ function profile(
             )
         end
     end
+end
+
+"""
+    function _profile(
+        theta_init::Vector{Float64},
+        theta_num::Int,
+        loss_func::Function;
+
+        skip_optim::Bool = false,
+        theta_bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(theta_init)),
+        local_alg::Symbol = :LN_NELDERMEAD,
+        ftol_abs::Float64 = 1e-3,
+        maxeval::Int = 10^5,
+        kwargs... # currently not used
+        )
+Generates the profile function based on `loss_func`. Used internally in methods `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
+
+## Return
+Returns profile function for selected parameter.
+
+# Arguments
+- `theta_init`: starting values of parameter vector ``\\theta``. 
+- `theta_num`: index of vector component for identification: `theta_init(theta_num)`.
+- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+
+## Keyword arguments
+- `skip_optim` : set `true` if you need marginal profile, i.e. profile without optimization. Default is `false`.
+- `theta_bounds`: vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
+- `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package.
+- `ftol_abs` : absolute tolerance criterion for profile function.
+- `maxeval` : maximal number of `loss_func` evaluations to estimate profile point.
+"""
+function profile(
+    theta_init::Vector{Float64},
+    theta_num::Int,
+    loss_func::Function;
+
+    scale::Vector{Symbol} = fill(:direct, length(theta_init)),
+    skip_optim::Bool = false,
+    theta_bounds::Vector{Tuple{Float64,Float64}} = fill((-Inf, Inf), length(theta_init)),
+    # fit alg args
+    local_alg::Symbol = :LN_NELDERMEAD,
+    ftol_abs::Float64 = 1e-3,
+    kwargs...
+)
+    return _profile(
+        theta_init,
+        theta_num,
+        loss_func;
+        skip_optim,
+        theta_bounds,
+        local_alg,
+        ftol_abs,
+        kwargs...
+    )
 end
