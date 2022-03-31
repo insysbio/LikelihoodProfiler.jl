@@ -17,9 +17,11 @@ ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [compat]
+Calculus = "0.5.1"
 ForwardDiff = "0.9.0, 0.10.0"
 NLopt = "0.6"
 PlotUtils = "1.0.7"
+ProgressMeter = "1.7.1"
 RecipesBase = "1.1.0"
 julia = "1.6"
 
