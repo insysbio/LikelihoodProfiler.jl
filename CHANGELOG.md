@@ -2,6 +2,7 @@
 
 ## 0.5.0
 
+- support of scales in `profile`
 - use `:lin` as a synonym of `:direct`
 - julia 1.7 compatibility
 - progress info
