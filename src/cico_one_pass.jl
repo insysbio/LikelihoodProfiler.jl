@@ -43,7 +43,7 @@ function get_right_endpoint(
     #constraints_func_error = false
 
     function constraints_func(x, g) # testing grad methods
-    #function constraints_func(x) # testing grad methods    
+        # function constraints_func(x) # testing grad methods    
         # this part is necessary to understand the difference between
         # "stop out of bounds" and "stop because of function call error"
         try

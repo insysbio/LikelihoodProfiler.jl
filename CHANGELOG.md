@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.5.1
+
+- add method `get_optimal`
+
 ## 0.5.0
 
 - support of scales in `profile`

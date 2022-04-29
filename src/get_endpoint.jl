@@ -71,27 +71,28 @@ scaling(::Nothing, ::Symbol) = nothing
 unscaling(::Nothing, ::Symbol) = nothing
 
 """
-    function get_endpoint(
-        theta_init::Vector{Float64},
-        theta_num::Int,
-        loss_func::Function,
-        method::Symbol,
-        direction::Symbol = :right;
+        function get_endpoint(
+            theta_init::Vector{Float64},
+            theta_num::Int,
+            loss_func::Function,
+            method::Symbol,
+            direction::Symbol = :right;
 
-        loss_crit::Float64 = 0.0,
-        scale::Vector{Symbol} = fill(:direct, length(theta_init)),
-        theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
-            fill((-Inf, Inf), length(theta_init)),
-            scale
-            ),
-        scan_bound::Float64 = unscaling(
-            (direction==:left) ? -9.0 : 9.0,
-            scale[theta_num]
-            ),
-        scan_tol::Float64 = 1e-3,
-        loss_tol::Float64 = 1e-3,
-        local_alg::Symbol = :LN_NELDERMEAD,
-        kwargs...
+            loss_crit::Float64 = 0.0,
+            scale::Vector{Symbol} = fill(:direct, length(theta_init)),
+            theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
+                fill((-Inf, Inf), length(theta_init)),
+                scale
+                ),
+            scan_bound::Float64 = unscaling(
+                (direction==:left) ? -9.0 : 9.0,
+                scale[theta_num]
+                ),
+            scan_tol::Float64 = 1e-3,
+            loss_tol::Float64 = 1e-3,
+            local_alg::Symbol = :LN_NELDERMEAD,
+            silent::Bool = false,
+            kwargs...
         )
 
     Calculates confidence interval's right or left endpoints for a given parameter `theta_num`.
@@ -107,7 +108,9 @@ unscaling(::Nothing, ::Symbol) = nothing
     - `direction`: `:right` or `:left` endpoint to estimate.
 
     ## Keyword arguments
-    see [`get_interval`](@ref)
+    - `silent` : Boolean argument declaring whether we display the optimization progress. Default is `false`
+
+    see also [`get_interval`](@ref)
 """
 function get_endpoint(
     theta_init::Vector{Float64},

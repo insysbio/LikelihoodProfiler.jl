@@ -29,6 +29,7 @@ include("method_quadr_extrapol.jl")
 include("profile.jl")
 include("plot_interval.jl")
 include("show.jl")
+include("get_optimal.jl")
 
 # export
 export get_right_endpoint,
@@ -41,5 +42,6 @@ export get_right_endpoint,
     ParamInterval,
     get_interval,
     profile,
-    update_profile_points!
+    update_profile_points!,
+    get_optimal
 end #module
