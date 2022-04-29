@@ -16,7 +16,7 @@
         )
 
     Provides the optimization routine using the interface similar to [`get_endpoint`](@ref).
-    Currently it uses standard NLopt optimization but allows to use parameter scaling.
+    Currently it uses standard NLopt optimization but allows to use parameter scaling and autodiff method.
 
     ## Return
     [`ProfilePoint`](@ref) object where `value` and `loss` properties are equal to the optimal (minimal) `loss_func` value.
@@ -49,6 +49,7 @@ function get_optimal(
     local_alg::Symbol = :LN_NELDERMEAD,
     silent::Bool = false,
     max_iter::Int = 10^5,
+    loss_grad::Union{Function, Symbol} = :EMPTY
     # kwargs... # options for local fitter
 )
     # dim of the theta vector
@@ -87,14 +88,10 @@ function get_optimal(
 
     # progress info
     prog = ProgressUnknown("Fitter counter:"; spinner=false, enabled=!silent, showspeed=true)
-
     count = 0
     supreme = nothing
 
-    # transforming loss
-    theta_init_g = scaling.(theta_init, scale)
-    function loss_func_g(theta_g, grad)
-        theta = unscaling.(theta_g, scale)
+    loss_func_prog = function(theta)
         loss_res = loss_func(theta)
 
         count += 1
@@ -106,12 +103,60 @@ function get_optimal(
         return loss_res
     end
 
-    theta_bounds_g = scaling.(theta_bounds, scale)
+    # transforming loss
+    theta_init_g = scaling.(theta_init, scale)
+    loss_func_g = if loss_grad == :EMPTY
+        function(theta_g, grad) # no gradient, only for gradient-free methods
+            theta = unscaling.(theta_g, scale)
+            
+            return loss_func_prog(theta)
+        end
+    elseif isa(loss_grad, Function)
+        function(theta_g, grad) # gradient is directly declared
+            theta = unscaling.(theta_g, scale)
+
+            # rescaling gradient function
+            if length(grad) > 0
+                loss_grad_theta = loss_grad(theta)
+                for i in 1:n_theta
+                    if scale[i] == :log
+                        grad[i] = loss_grad_theta[i] * theta[i] * log(10.)
+                    elseif scale[i] == :logit
+                        grad[i] = loss_grad_theta[i] * theta[i] * (1. - theta[i]) * log(10.)
+                    else
+                        grad[i] = loss_grad_theta[i]
+                    end
+                end
+            end
+
+            return loss_func_prog(theta)
+        end
+    elseif loss_grad == :AUTODIFF
+        function(theta_g, grad) # gradient is directly declared
+            theta = unscaling.(theta_g, scale)
+            ForwardDiff.gradient!(grad, loss_func_prog, theta_g)
+
+            # rescaling gradient function
+            loss_grad_theta = loss_grad(theta)
+            for i in 1:n_theta
+                if scale[i] == :log
+                    grad[i] = loss_grad_theta[i] * theta[i] * log(10.)
+                elseif scale[i] == :logit
+                    grad[i] = loss_grad_theta[i] * theta[i] * (1. - theta[i]) * log(10.)
+                else
+                    grad[i] = loss_grad_theta[i]
+                end
+            end
+
+            return loss_func_prog(theta)
+        end
+    end
 
     opt.min_objective = loss_func_g
     opt.maxeval = max_iter
 
     # version 1: internal :LN_AUGLAG box constrains
+    theta_bounds_g = scaling.(theta_bounds, scale)
     opt.lower_bounds = [tb[1] for tb in theta_bounds_g]
     opt.upper_bounds = [tb[2] for tb in theta_bounds_g]
 
