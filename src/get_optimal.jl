@@ -91,14 +91,15 @@ function get_optimal(
     count = 0
     supreme = nothing
 
-    loss_func_prog = function(theta)
+    loss_func_prog = function(theta_g)
+        theta = unscaling.(theta_g, scale)
         loss_res = loss_func(theta)
 
         count += 1
-        if typeof(supreme)==Nothing || loss_res < supreme
+        if (typeof(supreme) == Nothing || loss_res < supreme) && !isa(loss_res, ForwardDiff.Dual)
             supreme = loss_res
+            ProgressMeter.update!(prog, count, spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; showvalues = [(:supreme,round(supreme; sigdigits=4))])
         end
-        ProgressMeter.update!(prog, count, spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; showvalues = [(:supreme,round(supreme; sigdigits=4))])
         
         return loss_res
     end
@@ -106,49 +107,36 @@ function get_optimal(
     # transforming loss
     theta_init_g = scaling.(theta_init, scale)
     loss_func_g = if loss_grad == :EMPTY
-        function(theta_g, grad) # no gradient, only for gradient-free methods
-            theta = unscaling.(theta_g, scale)
-            
-            return loss_func_prog(theta)
-        end
+        (theta_g, grad_g) -> loss_func_prog(theta_g) # no gradient, only for gradient-free methods
     elseif isa(loss_grad, Function)
-        function(theta_g, grad) # gradient is directly declared
-            theta = unscaling.(theta_g, scale)
-
+        function(theta_g, grad_g) # gradient is directly declared
+            res = loss_func_prog(theta_g)
             # rescaling gradient function
-            if length(grad) > 0
+            if length(grad_g) > 0
+                theta = unscaling.(theta_g, scale)
                 loss_grad_theta = loss_grad(theta)
                 for i in 1:n_theta
                     if scale[i] == :log
-                        grad[i] = loss_grad_theta[i] * theta[i] * log(10.)
+                        grad_g[i] = loss_grad_theta[i] * theta[i] * log(10.)
                     elseif scale[i] == :logit
-                        grad[i] = loss_grad_theta[i] * theta[i] * (1. - theta[i]) * log(10.)
+                        grad_g[i] = loss_grad_theta[i] * theta[i] * (1. - theta[i]) * log(10.)
                     else
-                        grad[i] = loss_grad_theta[i]
+                        grad_g[i] = loss_grad_theta[i]
                     end
                 end
             end
 
-            return loss_func_prog(theta)
+            return res
         end
     elseif loss_grad == :AUTODIFF
-        function(theta_g, grad) # gradient is directly declared
-            theta = unscaling.(theta_g, scale)
-            ForwardDiff.gradient!(grad, loss_func_prog, theta_g)
-
-            # rescaling gradient function
-            loss_grad_theta = loss_grad(theta)
-            for i in 1:n_theta
-                if scale[i] == :log
-                    grad[i] = loss_grad_theta[i] * theta[i] * log(10.)
-                elseif scale[i] == :logit
-                    grad[i] = loss_grad_theta[i] * theta[i] * (1. - theta[i]) * log(10.)
-                else
-                    grad[i] = loss_grad_theta[i]
-                end
-            end
-
-            return loss_func_prog(theta)
+        function(theta_g, grad_g) # gradient is directly declared
+            ForwardDiff.gradient!(grad_g, loss_func_prog, theta_g)
+            return loss_func_prog(theta_g)
+        end
+    elseif loss_grad == :FINITE
+        function(theta_g, grad_g) # gradient is directly declared
+            Calculus.finite_difference!(loss_func_prog, theta_g, grad_g, :central)
+            return loss_func_prog(theta_g)
         end
     end
 
