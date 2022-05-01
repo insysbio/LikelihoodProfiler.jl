@@ -12,17 +12,18 @@
             loss_tol::Float64 = 1e-3,
             local_alg::Symbol = :LN_NELDERMEAD,
             silent::Bool = false,
-            max_iter::Int = 10^5
+            max_iter::Int = 10^5,
+            loss_grad::Union{Function, Symbol} = :EMPTY
         )
 
     Provides the optimization routine using the interface similar to [`get_endpoint`](@ref).
     Currently it uses standard NLopt optimization but allows to use parameter scaling and autodiff method.
 
     ## Return
-    [`ProfilePoint`](@ref) object where `value` and `loss` properties are equal to the optimal (minimal) `loss_func` value.
+    [`ProfilePoint`](@ref) object storing optimizations results.`
+    `value` and `loss` properties are equal to the optimal (minimal) `loss_func` value.
 
     ## Arguments
-
     - `theta_init`: starting values of parameter vector ``\\theta``.
     - `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
     
@@ -32,8 +33,13 @@
     - `scan_tol`: Absolute tolerance for all component of theta used as termination criterion.  
     - `loss_tol`: Absolute tolerance controlling `loss_func`.
     - `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package.
-    - `silent` : Boolean argument declaring whether we display the optimization progress. Default is `false`
-    - `autodiff` (experimental) : whether to use automatic differentiation with gradient-based algorithms. Default is `true`.
+    - `max_iter` : maximal number of optimizator iterations.
+    - `loss_grad` : This option declares the method for calcuting loss function gradient.
+                    This is required for gradient-based methods. The possible values
+                    - `:EMPTY` (default) not gradient is set. IT works only for gradient-free methods.
+                    - `:AUTODIFF` means autodifferentiation from `ForwardDiff` package is used.
+                    - `:FINITE` means finite difference method from `Calculus` is used.
+                    - It is also possible to set gradient function here `function(x::Vector{Float64})` which returns gradient vector.
 """
 function get_optimal(
     theta_init::Vector{Float64}, # initial point of parameters
@@ -75,71 +81,69 @@ function get_optimal(
     # checking arguments
     # when using :LN_NELDERMEAD initial parameters should not be zero
     if local_alg == :LN_NELDERMEAD
-        zeroParameter = [ isapprox(theta_init[i], 0., atol=1e-2) for i in 1:n_theta]
+        zeroParameter = [isapprox(theta_init[i], 0., atol=1e-2) for i in 1:n_theta]
         if any(zeroParameter)
             @warn "Close-to-zero parameters found when using :LN_NELDERMEAD."
             show(findall(zeroParameter))
         end
     end
 
-    opt = Opt(local_alg, n_theta)
-    opt.ftol_abs = loss_tol
-    opt.xtol_abs = scan_tol
-
     # progress info
     prog = ProgressUnknown("Fitter counter:"; spinner=false, enabled=!silent, showspeed=true)
     count = 0
     supreme = nothing
 
-    loss_func_prog = function(theta_g)
+    loss_func_rescaled = function(theta_g)
         theta = unscaling.(theta_g, scale)
-        loss_res = loss_func(theta)
+        loss_value = loss_func(theta)
 
         count += 1
-        if (typeof(supreme) == Nothing || loss_res < supreme) && !isa(loss_res, ForwardDiff.Dual)
-            supreme = loss_res
+        if (typeof(supreme) == Nothing || loss_value < supreme) && !isa(loss_value, ForwardDiff.Dual)
+            supreme = loss_value
             ProgressMeter.update!(prog, count, spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; showvalues = [(:supreme,round(supreme; sigdigits=4))])
         end
         
-        return loss_res
+        return loss_value
     end
 
     # transforming loss
     theta_init_g = scaling.(theta_init, scale)
     loss_func_g = if loss_grad == :EMPTY
-        (theta_g, grad_g) -> loss_func_prog(theta_g) # no gradient, only for gradient-free methods
+        (theta_g, grad_g) -> loss_func_rescaled(theta_g) # no gradient, only for gradient-free methods
     elseif isa(loss_grad, Function)
         function(theta_g, grad_g) # gradient is directly declared
-            res = loss_func_prog(theta_g)
             # rescaling gradient function
             if length(grad_g) > 0
                 theta = unscaling.(theta_g, scale)
-                loss_grad_theta = loss_grad(theta)
+                loss_grad_value = loss_grad(theta)
                 for i in 1:n_theta
                     if scale[i] == :log
-                        grad_g[i] = loss_grad_theta[i] * theta[i] * log(10.)
+                        grad_g[i] = loss_grad_value[i] * theta[i] * log(10.)
                     elseif scale[i] == :logit
-                        grad_g[i] = loss_grad_theta[i] * theta[i] * (1. - theta[i]) * log(10.)
-                    else
-                        grad_g[i] = loss_grad_theta[i]
+                        grad_g[i] = loss_grad_value[i] * theta[i] * (1. - theta[i]) * log(10.)
+                    else # for :direct and :lin
+                        grad_g[i] = loss_grad_value[i]
                     end
                 end
             end
 
-            return res
+            return loss_func_rescaled(theta_g)
         end
     elseif loss_grad == :AUTODIFF
         function(theta_g, grad_g) # gradient is directly declared
-            ForwardDiff.gradient!(grad_g, loss_func_prog, theta_g)
-            return loss_func_prog(theta_g)
+            ForwardDiff.gradient!(grad_g, loss_func_rescaled, theta_g)
+            return loss_func_rescaled(theta_g)
         end
     elseif loss_grad == :FINITE
         function(theta_g, grad_g) # gradient is directly declared
-            Calculus.finite_difference!(loss_func_prog, theta_g, grad_g, :central)
-            return loss_func_prog(theta_g)
+            Calculus.finite_difference!(loss_func_rescaled, theta_g, grad_g, :central)
+            return loss_func_rescaled(theta_g)
         end
     end
 
+    opt = Opt(local_alg, n_theta)
+    opt.ftol_abs = loss_tol
+    opt.xtol_abs = scan_tol
     opt.min_objective = loss_func_g
     opt.maxeval = max_iter
 
