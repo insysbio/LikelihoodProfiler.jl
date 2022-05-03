@@ -1,45 +1,45 @@
 """
-        function get_optimal(
-            theta_init::Vector{Float64}, # initial point of parameters
-            loss_func::Function; # lambda(theta)
+    function get_optimal(
+        theta_init::Vector{Float64}, # initial point of parameters
+        loss_func::Function; # lambda(theta)
 
-            scale::Vector{Symbol} = fill(:direct, length(theta_init)),
-            theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
-                fill((-Inf, Inf), length(theta_init)),
-                scale
-                ),
-            scan_tol::Float64 = 1e-3,
-            loss_tol::Float64 = 1e-3,
-            local_alg::Symbol = :LN_NELDERMEAD,
-            silent::Bool = false,
-            max_iter::Int = 10^5,
-            loss_grad::Union{Function, Symbol} = :EMPTY
-        )
+        scale::Vector{Symbol} = fill(:direct, length(theta_init)),
+        theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
+            fill((-Inf, Inf), length(theta_init)),
+            scale
+            ),
+        scan_tol::Float64 = 1e-3,
+        loss_tol::Float64 = 1e-3,
+        local_alg::Symbol = :LN_NELDERMEAD,
+        silent::Bool = false,
+        max_iter::Int = 10^5,
+        loss_grad::Union{Function, Symbol} = :EMPTY
+    )
 
-    Provides the optimization routine using the interface similar to [`get_endpoint`](@ref).
-    Currently it uses standard NLopt optimization but allows to use parameter scaling and autodiff method.
+Provides the optimization routine using the interface similar to [`get_endpoint`](@ref).
+Currently it uses standard NLopt optimization but allows to use parameter scaling and autodiff method.
 
-    ## Return
-    [`ProfilePoint`](@ref) object storing optimizations results.`
-    `value` and `loss` properties are equal to the optimal (minimal) `loss_func` value.
+## Return
+[`ProfilePoint`](@ref) object storing optimizations results.`
+`value` and `loss` properties are equal to the optimal (minimal) `loss_func` value.
 
-    ## Arguments
-    - `theta_init`: starting values of parameter vector ``\\theta``.
-    - `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-    
-    ## Keyword arguments
-    - `scale`: vector of scale transformations for each parameters' component. Possible values: `:direct` (`:lin`), `:log`, `:logit`. This option can speed up the optimization, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all parameters.
-    - `theta_bounds`: vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
-    - `scan_tol`: Absolute tolerance for all component of theta used as termination criterion.  
-    - `loss_tol`: Absolute tolerance controlling `loss_func`.
-    - `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package.
-    - `max_iter` : maximal number of optimizator iterations.
-    - `loss_grad` : This option declares the method for calcuting loss function gradient.
-                    This is required for gradient-based methods. The possible values
-                    - `:EMPTY` (default) not gradient is set. IT works only for gradient-free methods.
-                    - `:AUTODIFF` means autodifferentiation from `ForwardDiff` package is used.
-                    - `:FINITE` means finite difference method from `Calculus` is used.
-                    - It is also possible to set gradient function here `function(x::Vector{Float64})` which returns gradient vector.
+## Arguments
+- `theta_init`: starting values of parameter vector ``\\theta``.
+- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+
+## Keyword arguments
+- `scale`: vector of scale transformations for each parameters' component. Possible values: `:direct` (`:lin`), `:log`, `:logit`. This option can speed up the optimization, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all parameters.
+- `theta_bounds`: vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
+- `scan_tol`: Absolute tolerance for all component of theta used as termination criterion.  
+- `loss_tol`: Absolute tolerance controlling `loss_func`.
+- `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package.
+- `max_iter` : maximal number of optimizator iterations.
+- `loss_grad` : This option declares the method for calcuting loss function gradient.
+        This is required for gradient-based methods. The possible values
+        - `:EMPTY` (default) not gradient is set. IT works only for gradient-free methods.
+        - `:AUTODIFF` means autodifferentiation from `ForwardDiff` package is used.
+        - `:FINITE` means finite difference method from `Calculus` is used.
+        - It is also possible to set gradient function here `function(x::Vector{Float64})` which returns gradient vector.
 """
 function get_optimal(
     theta_init::Vector{Float64}, # initial point of parameters
@@ -56,7 +56,6 @@ function get_optimal(
     silent::Bool = false,
     max_iter::Int = 10^5,
     loss_grad::Union{Function, Symbol} = :EMPTY
-    # kwargs... # options for local fitter
 )
     # dim of the theta vector
     n_theta = length(theta_init)
