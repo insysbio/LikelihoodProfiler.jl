@@ -233,7 +233,7 @@ function get_interval(
         scan_tol = scan_tol,
         loss_tol = loss_tol,
         local_alg = local_alg,
-        kwargs... # options for local fitter
+        kwargs...
         ) for i in 1:2]
 
     input = ParamIntervalInput(

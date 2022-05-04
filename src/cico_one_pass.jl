@@ -154,7 +154,7 @@ function get_right_endpoint(
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3,
     local_alg::Symbol = :LN_NELDERMEAD,
-    kwargs... # options for local fitter
+    kwargs... # for get_right_endpoint
     )
     # checking arguments
     if theta_num > length(theta_init)
@@ -174,7 +174,7 @@ function get_right_endpoint(
         scan_tol = scan_tol,
         loss_tol = loss_tol,
         local_alg = local_alg,
-        kwargs... # options for local fitter
+        kwargs...
     )
 end
 

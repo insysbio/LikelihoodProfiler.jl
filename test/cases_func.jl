@@ -36,7 +36,7 @@ function test_alg(
             f.x0,
             i,
             f.func,
-            :CICO_ONE_PASS,
+            :CICO_ONE_PASS;
             theta_bounds=fill(bounds,length(f.x0)),
             scan_tol=1e-8,
             local_alg = alg.algorithm,

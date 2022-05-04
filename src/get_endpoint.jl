@@ -217,7 +217,7 @@ function get_endpoint(
         scan_tol = scan_tol,
         loss_tol = loss_tol,
         local_alg = local_alg,
-        kwargs... # options for local fitter
+        kwargs...
     )
 
     # transforming back
@@ -381,7 +381,7 @@ function get_endpoint(
         scan_tol = scan_tol,
         loss_tol = loss_tol,
         local_alg = local_alg,
-        kwargs... # options for local fitter
+        kwargs...
     )
 
     # transforming back

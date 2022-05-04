@@ -41,4 +41,4 @@ println("Starting tests for get_optimal")
 
 @testset "gradient-based algorithms" begin include("test_grad_algs.jl") end
 
-@testset "testing dfo algorithms" begin include("test_deriv_free_algs.jl") end
+@testset "testing derivative-free algorithms" begin include("test_deriv_free_algs.jl") end
