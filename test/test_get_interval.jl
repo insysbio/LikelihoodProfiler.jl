@@ -4,7 +4,8 @@
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x),
         :CICO_ONE_PASS;
-        loss_crit = 9.
+        loss_crit = 9.,
+        silent = true
     ) for i in 1:3]
 
     @test isapprox(res0[1].result[1].value, 1.0, atol=1e-2)

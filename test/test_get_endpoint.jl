@@ -16,7 +16,8 @@ get_endpoint(
         i,
         (x::Vector{Float64}) -> f_3p_1im_dep(x),
         method;
-        loss_crit = 9.
+        loss_crit = 9.,
+        silent = true
     ) for i in 1:3]
 
     @test isapprox(res0[1].value, 5.0, atol=1e-2)
@@ -41,6 +42,7 @@ end
         method,
         :left;
         loss_crit = 9.,
+        silent = true
     ) for i in 1:3]
 
     @test isapprox(res0[1].value, 1.0, atol=1e-2)
@@ -65,7 +67,8 @@ end
         method,
         :right;
         loss_crit = 9.,
-        scale = [:log, :direct, :log]
+        scale = [:log, :direct, :log],
+        silent = true
     ) for i in 1:3]
 
     @test isapprox(log10(res0[1].value), log10(5.), atol=1e-2)

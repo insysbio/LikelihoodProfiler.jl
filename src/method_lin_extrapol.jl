@@ -16,7 +16,6 @@ function get_right_endpoint(
     # local alg args
     local_alg::Symbol = :LN_NELDERMEAD,
     max_iter::Int = 10^5,
-    ftol_abs::Float64 = 1e-3,
     kwargs... # options for local fitter
     )
     # dim of the theta vector

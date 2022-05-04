@@ -16,9 +16,10 @@ end
         1,
         err_fun,
         :CICO_ONE_PASS;
-        loss_crit = 9.
+        loss_crit = 9.,
+        silent = true
     )
-    @test res0.value == nothing
+    @test res0.value === nothing
     @test res0.profilePoints == ProfilePoint[]
     @test res0.status == :LOSS_ERROR_STOP
     @test res0.counter < 5
@@ -44,9 +45,10 @@ end
         1,
         err_fun,
         :LIN_EXTRAPOL;
-        loss_crit = 9.
+        loss_crit = 9.,
+        silent = true
     )
-    @test res0.value == nothing
+    @test res0.value === nothing
     @test length(res0.profilePoints) == 1
     @test res0.status == :LOSS_ERROR_STOP
     @test res0.counter < 5
@@ -62,9 +64,10 @@ end
         1,
         err_fun,
         :QUADR_EXTRAPOL;
-        loss_crit = 9.
+        loss_crit = 9.,
+        silent = true
     )
-    @test res0.value == nothing
+    @test res0.value === nothing
     @test length(res0.profilePoints) == 1
     @test res0.status == :LOSS_ERROR_STOP
     @test res0.counter < 5

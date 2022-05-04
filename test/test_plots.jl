@@ -8,7 +8,8 @@ using Plots
         i,
         f_3p_1im_dep,
         method;
-        loss_crit = 9.
+        loss_crit = 9.,
+        silent = true
     ) for i in 1:3]
     update_profile_points!(res0[1]; max_recursions=1)
     a_grid_1 = LikelihoodProfiler.get_grid(res0[1])

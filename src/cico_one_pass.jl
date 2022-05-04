@@ -17,8 +17,8 @@ function get_right_endpoint(
     local_alg::Symbol = :LN_NELDERMEAD,
     # options for local fitter :max_iter
     max_iter::Int = 10^5,
-    ftol_abs::Float64 = 1e-3,
-    autodiff::Bool = true,
+    #autodiff::Bool = true,
+    loss_grad::Union{Function, Symbol} = :AUTODIFF, #:EMPTY,
     kwargs...
     )
     # dim of the theta vector
@@ -46,8 +46,8 @@ function get_right_endpoint(
         # function constraints_func(x) # testing grad methods    
         # this part is necessary to understand the difference between
         # "stop out of bounds" and "stop because of function call error"
-        try
-            loss = loss_func(x)
+        loss = try
+            loss_func(x)
         catch e
             @warn "Error when call loss_func($x)"
             throw(e)
@@ -56,19 +56,10 @@ function get_right_endpoint(
         if (loss < 0.) && (scan_func(x) > scan_bound)
             out_of_bound = true
             throw(NLopt.ForcedStop())
-            # throw(OutOfBoundException())
-        #elseif isapprox(loss, 0., atol=loss_tol)
-            #@warn "loss_tol reached... but..."
-            #return loss
         elseif length(g) > 0
-          if autodiff 
-            try ForwardDiff.gradient!(g, loss_func, x)
-            catch e
-              @warn "autodiff gradient is not available, switching to finite difference mode"
-              Calculus.finite_difference!(loss_func,x,g,:central)
-            end
-            #g .= Zygote.gradient(loss_func,x)[1]
-          else
+          if loss_grad == :AUTODIFF
+            ForwardDiff.gradient!(g, loss_func, x)
+          elseif loss_grad == :FINITE
             Calculus.finite_difference!(loss_func,x,g,:central)
           end
         end
@@ -76,17 +67,12 @@ function get_right_endpoint(
         return loss
     end
 
-    function obj_func(x,g)
+    function obj_func(x, g)
         if length(g) > 0
-          if autodiff
-            try ForwardDiff.gradient!(g, scan_func, x)
-            catch e
-              @warn "autodiff gradient is not available, switching to finite difference mode"
-              Calculus.finite_difference!(scan_func,x,g,:central)
-            end
-            #g .= Zygote.gradient(scan_func,x)[1]
-          else
-            Calculus.finite_difference!(scan_func,x,g,:central)
+          if loss_grad == :AUTODIFF
+            ForwardDiff.gradient!(g, scan_func, x)
+          elseif loss_grad == :FINITE
+            Calculus.finite_difference!(scan_func, x, g, :central)
           end
         end
         return scan_func(x)

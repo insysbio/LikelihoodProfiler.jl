@@ -21,7 +21,8 @@ res1 = get_interval(
   1,
   f1,
   :CICO_ONE_PASS;
-  loss_crit = 5.
+  loss_crit = 5.,
+  silent = true
 )
 
 res2 = get_interval(
@@ -29,7 +30,8 @@ res2 = get_interval(
   1,
   f2,
   :CICO_ONE_PASS;
-  loss_crit = 7.
+  loss_crit = 7.,
+  silent = true
 )
 
 res3 = get_interval(
@@ -37,7 +39,8 @@ res3 = get_interval(
   1,
   f3,
   :CICO_ONE_PASS;
-  loss_crit = 5.
+  loss_crit = 5.,
+  silent = true
 )
 
 res4 = get_interval(
@@ -45,7 +48,8 @@ res4 = get_interval(
   1,
   f4,
   :CICO_ONE_PASS;
-  loss_crit = 5.
+  loss_crit = 5.,
+  silent = true
 )
 
 res6 = get_interval(
@@ -53,5 +57,6 @@ res6 = get_interval(
   1,
   f6,
   :CICO_ONE_PASS;
-  loss_crit = 9.
+  loss_crit = 9.,
+  silent = true
 )

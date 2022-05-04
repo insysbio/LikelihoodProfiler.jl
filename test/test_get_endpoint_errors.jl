@@ -6,7 +6,8 @@
         1,
         f_3p_1im_dep,
         method;
-        loss_crit = 9.
+        loss_crit = 9.,
+        silent = true
         )
 end
 
@@ -19,7 +20,8 @@ end
         method;
         loss_crit = 9.,
         scan_bound = 6.,
-        theta_bounds = [(-Inf,5.),(-Inf,Inf),(-Inf,Inf)]
+        theta_bounds = [(-Inf,5.),(-Inf,Inf),(-Inf,Inf)],
+        silent = true
         )
 end
 
@@ -31,7 +33,8 @@ end
         f_3p_1im_dep,
         method;
         loss_crit = 9.,
-        scan_bound = 2.
+        scan_bound = 2.,
+        silent = true
         )
 end
 
@@ -43,7 +46,8 @@ end
         f_3p_1im_dep,
         method;
         loss_crit = 9.,
-        scale = [:direct,:direct,:log]
+        scale = [:direct,:direct,:log],
+        silent = true
         )
 end
 
@@ -56,6 +60,7 @@ end
         method;
         loss_crit = 9.,
         scale = [:direct,:direct,:log],
-        theta_bounds = [(-Inf, Inf), (-Inf, Inf), (-5., Inf)]
+        theta_bounds = [(-Inf, Inf), (-Inf, Inf), (-5., Inf)],
+        silent = true
         )
 end

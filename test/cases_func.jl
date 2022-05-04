@@ -20,7 +20,13 @@ f_5p_3im(x) = 5.0 + (x[1]-3.0)^2 + (exp(x[2])-1.0)^2 + (x[3]/x[4]-4.0)^2 + 0.0*x
 f_3p_im(x) = 5.0 + (x[1]-3.0)^2 + (exp(x[2])-1.0)^2 + 0.0*x[3] # [3.0, 0., missing]
 
 # test each alg on all functions
-function test_alg(alg::NamedTuple, func_dict::AbstractDict = test_funcs; bounds::Tuple{Float64,Float64} = (-Inf,Inf), tol::Float64 = 1e-2)
+function test_alg(
+  alg::NamedTuple,
+  func_dict::AbstractDict = test_funcs;
+  bounds::Tuple{Float64,Float64} = (-Inf,Inf),
+  tol::Float64 = 1e-2,
+  kwargs...
+)
   @testset "get_interval() for $(alg.algorithm)" begin
     for (f_name, f) in func_dict
       #println("Testing $f_name")
@@ -35,7 +41,8 @@ function test_alg(alg::NamedTuple, func_dict::AbstractDict = test_funcs; bounds:
             scan_tol=1e-8,
             local_alg = alg.algorithm,
             loss_crit = f.loss_crit,
-            silent = true
+            silent = true,
+            kwargs...
           )
           should_skip = f_name in alg.skip
           @test ep.result[1].status == f.status[i][1] skip = should_skip
