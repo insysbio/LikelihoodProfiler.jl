@@ -17,8 +17,7 @@ function get_right_endpoint(
     local_alg::Symbol = :LN_NELDERMEAD,
     # options for local fitter :max_iter
     max_iter::Int = 10^5,
-    #autodiff::Bool = true,
-    loss_grad::Union{Function, Symbol} = :AUTODIFF, #:EMPTY,
+    loss_grad::Union{Function, Symbol} = :EMPTY,
     kwargs...
     )
     # dim of the theta vector
@@ -32,6 +31,12 @@ function get_right_endpoint(
             @warn "Close-to-zero parameters found when using :LN_NELDERMEAD."
             show(findall(zeroParameter))
         end
+    end
+    
+    # checking loss_grad
+    is_gradient = occursin(r"^LD_", String(local_alg))
+    if loss_grad == :EMPTY && is_gradient
+        throw(ArgumentError("`loss_grad` must be set for gradient local fitter `$(local_alg)`"))
     end
 
     # optimizer

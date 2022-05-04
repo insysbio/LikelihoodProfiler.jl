@@ -87,6 +87,12 @@ function get_optimal(
         end
     end
 
+    # checking loss_grad
+    is_gradient = occursin(r"^LD_", String(local_alg))
+    if loss_grad == :EMPTY && is_gradient
+        throw(ArgumentError("`loss_grad` must be set for gradient local fitter `$(local_alg)`"))
+    end
+
     # progress info
     prog = ProgressUnknown("Fitter counter:"; spinner=false, enabled=!silent, showspeed=true)
     count = 0
