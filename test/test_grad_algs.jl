@@ -25,7 +25,7 @@ grad_algorithms_finite = [
     (algorithm = :LD_SLSQP, skip = []), # Sequential Least-Squares Quadratic Programming
     (algorithm = :LD_CCSAQ, skip = [:f_5p_3im]), # Conservative convex separable approximation
     # errors
-    (algorithm = :LD_LBFGS, skip = [:f_3p_1im, :f_4p_3im, :f_5p_3im]), # Low-storage BFGS
+    (algorithm = :LD_LBFGS, skip = [:f_1p, :f_3p_1im, :f_4p_3im, :f_5p_3im, :f_4p_2im, :f_2p_1im, :f_2p]), # Low-storage BFGS
     (algorithm = :LD_TNEWTON_PRECOND_RESTART, skip = [:f_3p_1im, :f_3p_1im_dep, :f_4p_3im, :f_5p_3im]), # Preconditioned truncated Newton
     (algorithm = :LD_TNEWTON_PRECOND, skip = [:f_3p_1im, :f_4p_3im, :f_5p_3im]), # Same without restarting
     (algorithm = :LD_TNEWTON_RESTART, skip = [:f_3p_1im, :f_4p_3im, :f_5p_3im]), # Same without preconditioning
