@@ -17,6 +17,7 @@ function get_right_endpoint(
     local_alg::Symbol = :LN_NELDERMEAD,
     # options for local fitter :max_iter
     max_iter::Int = 10^5,
+    scan_grad::Union{Function, Symbol} = :EMPTY,
     loss_grad::Union{Function, Symbol} = :EMPTY,
     kwargs...
     )
@@ -33,8 +34,11 @@ function get_right_endpoint(
         end
     end
     
-    # checking loss_grad
+    # checking scan_grad, loss_grad
     is_gradient = occursin(r"^LD_", String(local_alg))
+    if scan_grad == :EMPTY && is_gradient
+        throw(ArgumentError("`scan_grad` must be set for gradient local fitter `$(local_alg)`"))
+    end
     if loss_grad == :EMPTY && is_gradient
         throw(ArgumentError("`loss_grad` must be set for gradient local fitter `$(local_alg)`"))
     end
@@ -51,32 +55,36 @@ function get_right_endpoint(
         # function constraints_func(x) # testing grad methods    
         # this part is necessary to understand the difference between
         # "stop out of bounds" and "stop because of function call error"
-        loss = try
+        loss_value = try
             loss_func(x)
         catch e
             @warn "Error when call loss_func($x)"
             throw(e)
         end
         
-        if (loss < 0.) && (scan_func(x) > scan_bound)
+        if (loss_value < 0.) && (scan_func(x) > scan_bound)
             out_of_bound = true
             throw(NLopt.ForcedStop())
         elseif length(g) > 0
-          if loss_grad == :AUTODIFF
+          if isa(loss_grad, Function)
+            g .= loss_grad(x)
+          elseif loss_grad == :AUTODIFF
             ForwardDiff.gradient!(g, loss_func, x)
           elseif loss_grad == :FINITE
             Calculus.finite_difference!(loss_func,x,g,:central)
           end
         end
         
-        return loss
+        return loss_value
     end
 
     function obj_func(x, g)
         if length(g) > 0
-          if loss_grad == :AUTODIFF
+          if isa(scan_grad, Function)
+            g .= scan_grad(x)
+          elseif scan_grad == :AUTODIFF
             ForwardDiff.gradient!(g, scan_func, x)
-          elseif loss_grad == :FINITE
+          elseif scan_grad == :FINITE
             Calculus.finite_difference!(scan_func, x, g, :central)
           end
         end
@@ -167,6 +175,11 @@ function get_right_endpoint(
     end
 
     scan_func(theta::Vector) = theta[theta_num]
+    scan_grad(theta::Vector) = begin
+        res = zeros(length(theta_init))
+        res[theta_num] = 1.
+        return res
+    end
 
     get_right_endpoint(
         theta_init,
@@ -179,6 +192,7 @@ function get_right_endpoint(
         scan_tol = scan_tol,
         loss_tol = loss_tol,
         local_alg = local_alg,
+        scan_grad = scan_grad,
         kwargs...
     )
 end

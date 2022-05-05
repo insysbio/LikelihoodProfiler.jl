@@ -22,7 +22,8 @@ res2 = get_interval(
     loss_crit = 8.,
     local_alg = :LD_MMA,
     silent = true,
-    loss_grad = :AUTODIFF
+    loss_grad = :AUTODIFF,
+    scan_grad = :AUTODIFF
 )
 @test isapprox(res2.result[1].value, (3-sqrt(3))^2,atol=1e-2)
 @test isapprox(res2.result[2].value, (3+sqrt(3))^2,atol=1e-2)
@@ -37,7 +38,8 @@ res3 = get_interval(
     loss_crit = 8.,
     local_alg = :LD_MMA,
     silent = true,
-    loss_grad = :AUTODIFF
+    loss_grad = :AUTODIFF,
+    scan_grad = :AUTODIFF
 )
 @test isapprox(res3.result[1].value, 2*log10(3-sqrt(3)),atol=1e-2)
 @test isapprox(res3.result[2].value, 2*log10(3+sqrt(3)),atol=1e-2)
