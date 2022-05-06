@@ -338,6 +338,7 @@ function get_endpoint(
     local_alg::Symbol = :LN_NELDERMEAD,
     scan_grad::Union{Function, Symbol} = :EMPTY,
     loss_grad::Union{Function, Symbol} = :EMPTY,
+    silent::Bool = false,
     kwargs... # other options for get_right_endpoint
     )
     isLeft = direction == :left
@@ -365,9 +366,11 @@ function get_endpoint(
         throw(ArgumentError("Check theta_init and loss_crit: loss_func(theta_init) should be < loss_crit"))
 
     # set counter in the scope
+    prog = ProgressUnknown("Fitter counter:"; spinner=false, enabled=!silent, showspeed=true)
     counter::Int = 0
     # set supreme, maximal or minimal value of scanned parameter inside critical
     supreme_gd = nothing
+    loss_value = 0.
 
     # transforming
     theta_init_gd = scaling.(theta_init, scale)
@@ -377,6 +380,14 @@ function get_endpoint(
         theta = unscaling.(theta_gd, scale)
         scan_val = scan_func(theta)
         scan_val_gd = isLeft ? (-1)*scan_val : scan_val
+        
+        should_update = (loss_value < 0.) &&
+            (typeof(supreme_gd)==Nothing || (scan_val_gd > supreme_gd)) && 
+            !isa(loss_value, ForwardDiff.Dual) &&
+            !isa(scan_val_gd, ForwardDiff.Dual)
+        if should_update
+            supreme_gd = scan_val_gd
+        end
 
         return scan_val_gd
     end
@@ -384,20 +395,20 @@ function get_endpoint(
     function loss_func_gd(theta_gd)
         #theta_g = copy(theta_gd) # why copy?
         theta = unscaling.(theta_gd, scale)
-        loss_norm = loss_func(theta) - loss_crit
+        loss_value = loss_func(theta) - loss_crit
 
-        # update counter
         counter += 1
-        # update supreme ?
-        #scan_val = scan_func(theta)
-        #scan_val_gd = isLeft ? (-1)*scan_val : scan_val
-        #update_supreme = (loss_norm < 0.) &&
-        #    (typeof(supreme_gd)==Nothing || (scan_val_gd > supreme_gd))
-        #if update_supreme
-        #    supreme_gd = scan_val_gd
-        #end
+        #println("$loss_value => $supreme_gd")
+        supreme = if isa(supreme_gd, Nothing)
+            "-"
+        elseif isLeft
+            round(-supreme_gd; sigdigits=4)
+        else
+            round(supreme_gd; sigdigits=4)
+        end
+        ProgressMeter.update!(prog, counter, spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; showvalues = [(:supreme,supreme)])
 
-        return loss_norm
+        return loss_value
     end
     theta_bounds_gd = scaling.(theta_bounds, scale)
 
@@ -480,11 +491,10 @@ function get_endpoint(
     pps = [ temp_fun(pp_gd[i]) for i in 1:length(pp_gd) ]
     # transforming supreme back
     if (isLeft && typeof(supreme_gd)!==Nothing) supreme_gd *= -1 end # change direction
-    supreme = unscaling(supreme_gd, :direct) # scan_scale ??
 
     if (isLeft && typeof(optf_gd)!==Nothing) optf_gd *= -1 end # change direction
     # optf = unscaling(optf_gd, scan_scale)
     optf = optf_gd
 
-    EndPoint(optf, pps, status, direction, counter, supreme)
+    EndPoint(optf, pps, status, direction, counter, supreme_gd)
 end

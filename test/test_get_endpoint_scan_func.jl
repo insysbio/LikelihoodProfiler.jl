@@ -7,7 +7,8 @@
         (x) -> (x[1]-5.)^2 + (x[2] - 6.)^2, # loss_func
         :CICO_ONE_PASS,
         loss_crit = 64.,
-        local_alg = :LN_NELDERMEAD
+        local_alg = :LN_NELDERMEAD,
+        silent = true
     )
     @test res0.status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0.counter < 1000
@@ -22,7 +23,8 @@ end
         :CICO_ONE_PASS,
         loss_crit = 64.,
         scan_bound = 200.,
-        local_alg = :LN_NELDERMEAD
+        local_alg = :LN_NELDERMEAD,
+        silent = true
     )
     @test res0.status == :SCAN_BOUND_REACHED
     @test res0.counter < 1000
@@ -36,7 +38,8 @@ end
         :CICO_ONE_PASS,
         loss_crit = 64.,
         scale = [:log, :log, :log],
-        local_alg = :LN_NELDERMEAD
+        local_alg = :LN_NELDERMEAD,
+        silent = true
     )
     @test res0.status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0.counter < 1000
@@ -52,7 +55,8 @@ end
         loss_crit = 64.,
         scale = [:log, :log, :log],
         scan_bound = 200.,
-        local_alg = :LN_NELDERMEAD
+        local_alg = :LN_NELDERMEAD,
+        silent = true
     )
     @test res0.status == :SCAN_BOUND_REACHED
     @test res0.counter < 1000
@@ -67,7 +71,8 @@ end
         (x) -> (x[1]-5.)^2 + (x[2] - 6.)^2, # loss_func
         :CICO_ONE_PASS,
         loss_crit = 64.,
-        local_alg = :LD_SLSQP
+        local_alg = :LD_SLSQP,
+        silent = true
     )
 end
 
@@ -79,9 +84,12 @@ end
         :CICO_ONE_PASS,
         loss_crit = 64.,
         scale = [:log, :log, :log],
-        local_alg = :LD_SLSQP
+        local_alg = :LD_SLSQP,
+        silent = true
     )
 end
+
+## autodiff
 
 @testset ":LD_SLSQP, no scale, :AUTODIFF, :AUTODIFF" begin
     res0 = get_endpoint(
@@ -92,7 +100,8 @@ end
         loss_crit = 64.,
         local_alg = :LD_SLSQP,
         scan_grad = :AUTODIFF,
-        loss_grad = :AUTODIFF
+        loss_grad = :AUTODIFF,
+        silent = true
     )
     @test res0.status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0.counter < 1000
@@ -109,7 +118,8 @@ end
         scan_bound = 200.,
         local_alg = :LD_SLSQP,
         scan_grad = :AUTODIFF,
-        loss_grad = :AUTODIFF
+        loss_grad = :AUTODIFF,
+        silent = true
     )
     @test res0.status == :SCAN_BOUND_REACHED
     @test res0.counter < 1000
@@ -125,7 +135,8 @@ end
         scale = [:log, :log, :log],
         local_alg = :LD_SLSQP,
         scan_grad = :AUTODIFF,
-        loss_grad = :AUTODIFF
+        loss_grad = :AUTODIFF,
+        silent = true
     )
     @test res0.status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0.counter < 1000
@@ -143,7 +154,8 @@ end
         scale = [:log, :log, :log],
         local_alg = :LD_SLSQP,
         scan_grad = :AUTODIFF,
-        loss_grad = :AUTODIFF
+        loss_grad = :AUTODIFF,
+        silent = true
     )
     @test res0.status == :SCAN_BOUND_REACHED
     @test res0.counter < 1000
@@ -158,7 +170,8 @@ end
         loss_crit = 64.,
         local_alg = :LD_SLSQP,
         scan_grad = :FINITE,
-        loss_grad = :FINITE
+        loss_grad = :FINITE,
+        silent = true
     )
     @test res0.status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0.counter < 1000
@@ -175,7 +188,8 @@ end
         scan_bound = 200.,
         local_alg = :LD_SLSQP,
         scan_grad = :FINITE,
-        loss_grad = :FINITE
+        loss_grad = :FINITE,
+        silent = true
     )
     @test res0.status == :SCAN_BOUND_REACHED
     @test res0.counter < 1000
@@ -191,7 +205,8 @@ end
         scale = [:log, :log, :log],
         local_alg = :LD_SLSQP,
         scan_grad = :FINITE,
-        loss_grad = :FINITE
+        loss_grad = :FINITE,
+        silent = true
     )
     @test res0.status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0.counter < 1000
@@ -209,7 +224,8 @@ end
         scale = [:log, :log, :log],
         local_alg = :LD_SLSQP,
         scan_grad = :FINITE,
-        loss_grad = :FINITE
+        loss_grad = :FINITE,
+        silent = true
     )
     @test res0.status == :SCAN_BOUND_REACHED
     @test res0.counter < 1000
@@ -224,7 +240,8 @@ end
         loss_crit = 64.,
         local_alg = :LD_SLSQP,
         scan_grad = (x) -> [2.0 * x[1], 0., 0.],
-        loss_grad = (x) -> [2.0 * (x[1] - 5.), 2.0 * (x[2] - 6.), 0.]
+        loss_grad = (x) -> [2.0 * (x[1] - 5.), 2.0 * (x[2] - 6.), 0.],
+        silent = true
     )
     @test res0.status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0.counter < 1000
@@ -241,7 +258,8 @@ end
         scan_bound = 200.,
         local_alg = :LD_SLSQP,
         scan_grad = (x) -> [0., 0., 2.0 * x[3]],
-        loss_grad = (x) -> [2.0 * (x[1] - 5.), 2.0 * (x[2] - 6.), 0.]
+        loss_grad = (x) -> [2.0 * (x[1] - 5.), 2.0 * (x[2] - 6.), 0.],
+        silent = true
     )
     @test res0.status == :SCAN_BOUND_REACHED
     @test res0.counter < 1000
@@ -257,7 +275,8 @@ end
         scale = [:log, :log, :log],
         local_alg = :LD_SLSQP,
         scan_grad = (x) -> [2.0 * x[1], 0., 0.],
-        loss_grad = (x) -> [2.0 * (x[1] - 5.), 2.0 * (x[2] - 6.), 0.]
+        loss_grad = (x) -> [2.0 * (x[1] - 5.), 2.0 * (x[2] - 6.), 0.],
+        silent = true
     )
     @test res0.status == :BORDER_FOUND_BY_SCAN_TOL
     @test res0.counter < 1000
@@ -275,7 +294,8 @@ end
         scale = [:log, :log, :log],
         local_alg = :LD_SLSQP,
         scan_grad = (x) -> [0., 0., 2.0 * x[3]],
-        loss_grad = (x) -> [2.0 * (x[1] - 5.), 2.0 * (x[2] - 6.), 0.]
+        loss_grad = (x) -> [2.0 * (x[1] - 5.), 2.0 * (x[2] - 6.), 0.],
+        silent = true
     )
     @test res0.status == :SCAN_BOUND_REACHED
     @test res0.counter < 1000

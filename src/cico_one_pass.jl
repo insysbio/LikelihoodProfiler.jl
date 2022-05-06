@@ -46,6 +46,7 @@ function get_right_endpoint(
     # optimizer
     local_opt = Opt(local_alg, n_theta)
     ftol_abs!(local_opt, scan_tol) #ftol_abs
+    # local_opt.initial_step = fill(1., n_theta) # changes fitting but still unstable
 
     # flags to analyze fitting stop
     out_of_bound::Bool = false

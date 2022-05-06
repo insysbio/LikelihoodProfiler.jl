@@ -95,17 +95,17 @@ function get_optimal(
 
     # progress info
     prog = ProgressUnknown("Fitter counter:"; spinner=false, enabled=!silent, showspeed=true)
-    count = 0
+    counter = 0
     supreme = nothing
 
     loss_func_rescaled = function(theta_g)
         theta = unscaling.(theta_g, scale)
         loss_value = loss_func(theta)
 
-        count += 1
+        counter += 1
         if (typeof(supreme) == Nothing || loss_value < supreme) && !isa(loss_value, ForwardDiff.Dual)
             supreme = loss_value
-            ProgressMeter.update!(prog, count, spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; showvalues = [(:supreme,round(supreme; sigdigits=4))])
+            ProgressMeter.update!(prog, counter, spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; showvalues = [(:supreme,round(supreme; sigdigits=4))])
         end
         
         return loss_value
@@ -160,7 +160,7 @@ function get_optimal(
     (optf, optx_g, ret) = optimize(opt, theta_init_g)
     optx = unscaling.(optx_g, scale)
 
-    pp = ProfilePoint(optf, loss_func(optx), optx, ret, count)
+    pp = ProfilePoint(optf, loss_func(optx), optx, ret, counter)
 
     return pp
 end
