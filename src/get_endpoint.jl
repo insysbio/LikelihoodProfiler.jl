@@ -340,8 +340,8 @@ function get_endpoint(
     theta_init_gd = scaling.(theta_init, scale)
     
     function scan_func_gd(theta_gd)
-        theta_g = copy(theta_gd) # XXX: why copy?
-        theta = unscaling.(theta_g, scale)
+        #theta_g = copy(theta_gd) # why copy?
+        theta = unscaling.(theta_gd, scale)
         scan_val = scan_func(theta)
         scan_val_gd = isLeft ? (-1)*scan_val : scan_val
 
@@ -349,9 +349,8 @@ function get_endpoint(
     end
 
     function loss_func_gd(theta_gd)
-        theta_g = copy(theta_gd) # XXX: why copy?
-        theta = unscaling.(theta_g, scale)
-        # calculate function
+        #theta_g = copy(theta_gd) # why copy?
+        theta = unscaling.(theta_gd, scale)
         loss_norm = loss_func(theta) - loss_crit
 
         # update counter
