@@ -1,6 +1,8 @@
 # TODO
 
-- allow function for `loss_grad` 
-- use scale option for get_interval 
+- check supreme in `get_endpoint`
+- `loss_grad`, `scan_grad` for  :LIN_EXTRAPOL, :QUADR_EXTRAPOL
+- use `scale` option for `get_interval`
 - remove bound for scanned parameter
 - use fitting reset as an option
+- remove `kwargs...` if not required

@@ -71,46 +71,46 @@ scaling(::Nothing, ::Symbol) = nothing
 unscaling(::Nothing, ::Symbol) = nothing
 
 """
-        function get_endpoint(
-            theta_init::Vector{Float64},
-            theta_num::Int,
-            loss_func::Function,
-            method::Symbol,
-            direction::Symbol = :right;
+    function get_endpoint(
+        theta_init::Vector{Float64},
+        theta_num::Int,
+        loss_func::Function,
+        method::Symbol,
+        direction::Symbol = :right;
 
-            loss_crit::Float64 = 0.0,
-            scale::Vector{Symbol} = fill(:direct, length(theta_init)),
-            theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
-                fill((-Inf, Inf), length(theta_init)),
-                scale
-                ),
-            scan_bound::Float64 = unscaling(
-                (direction==:left) ? -9.0 : 9.0,
-                scale[theta_num]
-                ),
-            scan_tol::Float64 = 1e-3,
-            loss_tol::Float64 = 1e-3,
-            local_alg::Symbol = :LN_NELDERMEAD,
-            silent::Bool = false,
-            kwargs...
-        )
+        loss_crit::Float64 = 0.0,
+        scale::Vector{Symbol} = fill(:direct, length(theta_init)),
+        theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
+            fill((-Inf, Inf), length(theta_init)),
+            scale
+            ),
+        scan_bound::Float64 = unscaling(
+            (direction==:left) ? -9.0 : 9.0,
+            scale[theta_num]
+            ),
+        scan_tol::Float64 = 1e-3,
+        loss_tol::Float64 = 1e-3,
+        local_alg::Symbol = :LN_NELDERMEAD,
+        silent::Bool = false,
+        kwargs...
+    )
 
-    Calculates confidence interval's right or left endpoints for a given parameter `theta_num`.
+Calculates confidence interval's right or left endpoints for a given parameter `theta_num`.
 
-    ## Return
-    [`EndPoint`](@ref) object storing confidence interval's endpoint and intermediate profile points.
+## Return
+[`EndPoint`](@ref) object storing confidence interval's endpoint and intermediate profile points.
 
-    ## Arguments
-    - `theta_init`: starting values of parameter vector ``\\theta``. The starting values should not necessary be the optimum values of `loss_func` but `loss_func(theta_init)` should be lower than `loss_crit`.
-    - `theta_num`: index of vector component for identification: `theta_init(theta_num)`.
-    - `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
-    - `method`: computational method to estimate confidence interval's endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
-    - `direction`: `:right` or `:left` endpoint to estimate.
+## Arguments
+- `theta_init`: starting values of parameter vector ``\\theta``. The starting values should not necessary be the optimum values of `loss_func` but `loss_func(theta_init)` should be lower than `loss_crit`.
+- `theta_num`: index of vector component for identification: `theta_init(theta_num)`.
+- `loss_func`: loss function ``\\Lambda\\left(\\theta\\right)`` for profile likelihood-based (PL) identification. Usually we use log-likelihood for PL analysis: ``\\Lambda( \\theta ) = - 2 ln\\left( L(\\theta) \\right)``.
+- `method`: computational method to estimate confidence interval's endpoint. Currently the following methods are implemented: `:CICO_ONE_PASS`, `:LIN_EXTRAPOL`, `:QUADR_EXTRAPOL`.
+- `direction`: `:right` or `:left` endpoint to estimate.
 
-    ## Keyword arguments
-    - `silent` : Boolean argument declaring whether we display the optimization progress. Default is `false`
+## Keyword arguments
+- `silent` : Boolean argument declaring whether we display the optimization progress. Default is `false`
 
-    see also [`get_interval`](@ref)
+see also [`get_interval`](@ref)
 """
 function get_endpoint(
     theta_init::Vector{Float64},
@@ -303,9 +303,12 @@ function get_endpoint(
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3,
     local_alg::Symbol = :LN_NELDERMEAD,
+    scan_grad::Union{Function, Symbol} = :EMPTY,
+    loss_grad::Union{Function, Symbol} = :EMPTY,
     kwargs... # other options for get_right_endpoint
     )
     isLeft = direction == :left
+    n_theta = length(theta_init)
 
     # checking arguments
     # theta_bound[1] < theta_init < theta_bound[2]
@@ -337,7 +340,7 @@ function get_endpoint(
     theta_init_gd = scaling.(theta_init, scale)
     
     function scan_func_gd(theta_gd)
-        theta_g = copy(theta_gd)
+        theta_g = copy(theta_gd) # XXX: why copy?
         theta = unscaling.(theta_g, scale)
         scan_val = scan_func(theta)
         scan_val_gd = isLeft ? (-1)*scan_val : scan_val
@@ -346,7 +349,7 @@ function get_endpoint(
     end
 
     function loss_func_gd(theta_gd)
-        theta_g = copy(theta_gd)
+        theta_g = copy(theta_gd) # XXX: why copy?
         theta = unscaling.(theta_g, scale)
         # calculate function
         loss_norm = loss_func(theta) - loss_crit
@@ -370,6 +373,51 @@ function get_endpoint(
     scan_bound_gd = scan_bound
     if isLeft scan_bound_gd *= -1 end # change direction
 
+    # transform gradients
+    scan_grad_gd = if isa(scan_grad, Function)
+        function(theta_gd)
+            theta = unscaling.(theta_gd, scale)
+            scan_grad_value = scan_grad(theta)
+            scan_grad_value_gd = zeros(n_theta)
+
+            for i in 1:n_theta
+                if scale[i] == :log
+                    scan_grad_value_gd[i] = scan_grad_value[i] * theta[i] * log(10.)
+                elseif scale[i] == :logit
+                    scan_grad_value_gd[i] = scan_grad_value[i] * theta[i] * (1. - theta[i]) * log(10.)
+                else # for :direct and :lin
+                    scan_grad_value_gd[i] = scan_grad_value[i]
+                end
+            end
+
+            return scan_grad_value_gd
+        end
+    else
+        scan_grad
+    end
+    loss_grad_gd = loss_grad
+    loss_grad_gd = if isa(loss_grad, Function)
+        function(theta_gd)
+            theta = unscaling.(theta_gd, scale)
+            loss_grad_value = loss_grad(theta)
+            loss_grad_value_gd = zeros(n_theta)
+
+            for i in 1:n_theta
+                if scale[i] == :log
+                    loss_grad_value_gd[i] = loss_grad_value[i] * theta[i] * log(10.)
+                elseif scale[i] == :logit
+                    loss_grad_value_gd[i] = loss_grad_value[i] * theta[i] * (1. - theta[i]) * log(10.)
+                else # for :direct and :lin
+                    loss_grad_value_gd[i] = loss_grad_value[i]
+                end
+            end
+
+            return loss_grad_value_gd
+        end
+    else
+        loss_grad
+    end
+
     # calculate endpoint using base method
     (optf_gd, pp_gd, status) = get_right_endpoint(
         theta_init_gd,
@@ -378,9 +426,11 @@ function get_endpoint(
         Val(method);
         theta_bounds = theta_bounds_gd,
         scan_bound = scan_bound_gd,
-        scan_tol = scan_tol,
-        loss_tol = loss_tol,
-        local_alg = local_alg,
+        scan_tol,
+        loss_tol,
+        local_alg,
+        scan_grad = scan_grad_gd,
+        loss_grad = loss_grad_gd,
         kwargs...
     )
 

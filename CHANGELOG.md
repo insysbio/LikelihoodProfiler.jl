@@ -3,6 +3,8 @@
 ## 0.5.1
 
 - add method `get_optimal`
+- update gradient-based interface, `loss_grad`, `scan_grad` options
+- support of `loss_grad`, `scan_grad` as explicit functions
 
 ## 0.5.0
 

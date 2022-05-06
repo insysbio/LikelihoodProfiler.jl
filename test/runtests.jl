@@ -11,8 +11,8 @@ println("Starting tests for get_interval")
 @testset "get_interval" begin include("test_get_interval.jl") end
 
 println("Starting tests for get_endpoint")
-@testset "get_endpoint" begin include("test_get_endpoint.jl") end
-@testset "get_endpoint CICO_ONE_PASS" begin include("test_get_endpoint.jl") end
+@testset "get_endpoint CICO_ONE_PASS parameters" begin include("test_get_endpoint_parameters.jl") end
+@testset "get_endpoint CICO_ONE_PASS function" begin include("test_get_endpoint_scan_func.jl") end
 @testset "get_endpoint errors and warnings" begin include("test_get_endpoint_errors.jl") end
 
 println("Starting tests for all all methods of get_right_endpoint")
