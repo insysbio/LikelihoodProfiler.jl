@@ -133,10 +133,12 @@ function get_endpoint(
     scan_tol::Float64 = 1e-3,
     loss_tol::Float64 = 1e-3,
     local_alg::Symbol = :LN_NELDERMEAD,
+    loss_grad::Union{Function, Symbol} = :EMPTY,
     silent::Bool = false,
     kwargs... # other options for get_right_endpoint
     )
     isLeft = direction == :left
+    n_theta = length(theta_init)
 
     # checking arguments
     # theta_bound[1] < theta_init < theta_bound[2]
@@ -176,6 +178,7 @@ function get_endpoint(
     # transforming loss
     theta_init_gd = scaling.(theta_init, scale)
     if isLeft theta_init_gd[theta_num] *= -1 end # change direction
+
     function loss_func_gd(theta_gd)
         theta_g = copy(theta_gd)
         if isLeft theta_g[theta_num] *= -1 end # change direction
@@ -192,7 +195,7 @@ function get_endpoint(
             supreme_gd = theta_gd[theta_num]
         end
         # display current
-        supreme = if (isLeft && typeof(supreme_gd)!==Nothing) 
+        supreme = if (isLeft && typeof(supreme_gd)!==Nothing)
             unscaling(-supreme_gd, scale[theta_num])
         else
             unscaling(supreme_gd, scale[theta_num])
@@ -203,8 +206,37 @@ function get_endpoint(
     end
     theta_bounds_gd = scaling.(theta_bounds, scale)
     if isLeft theta_bounds_gd[theta_num] = (-1*theta_bounds_gd[theta_num][2], -1*theta_bounds_gd[theta_num][1]) end # change direction
+
     scan_bound_gd = scaling(scan_bound, scale[theta_num])
     if isLeft scan_bound_gd *= -1 end # change direction
+
+    # transform gradient
+    loss_grad_gd = loss_grad
+    loss_grad_gd = if isa(loss_grad, Function)
+        function(theta_gd)
+            theta_g = copy(theta_gd)
+            if isLeft theta_g[theta_num] *= -1 end # change direction
+            theta = unscaling.(theta_g, scale)
+            loss_grad_value = loss_grad(theta)
+            loss_grad_value_gd = zeros(n_theta)
+
+            for i in 1:n_theta
+                if scale[i] == :log
+                    loss_grad_value_gd[i] = loss_grad_value[i] * theta[i] * log(10.)
+                elseif scale[i] == :logit
+                    loss_grad_value_gd[i] = loss_grad_value[i] * theta[i] * (1. - theta[i]) * log(10.)
+                else # for :direct and :lin
+                    loss_grad_value_gd[i] = loss_grad_value[i]
+                end
+            end
+
+            if isLeft loss_grad_value_gd[theta_num] *= -1 end # change direction
+
+            return loss_grad_value_gd
+        end
+    else
+        loss_grad
+    end
 
     # calculate endpoint using base method
     (optf_gd, pp_gd, status) = get_right_endpoint(
@@ -217,6 +249,7 @@ function get_endpoint(
         scan_tol = scan_tol,
         loss_tol = loss_tol,
         local_alg = local_alg,
+        loss_grad = loss_grad_gd,
         kwargs...
     )
 
@@ -394,7 +427,7 @@ function get_endpoint(
     else
         scan_grad
     end
-    loss_grad_gd = loss_grad
+    
     loss_grad_gd = if isa(loss_grad, Function)
         function(theta_gd)
             theta = unscaling.(theta_gd, scale)
