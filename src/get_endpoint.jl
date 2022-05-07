@@ -120,8 +120,7 @@ function get_endpoint(
     direction::Symbol = :right;
 
     loss_crit::Float64 = 0.0,
-    # :direct, :lin, :log, :logit
-    scale::Vector{Symbol} = fill(:direct, length(theta_init)),
+    scale::Vector{Symbol} = fill(:direct, length(theta_init)), # :direct, :lin, :log, :logit
     theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
         fill((-Inf, Inf), length(theta_init)),
         scale
@@ -131,12 +130,13 @@ function get_endpoint(
         scale[theta_num]
         ),
     scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3,
+    loss_tol::Float64 = 0.,
     local_alg::Symbol = :LN_NELDERMEAD,
+    max_iter::Int = 10^5,
     loss_grad::Union{Function, Symbol} = :EMPTY,
     silent::Bool = false,
-    kwargs... # other options for get_right_endpoint
-    )
+    #kwargs... # other options for get_right_endpoint
+)
     isLeft = direction == :left
     n_theta = length(theta_init)
 
@@ -247,10 +247,12 @@ function get_endpoint(
         theta_bounds = theta_bounds_gd,
         scan_bound = scan_bound_gd,
         scan_tol = scan_tol,
-        loss_tol = loss_tol,
-        local_alg = local_alg,
-        loss_grad = loss_grad_gd,
-        kwargs...
+        #scan_rtol
+        loss_tol,
+        local_alg,
+        max_iter,
+        loss_grad = loss_grad_gd
+        #kwargs...
     )
 
     # transforming back
@@ -334,13 +336,14 @@ function get_endpoint(
         ),
     scan_bound::Float64 = (direction==:left) ? -1e9 : 1e9, # log scan bound is not implemented
     scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3,
+    loss_tol::Float64 = 0.,
     local_alg::Symbol = :LN_NELDERMEAD,
+    max_iter::Int = 10^5,
     scan_grad::Union{Function, Symbol} = :EMPTY,
     loss_grad::Union{Function, Symbol} = :EMPTY,
     silent::Bool = false,
-    kwargs... # other options for get_right_endpoint
-    )
+    #kwargs... # other options for get_right_endpoint
+)
     isLeft = direction == :left
     n_theta = length(theta_init)
     loss_init = loss_func(theta_init)
@@ -466,14 +469,17 @@ function get_endpoint(
         scan_func_gd,
         loss_func_gd,
         Val(method);
+
         theta_bounds = theta_bounds_gd,
         scan_bound = scan_bound_gd,
         scan_tol,
+        # scan_rtol, # not required
         loss_tol,
         local_alg,
+        max_iter,
         scan_grad = scan_grad_gd,
         loss_grad = loss_grad_gd,
-        kwargs...
+        #kwargs...
     )
 
     # transforming back

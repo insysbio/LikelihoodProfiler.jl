@@ -31,16 +31,18 @@ profile points and make your plot more smooth
         label --> "Identifiability level"
         seriestype --> :hline
         line := (2.5, :purple)
-        [pi.input.loss_crit]
+        [pi.input.options[:loss_crit]]
     end
 
-    if (pi.result[1].value != nothing) || (pi.result[2].value != nothing)
+    if !isa(pi.result[1].value, Nothing) || !isa(pi.result[2].value, Nothing)
         @series begin
             label --> "Identifiability inteval"
             seriestype --> :vline
             line := (2.1, :pink)
-            [pi.result[1].value != nothing ? pi.result[1].value : NaN,
-            pi.result[2].value != nothing ? pi.result[2].value : NaN]
+            [
+                !isa(pi.result[1].value, Nothing) ? pi.result[1].value : NaN,
+                !isa(pi.result[2].value, Nothing) ? pi.result[2].value : NaN
+            ]
 
             #[pi.result[1].value,pi.result[2].value]
         end
@@ -109,7 +111,7 @@ See `PlotUtils.adapted_grid`.
 function update_profile_points!(
     pi::ParamInterval;
     max_recursions::Int = 2
-    )
+)
     for ep in pi.result
         if ep.status != :SCAN_BOUND_REACHED
             ep_start = pi.input.theta_init[pi.input.theta_num]
@@ -121,10 +123,10 @@ function update_profile_points!(
                 pi.input.theta_init,
                 pi.input.theta_num,
                 pi.input.loss_func,
-                pi.input.local_alg,
-                pi.input.theta_bounds,
-                pi.input.loss_tol;
-                max_recursions = max_recursions
+                pi.input.options[:local_alg],
+                pi.input.options[:theta_bounds],
+                pi.input.options[:loss_tol];
+                max_recursions
             )
         else
             @info "$(string(ep.direction)) - a half-open interval"

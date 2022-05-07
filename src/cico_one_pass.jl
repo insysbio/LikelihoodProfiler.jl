@@ -10,7 +10,8 @@ function get_right_endpoint(
         ),
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3, # we have no ideas how to implement loss_tol, currently it is in `inequality_constraint!`
+    scan_rtol::Float64 = 0.,
+    loss_tol::Float64 = 0., # we have no idea how to implement loss_tol
     # better results for LN_NELDERMEAD, :LD_MMA, :LD_SLSQP, :LD_CCSAQ
     # worse results for :LN_COBYLA, :LN_PRAXIS
     # errors for :LN_BOBYQA, :LN_SBPLX, :LN_NEWUOA
@@ -19,8 +20,8 @@ function get_right_endpoint(
     max_iter::Int = 10^5,
     scan_grad::Union{Function, Symbol} = :EMPTY,
     loss_grad::Union{Function, Symbol} = :EMPTY,
-    kwargs...
-    )
+    #kwargs...
+)
     # dim of the theta vector
     n_theta = length(theta_init)
 
@@ -45,7 +46,8 @@ function get_right_endpoint(
 
     # optimizer
     local_opt = Opt(local_alg, n_theta)
-    ftol_abs!(local_opt, scan_tol) #ftol_abs
+    ftol_abs!(local_opt, scan_tol)
+    ftol_rel!(local_opt, scan_rtol)
     # local_opt.initial_step = fill(1., n_theta) # changes fitting but still unstable
 
     # flags to analyze fitting stop
@@ -108,7 +110,7 @@ function get_right_endpoint(
     inequality_constraint!(
         opt,
         constraints_func,
-        loss_tol
+        1e-3 # XXX: magic number, loss_tol
     )
 
     # version 1: internal :LN_AUGLAG box constrains
@@ -166,10 +168,13 @@ function get_right_endpoint(
         ),
     scan_bound::Float64 = 9.0,
     scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3,
+    scan_rtol::Float64 = 0.,
+    loss_tol::Float64 = 0.,
     local_alg::Symbol = :LN_NELDERMEAD,
-    kwargs... # for get_right_endpoint
-    )
+    max_iter::Int = 10^5,
+    loss_grad::Union{Function, Symbol} = :EMPTY,
+    #kwargs...
+)
     # checking arguments
     if theta_num > length(theta_init)
         throw(DomainError(theta_num, "theta_num exceed theta dimention"))
@@ -188,13 +193,16 @@ function get_right_endpoint(
         loss_func,
         method;
 
-        theta_bounds = theta_bounds,
-        scan_bound = scan_bound,
-        scan_tol = scan_tol,
-        loss_tol = loss_tol,
-        local_alg = local_alg,
-        scan_grad = scan_grad,
-        kwargs...
+        theta_bounds,
+        scan_bound,
+        scan_tol,
+        scan_rtol,
+        loss_tol,
+        local_alg,
+        max_iter,
+        scan_grad,
+        loss_grad
+        #kwargs...
     )
 end
 

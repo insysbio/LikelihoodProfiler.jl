@@ -2,12 +2,14 @@ using Plots
 # plotly()
 
 @testset "plot with no errors" begin
-    method = :LIN_EXTRAPOL
     res0 = [get_interval(
         [3., 2., 2.1],
         i,
         f_3p_1im_dep,
-        method;
+        :LIN_EXTRAPOL;
+        local_alg = :LN_NELDERMEAD,
+        theta_bounds = [(-12., 12.), (-12., 12.), (-12., 12.)],
+        loss_tol = 1e-3,
         loss_crit = 9.,
         silent = true
     ) for i in 1:3]

@@ -11,7 +11,7 @@
         scan_tol::Float64 # fitting tolerance for local optimizer (default - `1e-3`)
         loss_tol::Float64 # constraints tolerance
         local_alg::Symbol # local fitting algorithm (default - `:LN_NELDERMEAD`)
-        fitter_options::Any
+        options::Any
     end
 
 Structure storing input data for parameter identification
@@ -21,14 +21,16 @@ struct ParamIntervalInput
     theta_num::Int # number of the parameter for analysis
     scan_func::Function
     loss_func::Function # loss function
-    loss_crit::Float64 # loss function maximum value, "identifiability level"
+    method::Symbol
     scale::Vector{Symbol}
-    theta_bounds::Vector{Tuple{Float64, Float64}} # search bounds for id parameter
+    #loss_crit::Float64 # loss function maximum value, "identifiability level"
+    #scale::Vector{Symbol}
+    #theta_bounds::Vector{Tuple{Float64, Float64}} # search bounds for id parameter
     scan_bounds::Tuple{Float64,Float64}
-    scan_tol::Float64 # fitting tolerance for local optimizer (default - 1e-3)
-    loss_tol::Float64 # constraints tolerance
-    local_alg::Symbol # local fitting algorithm (default - :LN_NELDERMEAD)
-    fitter_options::Any
+    #scan_tol::Float64 # fitting tolerance for local optimizer (default - 1e-3)
+    #loss_tol::Float64 # constraints tolerance
+    #local_alg::Symbol # local fitting algorithm (default - :LN_NELDERMEAD)
+    options::Any
 end
 
 """
@@ -100,21 +102,13 @@ function get_interval(
     loss_func::Function,
     method::Symbol;
 
-    loss_crit::Float64 = 0.0,
     scale::Vector{Symbol} = fill(:direct, length(theta_init)),
-    theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
-        fill((-Inf, Inf), length(theta_init)),
-        scale
-        ),
     scan_bounds::Tuple{Float64,Float64} = unscaling.(
         (-9.0, 9.0),
         scale[theta_num]
         ),
-    scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3,
-    local_alg::Symbol = :LN_NELDERMEAD,
     kwargs... # other options for get_right_endpoint
-    )
+)
     # both endpoints
     endpoints = [get_endpoint(
         theta_init,
@@ -122,28 +116,20 @@ function get_interval(
         loss_func,
         method,
         [:left,:right][i]; # method
-        loss_crit = loss_crit,
-        scale = scale,
-        theta_bounds = theta_bounds,
+
+        scale,
         scan_bound = scan_bounds[i],
-        scan_tol = scan_tol,
-        loss_tol = loss_tol,
-        local_alg = local_alg,
         kwargs... # options for local fitter
         ) for i in 1:2]
 
     input = ParamIntervalInput(
         theta_init,
         theta_num,
-        (x)->x[theta_num],
+        (x) -> x[theta_num],
         loss_func,
-        loss_crit,
+        method,
         scale,
-        theta_bounds,
         scan_bounds,
-        scan_tol,
-        loss_tol,
-        local_alg,
         kwargs
         )
 
@@ -207,18 +193,13 @@ function get_interval(
     loss_func::Function,
     method::Symbol;
 
-    loss_crit::Float64 = 0.0,
     scale::Vector{Symbol} = fill(:direct, length(theta_init)),
-    theta_bounds::Vector{Tuple{Float64,Float64}} = unscaling.(
-        fill((-Inf, Inf), length(theta_init)),
-        scale
+    scan_bounds::Tuple{Float64,Float64} = unscaling.(
+        (-9.0, 9.0),
+        scale[theta_num]
         ),
-    scan_bounds::Tuple{Float64,Float64} = (-1e9, 1e9), # log scan bound is not implemented
-    scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3,
-    local_alg::Symbol = :LN_NELDERMEAD,
     kwargs... # other options for get_right_endpoint
-    )
+)
     # both endpoints
     endpoints = [get_endpoint(
         theta_init,
@@ -226,13 +207,9 @@ function get_interval(
         loss_func,
         method,
         [:left,:right][i]; # method
-        loss_crit = loss_crit,
-        scale = scale,
-        theta_bounds = theta_bounds,
+
+        scale,
         scan_bound = scan_bounds[i],
-        scan_tol = scan_tol,
-        loss_tol = loss_tol,
-        local_alg = local_alg,
         kwargs...
         ) for i in 1:2]
 
@@ -241,13 +218,9 @@ function get_interval(
         0,
         scan_func,
         loss_func,
-        loss_crit,
+        method,
         scale,
-        theta_bounds,
         scan_bounds,
-        scan_tol,
-        loss_tol,
-        local_alg,
         kwargs
         )
 
