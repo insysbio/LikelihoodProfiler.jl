@@ -343,6 +343,7 @@ function get_endpoint(
     )
     isLeft = direction == :left
     n_theta = length(theta_init)
+    loss_init = loss_func(theta_init)
 
     # checking arguments
     # theta_bound[1] < theta_init < theta_bound[2]
@@ -362,33 +363,24 @@ function get_endpoint(
         throw(ArgumentError(":logit scaled theta_bound min is outside range [0,1]: $(findall(less_than_zero_theta_bounds))"))
     end
     # loss_func(theta_init) < loss_crit
-    !(loss_func(theta_init) < loss_crit) &&
+    !(loss_init < loss_crit) &&
         throw(ArgumentError("Check theta_init and loss_crit: loss_func(theta_init) should be < loss_crit"))
 
     # set counter in the scope
     prog = ProgressUnknown("Fitter counter:"; spinner=false, enabled=!silent, showspeed=true)
     counter::Int = 0
-    # set supreme, maximal or minimal value of scanned parameter inside critical
+    # set supreme, maximal or minimal value of loss_func inside critical
     supreme_gd = nothing
-    loss_value = 0.
+    scan_val_gd = nothing
 
     # transforming
     theta_init_gd = scaling.(theta_init, scale)
     
     function scan_func_gd(theta_gd)
-        #theta_g = copy(theta_gd) # why copy?
         theta = unscaling.(theta_gd, scale)
         scan_val = scan_func(theta)
         scan_val_gd = isLeft ? (-1)*scan_val : scan_val
         
-        should_update = (loss_value < 0.) &&
-            (typeof(supreme_gd)==Nothing || (scan_val_gd > supreme_gd)) && 
-            !isa(loss_value, ForwardDiff.Dual) &&
-            !isa(scan_val_gd, ForwardDiff.Dual)
-        if should_update
-            supreme_gd = scan_val_gd
-        end
-
         return scan_val_gd
     end
 
@@ -399,6 +391,13 @@ function get_endpoint(
 
         counter += 1
         #println("$loss_value => $supreme_gd")
+        should_update = (loss_value < 0.) &&
+            !isa(scan_val_gd, Nothing) &&
+            (isa(supreme_gd, Nothing) || (scan_val_gd > supreme_gd)) &&
+            !isa(scan_val_gd, ForwardDiff.Dual)
+        if should_update
+            supreme_gd = scan_val_gd
+        end
         supreme = if isa(supreme_gd, Nothing)
             "-"
         elseif isLeft
@@ -406,7 +405,7 @@ function get_endpoint(
         else
             round(supreme_gd; sigdigits=4)
         end
-        ProgressMeter.update!(prog, counter, spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"; showvalues = [(:supreme,supreme)])
+        ProgressMeter.update!(prog, counter; showvalues = [(:supreme,supreme)])
 
         return loss_value
     end
