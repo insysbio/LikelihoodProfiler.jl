@@ -89,10 +89,11 @@ unscaling(::Nothing, ::Symbol) = nothing
             scale[theta_num]
             ),
         scan_tol::Float64 = 1e-3,
-        loss_tol::Float64 = 1e-3,
+        loss_tol::Float64 = 0.,
         local_alg::Symbol = :LN_NELDERMEAD,
-        silent::Bool = false,
-        kwargs...
+        max_iter::Int = 10^5,
+        loss_grad::Union{Function, Symbol} = :EMPTY,
+        silent::Bool = false
     )
 
 Calculates confidence interval's right or left endpoints for a given parameter `theta_num`.
@@ -108,9 +109,23 @@ Calculates confidence interval's right or left endpoints for a given parameter `
 - `direction`: `:right` or `:left` endpoint to estimate.
 
 ## Keyword arguments
+- `loss_crit` : critical level of loss function. Confidence interval's endpoint value is the intersection point of profile likelihood and `loss_crit` level.
+- `scale` : vector of scale transformations for each parameters' component. Possible values: `:direct` (`:lin`), `:log`, `:logit`. This option can speed up the optimization, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all parameters.
+- `theta_bounds` : vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
+- `scan_bound` : value which states the area of confidence point analysis.
+- `scan_tol` : Absolute tolerance for `theta_num` parameter used as termination criterion.
+- `loss_tol` : Absolute tolerance controlling `loss_func` closenes to `loss_crit` (termination criterion). Currently doesn't work for `:CICO_ONE_PASS` method because of limitation in `LN_AUGLAG` interface.
+- `local_alg` : algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package. 
+- `max_iter` : maximal number of fitter iterations. If reaches the result status will be `:MAX_ITER_STOP`.
+- `loss_grad` : For gradient optimization methods it is necessary to set how the gradient of `loss_func` should be calculated.
+    There are options:
+    - `:EMPTY` (default) no gradient is set. It works only for gradient-free methods.
+    - `:AUTODIFF` means autodifferentiation from `ForwardDiff` package is used.
+    - `:FINITE` means finite difference method from `Calculus` is used.
+    - It is also possible to set gradient function here `function(x::Vector{Float64})` which returns gradient vector.
 - `silent` : Boolean argument declaring whether we display the optimization progress. Default is `false`
 
-see also [`get_interval`](@ref)
+See also [`get_interval`](@ref)
 """
 function get_endpoint(
     theta_init::Vector{Float64},
@@ -246,8 +261,7 @@ function get_endpoint(
         Val(method);
         theta_bounds = theta_bounds_gd,
         scan_bound = scan_bound_gd,
-        scan_tol = scan_tol,
-        #scan_rtol
+        scan_tol,
         loss_tol,
         local_alg,
         max_iter,
@@ -299,7 +313,7 @@ end
             scale[theta_num]
             ),
         scan_tol::Float64 = 1e-3,
-        loss_tol::Float64 = 1e-3,
+        loss_tol::Float64 = 0.,
         local_alg::Symbol = :LN_NELDERMEAD,
         kwargs...
         )
@@ -317,8 +331,27 @@ Calculates confidence interval's right or left endpoints for a function of param
 - `direction`: `:right` or `:left` endpoint to estimate.
 
 ## Keyword arguments
-see [`get_interval`](@ref)
+- `loss_crit`: critical level of loss function. Confidence interval's endpoint value is the intersection point of profile likelihood and `loss_crit` level.
+- `scale`: vector of scale transformations for each parameters' component. Possible values: `:direct` (`:lin`), `:log`, `:logit`. This option can speed up the optimization, especially for wide `theta_bounds`. The default value is `:direct` (no transformation) for all parameters.
+- `theta_bounds`: vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
+- `scan_bound`: value which states the area of confidence point analysis.
+- `scan_tol`: Absolute tolerance for `theta_num` parameter used as termination criterion.  
+- `loss_tol`: Absolute tolerance controlling `loss_func` closenes to `loss_crit` (termination criterion). Currently doesn't work for `:CICO_ONE_PASS` method because of limitation in `LN_AUGLAG` interface.
+- `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package. 
+- `max_iter` : maximal number of fitter iterations. If reaches the result status will be `:MAX_ITER_STOP`.
+- `scan_grad` : For gradient optimization methods it is necessary to set how the gradient of `scan_func` should be calculated.
+    - `:EMPTY` (default) no gradient is set. It works only for gradient-free methods.
+    - `:AUTODIFF` means autodifferentiation from `ForwardDiff` package is used.
+    - `:FINITE` means finite difference method from `Calculus` is used.
+    - `function(x::Vector{Float64})` which returns gradient vector.
+- `loss_grad` : For gradient optimization methods it is necessary to set how the gradient of `loss_func` should be calculated.
+    - `:EMPTY` (default) no gradient is set. It works only for gradient-free methods.
+    - `:AUTODIFF` means autodifferentiation from `ForwardDiff` package is used.
+    - `:FINITE` means finite difference method from `Calculus` is used.
+    - `function(x::Vector{Float64})` which returns gradient vector.
+- `silent` : Boolean argument declaring whether we display the optimization progress. Default is `false`
 
+See also [`get_interval`](@ref)
 """
 function get_endpoint(
     theta_init::Vector{Float64},
@@ -473,7 +506,6 @@ function get_endpoint(
         theta_bounds = theta_bounds_gd,
         scan_bound = scan_bound_gd,
         scan_tol,
-        # scan_rtol, # not required
         loss_tol,
         local_alg,
         max_iter,

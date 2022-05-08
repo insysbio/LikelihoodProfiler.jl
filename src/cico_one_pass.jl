@@ -155,7 +155,7 @@ function get_right_endpoint(
     end
 
     return res
-end # get_right_endpoint
+end
 
 function get_right_endpoint(
     theta_init::Vector{Float64}, # initial point of parameters
@@ -205,5 +205,3 @@ function get_right_endpoint(
         #kwargs...
     )
 end
-
-# struct OutOfBoundException <: Exception end

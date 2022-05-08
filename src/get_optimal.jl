@@ -33,7 +33,7 @@ Currently it uses standard NLopt optimization but allows to use parameter scalin
 - `scan_tol`: Absolute tolerance for all component of theta used as termination criterion.  
 - `loss_tol`: Absolute tolerance controlling `loss_func`.
 - `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package.
-- `max_iter` : maximal number of optimizator iterations.
+- `max_iter` : maximal number of optimizer iterations.
 - `loss_grad` : This option declares the method for calcuting loss function gradient.
         This is required for gradient-based methods. The possible values
         - `:EMPTY` (default) not gradient is set. IT works only for gradient-free methods.
