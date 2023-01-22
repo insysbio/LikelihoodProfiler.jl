@@ -114,7 +114,7 @@ Calculates confidence interval's right or left endpoints for a given parameter `
 - `theta_bounds` : vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
 - `scan_bound` : value which states the area of confidence point analysis.
 - `scan_tol` : Absolute tolerance for `theta_num` parameter used as termination criterion.
-- `loss_tol` : Absolute tolerance controlling `loss_func` closenes to `loss_crit` (termination criterion). Currently doesn't work for `:CICO_ONE_PASS` method because of limitation in `LN_AUGLAG` interface.
+- `loss_tol` : Absolute tolerance controlling `loss_func` closeness to `loss_crit` (termination criterion). Currently doesn't work for `:CICO_ONE_PASS` method because of limitation in `LN_AUGLAG` interface.
 - `local_alg` : algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package. 
 - `max_iter` : maximal number of fitter iterations. If reaches the result status will be `:MAX_ITER_STOP`.
 - `loss_grad` : For gradient optimization methods it is necessary to set how the gradient of `loss_func` should be calculated.
@@ -336,7 +336,7 @@ Calculates confidence interval's right or left endpoints for a function of param
 - `theta_bounds`: vector of tuple `(lower_bound, upper_bound)` for each parameter. Bounds define the ranges for possible parameter values. Default bounds are `(-Inf,Inf)`.
 - `scan_bound`: value which states the area of confidence point analysis.
 - `scan_tol`: Absolute tolerance for `theta_num` parameter used as termination criterion.  
-- `loss_tol`: Absolute tolerance controlling `loss_func` closenes to `loss_crit` (termination criterion). Currently doesn't work for `:CICO_ONE_PASS` method because of limitation in `LN_AUGLAG` interface.
+- `loss_tol`: Absolute tolerance controlling `loss_func` closeness to `loss_crit` (termination criterion). Currently doesn't work for `:CICO_ONE_PASS` method because of limitation in `LN_AUGLAG` interface.
 - `local_alg`: algorithm of optimization. Derivative-free and gradient-based algorithms form NLopt package. 
 - `max_iter` : maximal number of fitter iterations. If reaches the result status will be `:MAX_ITER_STOP`.
 - `scan_grad` : For gradient optimization methods it is necessary to set how the gradient of `scan_func` should be calculated.

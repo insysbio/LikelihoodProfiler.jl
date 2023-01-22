@@ -74,12 +74,12 @@ function get_right_endpoint(
             return (nothing, pps, :MAX_ITER_STOP)
         elseif point_2.ret == :FORCED_STOP
             return (nothing, pps, :LOSS_ERROR_STOP)
-        elseif x_2 >= scan_bound && point_2.loss < 0. # successfull result
+        elseif x_2 >= scan_bound && point_2.loss < 0. # successful result
             return (nothing, pps, :SCAN_BOUND_REACHED)
         # no checking for the first iteration
-        elseif iteration_count>1 && isapprox((x_2 - x_1) * point_2.loss / (point_2.loss - point_1.loss), 0., atol = scan_tol) # successfull result
+        elseif iteration_count>1 && isapprox((x_2 - x_1) * point_2.loss / (point_2.loss - point_1.loss), 0., atol = scan_tol) # successful result
             return (x_2, pps, :BORDER_FOUND_BY_SCAN_TOL)
-        elseif isapprox(point_2.loss, 0., atol = loss_tol) # successfull result
+        elseif isapprox(point_2.loss, 0., atol = loss_tol) # successful result
             return (x_2, pps, :BORDER_FOUND_BY_LOSS_TOL)
         end
 
