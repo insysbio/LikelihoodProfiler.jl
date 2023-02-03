@@ -140,10 +140,10 @@ function get_right_endpoint(
     elseif ret == :MAXEVAL_REACHED
         pp = ProfilePoint[]
         res = (nothing, pp, :MAX_ITER_STOP)
-    elseif (ret == :FORCED_STOP || ret == :FAILURE) && out_of_bound # successfull result
+    elseif (ret == :FORCED_STOP || ret == :FAILURE) && out_of_bound # successful result
         pp = ProfilePoint[]
         res = (nothing, pp, :SCAN_BOUND_REACHED)
-    elseif ret == :FTOL_REACHED # successfull result
+    elseif ret == :FTOL_REACHED # successful result
         loss = loss_func(optx)
         pp = [ ProfilePoint(optf, loss, optx, ret, nothing) ]
         res = (optf, pp, :BORDER_FOUND_BY_SCAN_TOL)
@@ -177,7 +177,7 @@ function get_right_endpoint(
 )
     # checking arguments
     if theta_num > length(theta_init)
-        throw(DomainError(theta_num, "theta_num exceed theta dimention"))
+        throw(DomainError(theta_num, "theta_num exceed theta dimension"))
     end
 
     scan_func(theta::Vector) = theta[theta_num]

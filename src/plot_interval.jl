@@ -36,7 +36,7 @@ profile points and make your plot more smooth
 
     if !isa(pi.result[1].value, Nothing) || !isa(pi.result[2].value, Nothing)
         @series begin
-            label --> "Identifiability inteval"
+            label --> "Identifiability interval"
             seriestype --> :vline
             line := (2.1, :pink)
             [
