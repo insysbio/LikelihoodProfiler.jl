@@ -29,7 +29,7 @@ Notebooks with use cases can be found in a separate repository: <https://github.
 ```julia
 julia> ]
 
-(v1.5) pkg> add LikelihoodProfiler
+(v1.7) pkg> add LikelihoodProfiler
 ```
 
 ## Quick start
