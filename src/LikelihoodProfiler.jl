@@ -13,6 +13,7 @@ Four functions are exported from this module for public use:
 module LikelihoodProfiler
 
 using NLopt, ForwardDiff
+using ADNLPModels, Percival
 using Calculus
 using LinearAlgebra
 using RecipesBase
@@ -26,6 +27,7 @@ include("get_interval.jl")
 include("cico_one_pass.jl")
 include("method_lin_extrapol.jl")
 include("method_quadr_extrapol.jl")
+include("percival.jl")
 include("profile.jl")
 include("plot_interval.jl")
 include("show.jl")

@@ -8,10 +8,12 @@ repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
 version = "0.5.0"
 
 [deps]
+ADNLPModels = "54578032-b7ea-4c30-94aa-7cbd1cce6c9a"
 Calculus = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
+Percival = "01435c0c-c90d-11e9-3788-63660f8fbccc"
 PlotUtils = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
