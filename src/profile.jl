@@ -43,6 +43,8 @@ function _profile(
         #xtol_abs!(opt, 0.)
         lower_bounds!(opt, lb)
         upper_bounds!(opt, ub)
+        #initial_step!(opt, fill(1., theta_length - 1))
+        
         # profile function
         return (x::Float64; theta_init_i::Vector{Float64} = theta_init, maxeval::Int = maxeval) -> begin
             # to count loss function calls inside profile

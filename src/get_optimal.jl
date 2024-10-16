@@ -78,14 +78,6 @@ function get_optimal(
     end
     
     # checking arguments
-    # when using :LN_NELDERMEAD initial parameters should not be zero
-    if local_alg == :LN_NELDERMEAD
-        zeroParameter = [isapprox(theta_init[i], 0., atol=1e-2) for i in 1:n_theta]
-        if any(zeroParameter)
-            @warn "Close-to-zero parameters found when using :LN_NELDERMEAD."
-            show(findall(zeroParameter))
-        end
-    end
 
     # checking loss_grad
     is_gradient = occursin(r"^LD_", String(local_alg))
@@ -151,6 +143,28 @@ function get_optimal(
     opt.xtol_abs = scan_tol
     opt.min_objective = loss_func_g
     opt.maxeval = max_iter
+
+    # scale initial step based on 1.0 in log scale XXX: magic number
+    #=
+    # select initial step Δx for x0 :log = 1., :direct = log(10) * x0, :logit = 1. / (1. - x0)
+    steps = Float64[]
+    for i in 1:n_theta
+        if scale[i] == :log
+            push!(steps, INITIAL_STEP_BASE)
+        elseif scale[i] == :logit 
+            push!(steps, 1. / (1. - theta_init[i]) * INITIAL_STEP_BASE)
+        elseif scale[i] == :direct
+            push!(steps, log(10.) * abs(theta_init[i]) * INITIAL_STEP_BASE)
+        else
+            throw(ArgumentError("Unknown scale: $(scale[i])"))
+        end
+    end
+    =#
+    # equal step for all scales
+    #=
+    steps = fill(INITIAL_STEP_BASE, n_theta)
+    initial_step!(opt, steps)
+    =#
 
     # version 1: internal :LN_AUGLAG box constrains
     theta_bounds_g = scaling.(theta_bounds, scale)

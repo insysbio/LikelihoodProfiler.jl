@@ -24,16 +24,6 @@ function get_right_endpoint(
 )
     # dim of the theta vector
     n_theta = length(theta_init)
-
-    # checking arguments
-    # when using :LN_NELDERMEAD initial parameters should not be zero
-    if local_alg == :LN_NELDERMEAD
-        zeroParameter = [ isapprox(theta_init[i], 0., atol=1e-2) for i in 1:n_theta]
-        if any(zeroParameter)
-            @warn "Close-to-zero parameters found when using :LN_NELDERMEAD."
-            show(findall(zeroParameter))
-        end
-    end
     
     # checking scan_grad, loss_grad
     is_gradient = occursin(r"^LD_", String(local_alg))
@@ -48,7 +38,7 @@ function get_right_endpoint(
     local_opt = Opt(local_alg, n_theta)
     ftol_abs!(local_opt, scan_tol)
     ftol_rel!(local_opt, scan_rtol)
-    # local_opt.initial_step = fill(1., n_theta) # changes fitting but still unstable
+    #initial_step!(local_opt, fill(1., n_theta))
 
     # flags to analyze fitting stop
     out_of_bound::Bool = false
