@@ -188,7 +188,7 @@ function get_endpoint(
     supreme_gd = nothing
 
     # progress info
-    prog = ProgressUnknown("$direction CP counter:"; spinner=false, enabled=!silent, showspeed=true)
+    prog = ProgressUnknown(; desc = "$direction CP counter:", spinner=false, enabled=!silent, showspeed=true)
 
     # transforming loss
     theta_init_gd = scaling.(theta_init, scale)
@@ -403,7 +403,7 @@ function get_endpoint(
         throw(ArgumentError("Check theta_init and loss_crit: loss_func(theta_init) should be < loss_crit"))
 
     # set counter in the scope
-    prog = ProgressUnknown("Fitter counter:"; spinner=false, enabled=!silent, showspeed=true)
+    prog = ProgressUnknown(; desc = "Fitter counter:", spinner=false, enabled=!silent, showspeed=true)
     counter::Int = 0
     # set supreme, maximal or minimal value of loss_func inside critical
     supreme_gd = nothing

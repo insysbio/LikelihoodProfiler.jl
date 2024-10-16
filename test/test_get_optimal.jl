@@ -98,7 +98,7 @@ end
     @test res3.ret == :FTOL_REACHED
 end
 
-f_2p(x) = 5.0 + (x[1]-3.0)^2 + (x[2]-4.0)^2
+#f_2p(x) = 5.0 + (x[1]-3.0)^2 + (x[2]-4.0)^2
 grad_2p(x) = [2*(x[1]-3.), 2*(x[2]-4.), 0.]
 
 @testset "testing get_optimal() for :LD_MMA and f_2p, nonidentifiable" begin

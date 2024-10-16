@@ -94,7 +94,7 @@ function get_optimal(
     end
 
     # progress info
-    prog = ProgressUnknown("Fitter counter:"; spinner=false, enabled=!silent, showspeed=true)
+    prog = ProgressUnknown(; desc = "Fitter counter:", spinner=false, enabled=!silent, showspeed=true)
     counter = 0
     supreme = nothing
 

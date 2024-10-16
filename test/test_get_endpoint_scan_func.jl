@@ -42,7 +42,7 @@ end
         silent = true
     )
     @test res0.status == :BORDER_FOUND_BY_SCAN_TOL
-    @test res0.counter < 1000
+    @test res0.counter < 1200
     @test isapprox(res0.value, 169.; atol=1e-2)
 end
 

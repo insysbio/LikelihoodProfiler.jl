@@ -23,9 +23,9 @@ for method = methods_list
               Val(method),
               max_iter = 5
           ) for i in 1:2]
-          @test res0[1][1] == nothing
+          @test res0[1][1] === nothing
           @test res0[1][3] == :MAX_ITER_STOP
-          @test res0[2][1] == nothing
+          @test res0[2][1] === nothing
           @test res0[2][3] == :MAX_ITER_STOP
       end
 
