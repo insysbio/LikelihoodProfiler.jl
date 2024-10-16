@@ -42,17 +42,18 @@ function get_right_endpoint(
 
     # flags to analyze fitting stop
     out_of_bound::Bool = false
-    #constraints_func_error = false
 
     function constraints_func(x, g) # testing grad methods
         # function constraints_func(x) # testing grad methods    
         # this part is necessary to understand the difference between
         # "stop out of bounds" and "stop because of function call error"
+        # in NLopt >= 1.0.2 we need to throw ForcedStop() to stop optimization
         loss_value = try
             loss_func(x)
         catch e
             @warn "Error when call loss_func($x)"
-            throw(e)
+            # throw(e) # last wersion for NLopt <= 1.0.1 when there was no difference between ForcedStop and Error
+            throw(NLopt.ForcedStop()) # XXX: temporary solution to suport both NLopt versions: 0.6 and 1.0.3
         end
         
         if (loss_value < 0.) && (scan_func(x) > scan_bound)

@@ -56,11 +56,12 @@ function _profile(
             loss_func_rest = (theta_rest::Array{Float64, 1}, g::Array{Float64, 1}) -> begin
                 theta_full = copy(theta_rest)
                 splice!(theta_full, theta_num:(theta_num-1), x)
-                try
-                    loss = loss_func(theta_full)
+                loss = try
+                    loss_func(theta_full)
                 catch e
                     @warn "Error when call loss_func($theta_full)"
-                    throw(e)
+                    #throw(e)
+                    throw(NLopt.ForcedStop())
                 end
                 counter += 1 # update counter
 

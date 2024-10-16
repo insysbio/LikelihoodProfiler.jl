@@ -2,7 +2,7 @@
 
 julia_version = "1.10.5"
 manifest_format = "2.0"
-project_hash = "f70812060e59088a3abfb6247b6fdbfe1c728917"
+project_hash = "4f4ab5d02f80052e938b11717ed7b9c9f3ca7a5b"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -13,6 +13,11 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+
+[[deps.CEnum]]
+git-tree-sha1 = "389ad5c84de1ae7cf0e28e381131c98ea87d54fc"
+uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
+version = "0.5.0"
 
 [[deps.Calculus]]
 deps = ["LinearAlgebra"]
@@ -196,10 +201,10 @@ uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2023.1.10"
 
 [[deps.NLopt]]
-deps = ["NLopt_jll"]
-git-tree-sha1 = "d1d09c342c3dd9b3bae985b088bd928632e4d79e"
+deps = ["CEnum", "NLopt_jll"]
+git-tree-sha1 = "81a321298aed95631447a1f3afc2ea83682d44a4"
 uuid = "76087f3c-5699-56af-9a33-bf431cd00edd"
-version = "1.0.1"
+version = "1.1.1"
 
     [deps.NLopt.extensions]
     NLoptMathOptInterfaceExt = ["MathOptInterface"]
