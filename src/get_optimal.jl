@@ -146,7 +146,7 @@ function get_optimal(
     
     # initial step for optimization
     theta_step_auto = initial_step(opt, theta_init_g) # for testing
-    theta_step = [(x == 0. ? 1. : copy(x)) for x in theta_init_g]
+    theta_step = [(x == 0. ? 1. : copy(x)) for x in theta_init_g] # same as auto
     initial_step!(opt, theta_step)
 
     # version 1: internal :LN_AUGLAG box constrains
