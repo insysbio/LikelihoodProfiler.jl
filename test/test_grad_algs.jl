@@ -17,7 +17,7 @@ grad_algorithms_autodiff = [
     (algorithm = :LD_VAR1, skip = [:f_3p_1im, :f_4p_2im, :f_4p_3im, :f_5p_3im, :f_2p])  # Shifted limited-memory variable-metric (rank 1)
 ]
 
-[test_alg(alg; bounds=(-1e10,1e10), loss_grad=:AUTODIFF) for alg in grad_algorithms_autodiff]
+[test_alg_interval(alg; bounds=(-1e10,1e10), loss_grad=:AUTODIFF) for alg in grad_algorithms_autodiff]
 
 grad_algorithms_finite = [
     # good
@@ -34,4 +34,4 @@ grad_algorithms_finite = [
     (algorithm = :LD_VAR1, skip = [:f_3p_1im, :f_4p_2im, :f_4p_3im, :f_5p_3im, :f_2p])  # Shifted limited-memory variable-metric (rank 1)
 ]
 
-[test_alg(alg; bounds=(-1e10,1e10), loss_grad=:FINITE) for alg in grad_algorithms_finite]
+[test_alg_interval(alg; bounds=(-1e10,1e10), loss_grad=:FINITE) for alg in grad_algorithms_finite]

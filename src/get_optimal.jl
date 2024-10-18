@@ -8,7 +8,7 @@
             fill((-Inf, Inf), length(theta_init)),
             scale
             ),
-        scan_tol::Float64 = 1e-3,
+        scan_tol::union{Float64,Nothing} = nothing,
         loss_tol::Float64 = 1e-3,
         local_alg::Symbol = :LN_NELDERMEAD,
         silent::Bool = false,
@@ -50,8 +50,8 @@ function get_optimal(
         fill((-Inf, Inf), length(theta_init)),
         scale
         ),
-    scan_tol::Float64 = 1e-3,
-    loss_tol::Float64 = 1e-3,
+    scan_tol::Union{Float64,Nothing} = nothing,
+    loss_tol::Float64 = 0.,
     local_alg::Symbol = :LN_NELDERMEAD,
     silent::Bool = false,
     max_iter::Int = 10^5,
@@ -139,8 +139,8 @@ function get_optimal(
     end
 
     opt = Opt(local_alg, n_theta)
-    opt.ftol_abs = loss_tol
-    opt.xtol_abs = scan_tol
+    loss_tol !== 0. && (opt.ftol_abs = loss_tol)
+    scan_tol !== nothing && (opt.xtol_abs = scan_tol)
     opt.min_objective = loss_func_g
     opt.maxeval = max_iter
 

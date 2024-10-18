@@ -39,5 +39,7 @@ println("Starting tests for get_optimal")
 
 # experimental tests
 
-@testset "testing derivative-free algorithms" begin include("test_deriv_free_algs.jl") end
-@testset "gradient-based algorithms" begin include("test_grad_algs.jl") end
+#@testset "testing derivative-free algorithms" begin include("test_deriv_free_algs.jl") end
+#@testset "gradient-based algorithms" begin include("test_grad_algs.jl") end
+
+@testset "get_optimal series" begin include("test_get_optimal_series.jl") end
