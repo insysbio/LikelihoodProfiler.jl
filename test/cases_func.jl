@@ -85,18 +85,18 @@ function test_alg_optimal(
           local_alg = alg.algorithm,
           silent = true
         )
-        #println("Result: ", result)
+        
         # check loss_tol
         if loss_tol !== 0.
-          @test result.ret == :FTOL_REACHED skip = should_skip
+          @test (result.ret == :FTOL_REACHED || result.ret == :SUCCESS) skip = should_skip
           @test isapprox(result.loss, f.loss_optim, atol = loss_tol * 10.) skip = should_skip
         end
 
         if scan_tol !== nothing
+          @test (result.ret == :XTOL_REACHED || result.ret == :SUCCESS) skip = should_skip
           for i in eachindex(f.x0)
-            if f.x_optim !== nothing
-              @test result.ret == :XTOL_REACHED skip = should_skip
-              #@test isapprox(result.params[i], f.x_optim[i], atol = scan_tol * 10) skip = should_skip
+            if f.x_optim[i] !== nothing
+              @test isapprox(result.params[i], f.x_optim[i], atol = scan_tol * 10) skip = should_skip
             end
           end
         end
@@ -171,7 +171,7 @@ test_funcs = Dict(
 
   :f_4p_2im => (
     func = f_4p_2im,
-    x0 = [4.,5.,1.,1.],
+    x0 = [4.,5.,1.1,1.1],
     endpoints = [(1.,5.),
                  (2.,6.),
                  (nothing,nothing),

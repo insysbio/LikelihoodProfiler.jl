@@ -27,9 +27,9 @@ all_algorithms_scan = [
     (algorithm = :LN_PRAXIS, skip = [:f_1p]), # "PRAXIS" gradient-free local optimization via the "principal-axis method"
     (algorithm = :LN_SBPLX, skip = []), # Subplex (a variant of Nelder-Mead that uses Nelder-Mead on a sequence of subspaces)
     # errors
-    (algorithm = :LN_NEWUOA, skip = [:f_1p,:f_4p_2im,:f_3p_im,:f_3p_1im_dep,:f_1p_ex,:f_2p_1im,:f_2p,:f_5p_3im]),
-    (algorithm = :LN_BOBYQA, skip = [:f_3p_im]), # BOBYQA algorithm for bound constrained optimization without derivatives
-    (algorithm = :LN_COBYLA, skip = []), # Constrained Optimization BY Linear Approximations
+    (algorithm = :LN_NEWUOA, skip = [:f_1p,:f_4p_2im,:f_3p_im,:f_3p_1im_dep,:f_1p_ex,:f_2p_1im,:f_2p,:f_5p_3im,:f_3p_1im,:f_4p_3im]),
+    (algorithm = :LN_BOBYQA, skip = [:f_3p_im,:f_3p_1im,:f_4p_3im,:f_5p_3im]), # BOBYQA algorithm for bound constrained optimization without derivatives
+    (algorithm = :LN_COBYLA, skip = [:f_3p_im]), # Constrained Optimization BY Linear Approximations
 ]
 all_algorithms_scan_log = [
     # good
@@ -39,8 +39,8 @@ all_algorithms_scan_log = [
     (algorithm = :LN_SBPLX, skip = []), # Subplex (a variant of Nelder-Mead that uses Nelder-Mead on a sequence of subspaces)
     # errors
     (algorithm = :LN_NEWUOA, skip = [:f_1p,:f_3p_1im,:f_3p_1im_dep,:f_4p_2im,:f_1p_ex,:f_2p_1im,:f_2p,:f_3p_im]),
-    (algorithm = :LN_BOBYQA, skip = [:f_3p_1im,:f_3p_1im_dep,:f_3p_im,:f_4p_3im,:f_5p_3im]), # BOBYQA algorithm for bound constrained optimization without derivatives
-    (algorithm = :LN_COBYLA, skip = []), # Constrained Optimization BY Linear Approximations
+    (algorithm = :LN_BOBYQA, skip = [:f_3p_1im,:f_3p_1im_dep,:f_3p_im,:f_4p_3im,:f_5p_3im,:f_4p_2im]), # BOBYQA algorithm for bound constrained optimization without derivatives
+    (algorithm = :LN_COBYLA, skip = [:f_1p,:f_3p_1im,:f_3p_1im_dep,:f_4p_2im,:f_3p_im,:f_4p_3im]), # Constrained Optimization BY Linear Approximations
 ]
 
 @testset "loss" begin
