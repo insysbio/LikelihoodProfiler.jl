@@ -38,7 +38,9 @@ function get_right_endpoint(
     local_opt = Opt(local_alg, n_theta)
     ftol_abs!(local_opt, scan_tol)
     ftol_rel!(local_opt, scan_rtol)
-    #initial_step!(local_opt, fill(1., n_theta))
+    # XXX: testing
+    #is_auto = initial_step(local_opt, theta_init)
+    #initial_step!(local_opt, is_auto)
 
     # flags to analyze fitting stop
     out_of_bound::Bool = false
@@ -47,7 +49,7 @@ function get_right_endpoint(
         # function constraints_func(x) # testing grad methods    
         # this part is necessary to understand the difference between
         # "stop out of bounds" and "stop because of function call error"
-        # in NLopt >= 1.0.2 we need to throw ForcedStop() to stop optimization
+        # in NLopt >= 1.0.2 we need to0 throw ForcedStop() to stop optimization
         loss_value = try
             loss_func(x)
         catch e
@@ -88,6 +90,9 @@ function get_right_endpoint(
     # constrain optimizer
     opt = Opt(:LN_AUGLAG, n_theta)
     ftol_abs!(opt, scan_tol)
+    # XXX: testing
+    #is_auto_glob = initial_step(opt, theta_init)
+    #initial_step!(opt, is_auto_glob)
 
     max_objective!(
         opt,

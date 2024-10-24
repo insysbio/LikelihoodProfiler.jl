@@ -52,9 +52,9 @@ end
 end
 
 @testset "scan" begin
-    [test_alg_optimal(alg; scan_tol = 1e-4) for alg in all_algorithms_scan] 
+    [test_alg_optimal(alg; scan_tol = 1e-6) for alg in all_algorithms_scan] 
 end
 
 @testset "scan :log" begin
-    [test_alg_optimal(alg; scan_tol = 1e-4, scale = :log, bounds = (0.,Inf)) for alg in all_algorithms_scan_log] 
+    [test_alg_optimal(alg; scan_tol = 1e-5, scale = :log, bounds = (0.,Inf)) for alg in all_algorithms_scan_log] 
 end

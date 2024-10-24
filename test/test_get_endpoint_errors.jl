@@ -40,7 +40,7 @@ end
 
 @testset "wrong theta_init in log scale" begin
     method = :CICO_ONE_PASS
-    @test_throws ArgumentError get_endpoint(
+    @test_throws ArgumentError get_endpoint( # DomainError instead of ArgumentError
         [3., 2., -1],
         1,
         f_3p_1im_dep,
