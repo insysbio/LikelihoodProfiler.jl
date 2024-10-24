@@ -3,6 +3,9 @@
 # Pkg.add("RecipesBase")
 
 using LikelihoodProfiler, Test
+using NLopt
+
+NLopt.srand(12345)
 
 include("./cases_func.jl")
 methods_list = [:CICO_ONE_PASS, :LIN_EXTRAPOL, :QUADR_EXTRAPOL]
