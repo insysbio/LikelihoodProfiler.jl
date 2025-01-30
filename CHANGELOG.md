@@ -1,10 +1,15 @@
 # Change Log
 
+## 0.5.2
+
+- fix NLopt compatibility
+
 ## 0.5.1
 
 - add method `get_optimal`
 - update gradient-based interface, `loss_grad`, `scan_grad` options
 - support of `loss_grad`, `scan_grad` as explicit functions
+- update NLopt
 
 ## 0.5.0
 
