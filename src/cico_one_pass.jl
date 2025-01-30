@@ -38,29 +38,12 @@ function get_right_endpoint(
     local_opt = Opt(local_alg, n_theta)
     ftol_abs!(local_opt, scan_tol)
     ftol_rel!(local_opt, scan_rtol)
-    # XXX: testing
-    #is_auto = initial_step(local_opt, theta_init)
-    #initial_step!(local_opt, is_auto)
 
-    # flags to analyze fitting stop
-    out_of_bound::Bool = false
-
-    function constraints_func(x, g) # testing grad methods
-        # function constraints_func(x) # testing grad methods    
-        # this part is necessary to understand the difference between
-        # "stop out of bounds" and "stop because of function call error"
-        # in NLopt >= 1.0.2 we need to0 throw ForcedStop() to stop optimization
-        loss_value = try
-            loss_func(x)
-        catch e
-            @warn "Error when call loss_func($x)"
-            # throw(e) # last wersion for NLopt <= 1.0.1 when there was no difference between ForcedStop and Error
-            throw(NLopt.ForcedStop()) # XXX: temporary solution to suport both NLopt versions: 0.6 and 1.0.3
-        end
+    function constraints_func(x, g) # testing grad methods    
+        loss_value = loss_func(x)
         
         if (loss_value < 0.) && (scan_func(x) > scan_bound)
-            out_of_bound = true
-            throw(NLopt.ForcedStop())
+            throw(NLopt.ForcedStop()) # stop optimization because of scan_bound reached
         elseif length(g) > 0
           if isa(loss_grad, Function)
             g .= loss_grad(x)
@@ -90,9 +73,6 @@ function get_right_endpoint(
     # constrain optimizer
     opt = Opt(:LN_AUGLAG, n_theta)
     ftol_abs!(opt, scan_tol)
-    # XXX: testing
-    #is_auto_glob = initial_step(opt, theta_init)
-    #initial_step!(opt, is_auto_glob)
 
     max_objective!(
         opt,
@@ -128,15 +108,18 @@ function get_right_endpoint(
     =#
 
     # start optimization
-    (optf, optx, ret) = optimize(opt, theta_init)
+    # TODO: just throw error if optimization fails, not :LOSS_ERROR_STOP
+    (optf, optx, ret) = try 
+        optimize(opt, theta_init)
+    catch e
+        @warn "Error when call optimize($opt, $theta_init)"
+        return (nothing, ProfilePoint[], :LOSS_ERROR_STOP)
+    end
 
-    if ret == :FORCED_STOP && !out_of_bound
-        pp = ProfilePoint[]
-        res = (nothing, pp, :LOSS_ERROR_STOP)
-    elseif ret == :MAXEVAL_REACHED
+    if ret == :MAXEVAL_REACHED
         pp = ProfilePoint[]
         res = (nothing, pp, :MAX_ITER_STOP)
-    elseif (ret == :FORCED_STOP || ret == :FAILURE) && out_of_bound # successful result
+    elseif ret == :FORCED_STOP || ret == :FAILURE # successful result
         pp = ProfilePoint[]
         res = (nothing, pp, :SCAN_BOUND_REACHED)
     elseif ret == :FTOL_REACHED # successful result
