@@ -33,50 +33,6 @@ end
 grad_error() = throw(ArgumentError("Gradient is not provided. Use `OptimizationFunction` either with a valid AD backend https://docs.sciml.ai/Optimization/stable/API/ad/ or a provided 'grad' function."))
 hess_error() = throw(ArgumentError("Hessian is not provided. Use `OptimizationFunction` either with a valid AD backend https://docs.sciml.ai/Optimization/stable/API/ad/ or a provided 'hess' function."))
 
-
-# tmp fix to interpret correctly NLopt retcodes
-function deduce_retcode(retcode::Symbol)
-  if retcode == :Default || retcode == :DEFAULT
-      return ReturnCode.Default
-  elseif retcode == :Success || retcode == :EXACT_SOLUTION_LEFT ||
-         retcode == :FLOATING_POINT_LIMIT || retcode == :true || retcode == :OPTIMAL ||
-         retcode == :LOCALLY_SOLVED || retcode == :ROUNDOFF_LIMITED || retcode == :SUCCESS ||
-        
-         # tmp fix to return correct status
-         retcode == :SUCCESS || retcode == :STOPVAL_REACHED || retcode == :FTOL_REACHED || retcode == :XTOL_REACHED
-      
-      return ReturnCode.Success
-  elseif retcode == :Terminated
-      return ReturnCode.Terminated
-  elseif retcode == :MaxIters || retcode == :MAXITERS_EXCEED ||
-         retcode == :MAXEVAL_REACHED
-      return ReturnCode.MaxIters
-  elseif retcode == :MaxTime || retcode == :TIME_LIMIT
-      return ReturnCode.MaxTime
-  elseif retcode == :DtLessThanMin
-      return ReturnCode.DtLessThanMin
-  elseif retcode == :Unstable
-      return ReturnCode.Unstable
-  elseif retcode == :InitialFailure
-      return ReturnCode.InitialFailure
-  elseif retcode == :ConvergenceFailure || retcode == :ITERATION_LIMIT
-      return ReturnCode.ConvergenceFailure
-  elseif retcode == :Failure || retcode == :false ||
-
-      # tmp fix to return correct status
-      retcode == :FAILURE || retcode == :OUT_OF_MEMORY || retcode == :INVALID_ARGS || retcode == :FORCED_STOP
-      
-      return ReturnCode.Failure
-  elseif retcode == :Infeasible || retcode == :INFEASIBLE ||
-         retcode == :DUAL_INFEASIBLE || retcode == :LOCALLY_INFEASIBLE ||
-         retcode == :INFEASIBLE_OR_UNBOUNDED
-      return ReturnCode.Infeasible
-  else
-      return ReturnCode.Failure
-  end
-end
-
-
 # helper type used in parameter profiling
 struct FixedParamCache{P}
   p::P

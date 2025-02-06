@@ -6,8 +6,7 @@ using Reexport
 @reexport using DataFrames
 using LinearAlgebra, DataInterpolations
 using Distributions
-using OptimizationBase 
-import Optimization: deduce_retcode # tmp, waiting for the NLopt fix
+using OptimizationBase
 using RecipesBase
 
 abstract type AbstractProfile end
