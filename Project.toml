@@ -1,0 +1,42 @@
+name = "LikelihoodProfiler"
+uuid = "93acb638-a083-5915-8dce-d129bc6a3f59"
+keywords = ["identifiability", "modeling", "simulations", "sciml", "profile likelihood"]
+license = "MIT"
+desc = "Practical identifiability analysis and confidence intervals estimation"
+authors = ["ivborissov <iv.borissov@gmail.com>", "metelkin <evgeny.metelkin@gmail.com>"]
+repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
+version = "0.5.2"
+
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+OptimizationBase = "bca83a33-5cc9-4baa-983d-23429ab6bcbb"
+PreallocationTools = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
+RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+
+[compat]
+DataFrames = "1.7.0"
+DataInterpolations = "6.5.2"
+ForwardDiff = "0.10.36"
+OptimizationBase = "2.4.0"
+Optimization = "4.1.1"
+OptimizationNLopt = "0.3.1"
+RecipesBase = "1.1"
+Reexport = "1.2.2"
+SciMLBase = "2.0"
+julia = "1.10"
+
+[extras]
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
+OptimizationNLopt = "4e6fcdb7-1186-4e1f-a706-475e75c168bb"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test", "Plots", "ForwardDiff", "Optimization", "OptimizationNLopt", "OrdinaryDiffEq"]
