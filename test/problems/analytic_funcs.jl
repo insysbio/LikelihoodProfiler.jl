@@ -118,6 +118,17 @@ funcs_dict = Dict(
     :retcode => [(:Identifiable,:Identifiable),
                 (:Identifiable,:Identifiable)]
   ),
+  :f_5p => Dict(
+    # Two global minima: x = [1, 1] and x = [2, 1]
+    :func => (x,p) -> 20 * (x[1]^2 - 3 * x[1] + 2)^2 + (x[2] - 1)^2,
+    :optim => [2.,1.],
+    :threshold => 4.0,
+    :ci => [(((3 - sqrt(9 - 4*(2 - 1/sqrt(5)))) / 2),((3 + sqrt(9 - 4*(2 - 1/sqrt(5)))) / 2)),
+            (-1.,3.),],
+    :profile_range => [(-20.,20.),(-20.,20.)],
+    :retcode => [(:Identifiable,:Identifiable),
+                (:Identifiable,:Identifiable)]
+  ),
 #=
   :f_4p_3im => Dict(
     :func => (x,p) -> 5.0 + (x[1]-3.0)^2 + (x[2]/x[3]-4.0)^2 + 0.0*x[4], 
