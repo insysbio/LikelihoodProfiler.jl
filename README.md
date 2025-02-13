@@ -59,7 +59,7 @@ method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedS
 sol = profile(plprob, method)
 plot(sol, size=(800,300))
 ```
-![Rosenbrock optimization-based profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/develop/docs/assets/rosenbrock_optimization.png)
+![Rosenbrock optimization-based profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/dev/docs/assets/rosenbrock_optimization.png)
 
 The same `profile` interface can be used with other profiling methods. For example a more advanced way to compute profiles is proposed by `IntegrationProfiler`. It obtains the profiles as the solution to the differential equation system. In order to solve this internally generated system we need to provide a differential equations solver (`integrator`). 
 
@@ -70,7 +70,7 @@ method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.3,
 sol = profile(plprob, method)
 plot(sol, size=(800,300))
 ```
-![Rosenbrock integration-based profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/develop/docs/assets/rosenbrock_integration.png)
+![Rosenbrock integration-based profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/dev/docs/assets/rosenbrock_integration.png)
 
 Likelihood profiling is mostly performed to assess if the profile has intersections with the given confidence level, hence if the parameter (or functions) has finite confidence intervals. Another approach to the problem of practical identifiability is to compute these intersections (endpoints of the confidence interval (CI)) without restoring the full shape of the profile. On of such methods is implemented in `CICOProfiler`. It estimates CI endpoints with an optimization procedure without following the exact trajectory of the profile. 
 
