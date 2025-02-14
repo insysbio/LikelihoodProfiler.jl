@@ -63,16 +63,61 @@ function build_scimlprob(plprob::PLProblem, method::IntegrationProfiler)
   return ODEProblem(odef, zeros(lp+1), xspan, p)
 end
 
-function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:hessian})
+function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:identity})
   lp = length(optpars)
   cache_mat = DiffCache(zeros(lp, lp))
   cache_vec = DiffCache(similar(optpars))
 
   function ode_func(dz, z, p, x)
     lhs_mat = get_tmp(cache_mat, z)
+    idx = get_idx(p)
+
+    gamma = 1.0
+
+    # Identity matrix
+    lhs_mat .= zero(eltype(lhs_mat))
+    for i in 1:size(lhs_mat, 1)
+      lhs_mat[i, i] = one(eltype(lhs_mat))
+    end
+    lhs_mat = -lhs_mat
+
+    # Augmented matrix (lhs)
+    e_i = zero(z)[1:lp]'
+    e_i[idx] = 1
+    lhs = [
+      lhs_mat e_i'
+      e_i     0      # ±e_i
+    ]
+
+    # Gradient (rhs)
+    grad! = optf.grad
+    rhs = zero(z)[1:lp]
+    grad!(rhs, view(z, 1:lp))
+    rhs = -gamma*rhs
+    rhs = vcat(rhs, 1)
+
+    dz .= pinv(lhs) * rhs
+  end
+end
+
+function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:hessian})
+  lp = length(optpars)
+  cache_mat = DiffCache(zeros(lp, lp))
+  cache_vec = DiffCache(similar(optpars))
+
+ function ode_func(dz, z, p, x)
+    #=
+    Assume Θ2 is fixed. Solve the following linear system
+
+    ∂^2 L / ∂^2 Θ1      ∂^2 L / ∂ Θ1 ∂ Θ2   0           dΘ1/dC        0
+    ∂^2 L / ∂ Θ1 ∂ Θ2   ∂^2 L / ∂^2 Θ2      1     *     dΘ2/dC   =    0
+    0                   1                   0           dλ/dC         1
+
+    We note that dΘ2/dC = 1 and eliminate it from the system.
+    =#
+    lhs_mat = get_tmp(cache_mat, z)
     rhs_vec = get_tmp(cache_vec, z)
     idx = get_idx(p)
-    x_fixed = get_x_fixed(p)
 
     hess! = optf.hess
     hess!(lhs_mat, view(z, 1:lp))
@@ -91,9 +136,9 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:hessian})
     for i in 1:lp
       lhs_mat[i, end] = 0.0
     end
-    lhs_mat[idx, end] = x_fixed
+    lhs_mat[idx, end] = 1.0
 
-    fill_x_full!(dz, pinv(lhs_mat)*rhs_vec, idx, x_fixed)
+    fill_x_full!(dz, pinv(lhs_mat)*rhs_vec, idx, 1.0)
   end
 end
 

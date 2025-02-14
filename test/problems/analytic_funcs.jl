@@ -119,7 +119,9 @@ funcs_dict = Dict(
                 (:Identifiable,:Identifiable)]
   ),
   :f_5p => Dict(
-    # Two global minima: x = [1, 1] and x = [2, 1]
+    # Two global minima: x = [1, 1] and x = [2, 1].
+    # The profile for the first parameter has three stationary points,
+    # two of which are global minimum.
     :func => (x,p) -> 20 * (x[1]^2 - 3 * x[1] + 2)^2 + (x[2] - 1)^2,
     :optim => [2.,1.],
     :threshold => 4.0,
