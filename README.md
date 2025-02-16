@@ -1,7 +1,7 @@
 # LikelihoodProfiler
-*A package for [practical identifiability analysis](https://en.wikipedia.org/wiki/Identifiability_analysis) and confidence intervals estimation using profile likelihood approach. The package provides a single interface to different profile likelihood methods.*
+*A package for [practical identifiability analysis](https://en.wikipedia.org/wiki/Identifiability_analysis) and confidence intervals (CI) estimation using profile likelihood approach. The package provides a single interface to different profile likelihood methods, including optimization-based, integration-based profiles, CI endpoints search and more.*
 
-#### !!! LikelihoodProfiler package underwent a huge redevelopment and now provides a single interface to different profile likelihood methods. If you are looking for a the CICO algorithm (initially implemented in LikelihoodProfiler package) you can use it through the new LikelihoodProfiler interface or directly with [CICO.jl package](https://github.com/insysbio/CICO.jl).
+#### !!! LikelihoodProfiler package underwent a huge redevelopment and now provides a single interface to different profile likelihood methods. If you are looking for a the CICO algorithm (initially implemented in LikelihoodProfiler package) you can use it through the new LikelihoodProfiler interface or directly with [CICOBase.jl package](https://github.com/insysbio/CICOBase.jl).
 
 #### !!! The new interface is at an early stage. Feedback and contributions are very welcome!  
 
@@ -41,7 +41,7 @@ sol = solve(optprob, Optimization.LBFGS())
 To define the `PLProblem` we need the `OptimizationProblem` and the optimal values of the parameters. Also we can set profiling domain with `profile_range` argument and `threshold` which is the confidence level required to estimate confidence intervals. Please, consult `?PLProblem` on the details of the interface.
 
 ```julia
-using LikelihoodProfiler
+using LikelihoodProfiler, Plots
 
 # optimal values of the parameters
 optpars = sol.u
