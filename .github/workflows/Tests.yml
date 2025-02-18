@@ -6,6 +6,7 @@ on:
     branches:
       - master
       - dev
+      - cicoext
     tags: '*'
 jobs:
   test:

@@ -1,5 +1,5 @@
 using LikelihoodProfiler
-using Test, Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq
+using Test, Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
 
 const step = 0.3
 const atol = step/2
@@ -17,7 +17,7 @@ function test_plmethod(method, funcs_dict)
       optprob = OptimizationProblem(optf, _f[:optim])
       plprob = PLProblem(optprob, _f[:optim], _f[:profile_range]; threshold=_f[:threshold])
 
-      sol = profile(plprob, method)
+      sol = LikelihoodProfiler.profile(plprob, method)
       for i in eachindex(_f[:optim])
         ret = get_retcodes(sol[i])
         ci = get_endpoints(sol[i])
@@ -51,11 +51,10 @@ end
   
 end
 
-#=
 @testset "Analytic funcs. CICOProfiler" begin
 
-  method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-3)
+  method = CICOProfiler(optimizer = :LN_SBPLX, scan_tol = 1e-3)
   test_plmethod(method, funcs_dict)
   
 end
-=#
+

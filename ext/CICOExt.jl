@@ -1,25 +1,28 @@
 module CICOExt
 
-using CICO: get_endpoint, EndPoint
+using LikelihoodProfiler, CICOBase
 
-function build_scimlprob(plprob::PLProblem, method::CICOProfiler)
+function LikelihoodProfiler.build_scimlprob(plprob::PLProblem, method::CICOProfiler)
   return nothing
 end
 
-function __profile_dir(plprob::PLProblem, method::CICOProfiler, sciml_prob, idx::Int, dir::Int; verbose=true, kwargs...)
+function LikelihoodProfiler.__profile_dir(plprob::PLProblem, method::CICOProfiler, sciml_prob, idx::Int, dir::Int; verbose=false, kwargs...)
   
   verbose && @info "Computing initial values."
-  optprob = get_optprob(plprob)
-  optpars = get_optpars(plprob)
-  threshold = get_threshold(plprob)
+  optprob = LikelihoodProfiler.get_optprob(plprob)
+  optpars = LikelihoodProfiler.get_optpars(plprob)
+  threshold = LikelihoodProfiler.get_threshold(plprob)
   
-  obj0 = compute_optf(optprob, optpars)
+  x0 = optpars[idx]
+  obj0 = LikelihoodProfiler.compute_optf(optprob, optpars)
   obj_level = obj0 + threshold
   
-  profile_range = get_profile_range(plprob)
+  profile_range = LikelihoodProfiler.get_profile_range(plprob)
   profile_lb, profile_ub = profile_range isa Tuple ? profile_range : profile_range[idx]
   
-  optprob_range = tuple.(optprob.lb, optprob.ub)
+  optprob_lb = isnothing(optprob.lb) ? -Inf : optprob.lb
+  optprob_ub = isnothing(optprob.ub) ? Inf : optprob.ub
+  optprob_range = tuple.(optprob_lb, optprob_ub)
   optprob_bounds = optprob_range isa Tuple ? fill(optprob_range, length(optpars)) : optprob_range
 
   if dir == 1 
@@ -32,28 +35,34 @@ function __profile_dir(plprob::PLProblem, method::CICOProfiler, sciml_prob, idx:
 
   verbose && @info "Computing $direction-side profile"
 
-  ep = get_endpoint(optpars, idx, x->optprob.f.f(x,SciMLBase.NullParameters()), :CICO_ONE_PASS, direction;
-    loss_crit = obj_level, theta_bounds=optprob_bounds, scan_bound=profile_bound, local_alg=get_local_alg(method), scan_tol=get_scan_tol(method), silent=!verbose)
+  ep = CICOBase.get_endpoint(optpars, idx, x->optprob.f.f(x,LikelihoodProfiler.SciMLBase.NullParameters()), :CICO_ONE_PASS, direction;
+    loss_crit = obj_level, theta_bounds=optprob_bounds, scan_bound=profile_bound, local_alg=LikelihoodProfiler.get_optimizer(method), scan_tol=LikelihoodProfiler.get_scan_tol(method), silent=!verbose)
 
-  return cico_to_profile_values(plprob, ep, obj_level)
+  return cico_to_profile_values(plprob, ep, optpars, x0, obj0, obj_level)
 end
 
-function cico_to_profile_values(plprob::PLProblem, ep::EndPoint, obj_level)
+function cico_to_profile_values(plprob::PLProblem, ep::CICOBase.EndPoint, optpars, x0, obj0, obj_level)
 
-  pars = ep.profilePoints[1].params 
-  x = ep.value
-  obj = ep.profilePoints[1].loss
+  ep_retcode = cico_deduce_retcode(ep.status)
+  ep_val = ep.value
 
   if isleft(ep)
-    retcodes = (cico_deduce_retcode(ep.status), :NonIdentifiable)
-    endpoints = (x, nothing)
+    pars = ep_retcode == :Identifiable ? [ep.profilePoints[1].params, optpars] : [optpars]
+    x = ep_retcode == :Identifiable ? [ep_val, x0] : [x0]
+    obj = ep_retcode == :Identifiable ? [ep.profilePoints[1].loss, obj0] : [obj0]
+    retcodes = (ep_retcode, :NonIdentifiable)
+    endpoints = (ep_val, nothing)
     stats = ((nf=ep.counter,), nothing)
   else
-    retcodes = (:NonIdentifiable, cico_deduce_retcode(ep.status))
-    endpoints = (nothing ,x) 
+    pars = ep_retcode == :Identifiable ? [optpars, ep.profilePoints[1].params] : [optpars]
+    x = ep_retcode == :Identifiable ? [x0, ep_val] : [x0]
+    obj = ep_retcode == :Identifiable ? [obj0, ep.profilePoints[1].loss] : [obj0]
+    retcodes = (:NonIdentifiable, ep_retcode)
+    endpoints = (nothing, ep_val) 
     stats = (nothing, nf=ep.counter)
   end
-  return ProfileValues(Val(false), plprob, pars, x, obj, obj_level, retcodes, endpoints, stats)
+
+  return LikelihoodProfiler.ProfileValues(Val(false), plprob, pars, x, obj, obj_level, retcodes, endpoints, stats)
 end
 
 function cico_deduce_retcode(retcode::Symbol)
@@ -68,7 +77,7 @@ function cico_deduce_retcode(retcode::Symbol)
   end
 end
 
-isleft(ep::Endpoint) = ep.direction == :left
+isleft(ep::CICOBase.EndPoint) = ep.direction == :left
 
 
 end #module
