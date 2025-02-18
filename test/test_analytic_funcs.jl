@@ -46,7 +46,23 @@ end
 
 @testset "Analytic funcs. IntegrationProfiler with full hessian" begin
 
-  method = IntegrationProfiler(integrator = FBDF(autodiff=false), integrator_opts = (dtmax=step,), matrix_type = :hessian)
+  method = IntegrationProfiler(
+    integrator = FBDF(autodiff=false), 
+    integrator_opts = (dtmax=step,), 
+    matrix_type = :hessian
+  )
+  test_plmethod(method, funcs_dict)
+  
+end
+
+@testset "Analytic funcs. IntegrationProfiler with identity matrix" begin
+
+  method = IntegrationProfiler(
+    integrator = FBDF(autodiff=false), 
+    integrator_opts = (dtmax=step,), 
+    matrix_type = :identity,
+    gamma=1.0
+  )
   test_plmethod(method, funcs_dict)
   
 end

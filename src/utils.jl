@@ -35,18 +35,20 @@ hess_error() = throw(ArgumentError("Hessian is not provided. Use `OptimizationFu
 
 # helper type used in parameter profiling
 struct FixedParamCache{P}
-  p::P
+  p::Base.RefValue{P}
   idx::Base.RefValue{Int}
   x_fixed::Base.RefValue{Float64}
 end
 
 function FixedParamCache(p, idx::Int, x_fixed::Real)
   _p = isnothing(p) ? SciMLBase.NullParameters() : p
-  return FixedParamCache{typeof(_p)}(_p, Ref(idx), Ref(float(x_fixed)))
+  return FixedParamCache{typeof(_p)}(Ref(_p), Ref(idx), Ref(float(x_fixed)))
 end
 
+get_p(p::FixedParamCache{P}) where {P} = p.p[]
 get_idx(p::FixedParamCache) = p.idx[]
 get_x_fixed(p::FixedParamCache) = p.x_fixed[]
+set_p!(p::FixedParamCache{P}, new_p::P) where {P} = p.p[] = new_p
 set_idx!(p::FixedParamCache, idx::Int) = p.idx[] = idx
 set_x_fixed!(p::FixedParamCache, x_fixed::Float64) = p.x_fixed[] = x_fixed
 
