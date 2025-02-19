@@ -22,6 +22,7 @@ SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 [compat]
 DataFrames = "1.7.0"
 DataInterpolations = "6.5.2"
+DiffEqBase = "~6.162"
 ForwardDiff = "0.10.36"
 OptimizationBase = "2.4.0"
 Optimization = "4.1.1"
