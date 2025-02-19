@@ -66,37 +66,18 @@ end
 
 function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:identity})
   lp = length(optpars)
-  cache_mat = DiffCache(zeros(lp, lp))
   cache_vec = DiffCache(similar(optpars))
 
   function ode_func(dz, z, p, x)
-    lhs_mat = get_tmp(cache_mat, z)
     rhs_vec = get_tmp(cache_vec, z)
     idx = get_idx(p)
-
-    # Identity matrix
-    lhs_mat .= zero(eltype(lhs_mat))
-    for i in 1:size(lhs_mat, 1)
-      lhs_mat[i, i] = one(eltype(lhs_mat))
-    end
-    lhs_mat = -lhs_mat
-
-    # Augmented matrix (lhs)
-    e_i = zero(z)[1:lp]'
-    e_i[idx] = 1
-    lhs = [
-      lhs_mat e_i'
-      e_i     0      # ±e_i
-    ]
-
-    # Gradient (rhs)
     gamma = get_p(p)
+
     grad! = optf.grad
     grad!(rhs_vec, view(z, 1:lp))
-    rhs_vec = gamma*rhs_vec
-    rhs_vec =  vcat(rhs_vec, one(eltype(rhs_vec)))
-
-    dz .= pinv(lhs) * rhs_vec
+    dz[1:lp] .= .- gamma .* rhs_vec
+    dz[idx] = one(dz[idx])
+    dz[end] = rhs_vec[idx] + dz[idx]
   end
 end
 
