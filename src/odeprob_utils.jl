@@ -41,6 +41,7 @@ function solver_init(sciml_prob::SciMLBase.AbstractODEProblem,
   sciml_prob.tspan = (x0, profile_bound)
 
   # update p values
+  set_p!(sciml_prob.p, -get_p(sciml_prob.p))
   set_idx!(sciml_prob.p, idx)
   set_x_fixed!(sciml_prob.p, 1.0)
   
@@ -65,38 +66,18 @@ end
 
 function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:identity})
   lp = length(optpars)
-  cache_mat = DiffCache(zeros(lp, lp))
   cache_vec = DiffCache(similar(optpars))
 
   function ode_func(dz, z, p, x)
-    lhs_mat = get_tmp(cache_mat, z)
+    rhs_vec = get_tmp(cache_vec, z)
     idx = get_idx(p)
+    gamma = get_p(p)
 
-    gamma = 1.0
-
-    # Identity matrix
-    lhs_mat .= zero(eltype(lhs_mat))
-    for i in 1:size(lhs_mat, 1)
-      lhs_mat[i, i] = one(eltype(lhs_mat))
-    end
-    lhs_mat = -lhs_mat
-
-    # Augmented matrix (lhs)
-    e_i = zero(z)[1:lp]'
-    e_i[idx] = 1
-    lhs = [
-      lhs_mat e_i'
-      e_i     0      # ±e_i
-    ]
-
-    # Gradient (rhs)
     grad! = optf.grad
-    rhs = zero(z)[1:lp]
-    grad!(rhs, view(z, 1:lp))
-    rhs = -gamma*rhs
-    rhs = vcat(rhs, 1)
-
-    dz .= pinv(lhs) * rhs
+    grad!(rhs_vec, view(z, 1:lp))
+    dz[1:lp] .= .- gamma .* rhs_vec
+    dz[idx] = one(dz[idx])
+    dz[end] = rhs_vec[idx] + dz[idx]
   end
 end
 

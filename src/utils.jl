@@ -34,7 +34,7 @@ grad_error() = throw(ArgumentError("Gradient is not provided. Use `OptimizationF
 hess_error() = throw(ArgumentError("Hessian is not provided. Use `OptimizationFunction` either with a valid AD backend https://docs.sciml.ai/Optimization/stable/API/ad/ or a provided 'hess' function."))
 
 # helper type used in parameter profiling
-struct FixedParamCache{P}
+mutable struct FixedParamCache{P}
   p::P
   idx::Base.RefValue{Int}
   x_fixed::Base.RefValue{Float64}
@@ -45,8 +45,10 @@ function FixedParamCache(p, idx::Int, x_fixed::Real)
   return FixedParamCache{typeof(_p)}(_p, Ref(idx), Ref(float(x_fixed)))
 end
 
+get_p(p::FixedParamCache{P}) where {P} = p.p
 get_idx(p::FixedParamCache) = p.idx[]
 get_x_fixed(p::FixedParamCache) = p.x_fixed[]
+set_p!(p::FixedParamCache{P}, new_p::P) where {P} = p.p = new_p
 set_idx!(p::FixedParamCache, idx::Int) = p.idx[] = idx
 set_x_fixed!(p::FixedParamCache, x_fixed::Float64) = p.x_fixed[] = x_fixed
 
