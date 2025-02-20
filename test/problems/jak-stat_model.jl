@@ -53,7 +53,8 @@ ode_jakstat_prob(p) = ODEProblem(stat5_ode, eltype(p).(u0), tspan, p)
 
 # solver algorithm, tolerances
 solver_opts = Dict(
-    :alg => AutoTsit5(Rodas5P()),
+    # NOTE: AutoTsit5(Rodas5P()) seems not working
+    :alg => AutoTsit5(Rosenbrock23()),
     :reltol => 1e-6,
     :abstol => 1e-8
 )
