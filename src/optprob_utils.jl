@@ -124,7 +124,7 @@ function build_optprob_reduced(optprob::OptimizationProblem, optpars)
   end
   =#
   #OptimizationProblem(optf_reduced, u0_reduced, lb_reduced, ub_reduced)
-  remake(optprob, f=optf_reduced, u0=u0_reduced, p=FixedParamCache(optprob.p, 1, u0_full[1]), lb=lb_reduced, ub=ub_reduced)
+  remake(optprob, f=optf_reduced, u0=u0_reduced, p=FixedParamCache(optprob.p, 1, u0_full[1], 1.0), lb=lb_reduced, ub=ub_reduced)
 end
 
 #build_optf_reduced(plprob::PLProblem, method) = nothing
