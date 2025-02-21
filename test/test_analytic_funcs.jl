@@ -67,6 +67,18 @@ end
   
 end
 
+# @testset "Analytic funcs. IntegrationProfiler with Fisher matrix" begin
+
+#   method = IntegrationProfiler(
+#     integrator = AutoVern7(Rodas5()), 
+#     integrator_opts = (dtmax=step,), 
+#     matrix_type = :fisher,
+#     gamma=1e-1
+#   )
+#   test_plmethod(method, funcs_dict)
+  
+# end
+
 #=
 @testset "Analytic funcs. CICOProfiler" begin
 

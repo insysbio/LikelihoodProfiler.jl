@@ -41,7 +41,7 @@ function solver_init(sciml_prob::SciMLBase.AbstractODEProblem,
   sciml_prob.tspan = (x0, profile_bound)
 
   # update p values
-  set_p!(sciml_prob.p, -get_p(sciml_prob.p))
+  set_gamma!(sciml_prob.p, -get_gamma(sciml_prob.p))
   set_idx!(sciml_prob.p, idx)
   set_x_fixed!(sciml_prob.p, 1.0)
   
@@ -59,7 +59,7 @@ function build_scimlprob(plprob::PLProblem, method::IntegrationProfiler)
 
   gamma = get_gamma(method)
   xspan = (optpars[1], Inf)
-  p = FixedParamCache(gamma, 1, 1.0)
+  p = FixedParamCache(gamma, 1, 1.0, gamma)
 
   return ODEProblem(odef, zeros(lp+1), xspan, p)
 end
@@ -71,13 +71,62 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:identity})
   function ode_func(dz, z, p, x)
     rhs_vec = get_tmp(cache_vec, z)
     idx = get_idx(p)
-    gamma = get_p(p)
+    gamma = get_gamma(p)
 
     grad! = optf.grad
     grad!(rhs_vec, view(z, 1:lp))
     dz[1:lp] .= .- gamma .* rhs_vec
     dz[idx] = one(dz[idx])
     dz[end] = rhs_vec[idx] + dz[idx]
+  end
+end
+
+function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:fisher})
+  lp = length(optpars)
+  cache_mat = DiffCache(zeros(lp, lp))
+  cache_vec = DiffCache(similar(optpars))
+
+  function ode_func(dz, z, p, x)
+    #=
+    - Fisher information, definition:
+
+        I_ij = 𝔼_Θ (∂ log L / ∂ Θi) (∂ log L / ∂ Θj)
+
+    - We have access to L and ∇L:
+
+        ∂ log L / ∂ Θ  =  (∂ L / ∂ Θ) / L
+                              ^
+                              ∇L
+
+        I_ij = 𝔼_Θ (∂ L / ∂ Θi) (∂ L / ∂ Θj) / (L^2)
+
+    - Compute I as follows:
+
+        I = 𝔼_[Θ=Θ0] (∇L ∇L.T) / (L^2)
+
+    =#
+    # Todo for Sasha: do not use pinv
+
+    lhs_mat = get_tmp(cache_mat, z)
+    rhs_vec = get_tmp(cache_vec, z)
+    idx = get_idx(p)
+    gamma = get_gamma(p)
+
+    grad! = optf.grad
+    grad!(rhs_vec, view(z, 1:lp))
+    # Todo for Sasha: write the correct formula
+    rhs_vec = 1 ./ rhs_vec
+    lhs_mat = rhs_vec[1:lp] * rhs_vec[1:lp]'
+
+    e_i = zero(z)[1:lp]'
+    e_i[idx] = 1
+    lhs = [
+      lhs_mat   e_i'
+      e_i       0
+    ]
+    rhs = vcat(.- gamma .* (1 ./ rhs_vec), 1)
+
+    dz .= pinv(lhs) * rhs
   end
 end
 
