@@ -67,6 +67,20 @@ end
   
 end
 
+@testset "Analytic funcs. IntegrationProfiler with identity matrix + reoptimize" begin
+
+  method = IntegrationProfiler(
+    integrator = Rosenbrock23(autodiff=false),
+    integrator_opts = (dtmax=0.3,),
+    matrix_type = :identity,
+    gamma=0.2,            # (!!!) select "bad" gamma
+    reoptimize=true,
+    optimizer = Optimization.LBFGS()
+  )
+  test_plmethod(method, funcs_dict)
+
+end
+
 # @testset "Analytic funcs. IntegrationProfiler with Fisher matrix" begin
 
 #   method = IntegrationProfiler(

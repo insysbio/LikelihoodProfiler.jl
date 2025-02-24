@@ -44,8 +44,31 @@ function solver_init(sciml_prob::SciMLBase.AbstractODEProblem,
   set_gamma!(sciml_prob.p, -get_gamma(sciml_prob.p))
   set_idx!(sciml_prob.p, idx)
   set_x_fixed!(sciml_prob.p, 1.0)
+
+  # If reoptimize is requested, then create an optimization problem, create an
+  # optimizer state, and register a callback.
+  callback = nothing
+  if method.reoptimize
+    sciml_prob_opt = build_optprob_reduced(deepcopy(plprob.optprob), deepcopy(plprob.optpars))
+    solver_state_opt = solver_init(sciml_prob_opt, deepcopy(plprob), method, idx, dir, profile_bound)
+    condition(u, t, integrator) = true
+    function affect!(integrator)
+      set_x_fixed!(solver_state_opt.reinit_cache.p, integrator.u[idx])
+      solver_state_opt.reinit_cache.u0 = integrator.u[1:end-1][1:end .!= idx]
+      sol = solve!(solver_state_opt)
+      for i in 1:length(integrator.u)-1
+        i == idx && continue
+        integrator.u[i] = sol[i - (i>idx)]
+      end
+    end
+    callback = DiscreteCallback(condition, affect!)
+  end
   
-  return SciMLBase.init(sciml_prob, get_integrator(method); get_integrator_opts(method)...)
+  return SciMLBase.init(
+    sciml_prob, get_integrator(method);
+    get_integrator_opts(method)...,
+    callback=callback
+  )
 end
 
 
