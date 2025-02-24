@@ -89,10 +89,9 @@ end
 
 function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:identity})
   lp = length(optpars)
-  cache_vec = DiffCache(similar(optpars))
+  rhs_vec = similar(optpars)
 
   function ode_func(dz, z, p, x)
-    rhs_vec = get_tmp(cache_vec, z)
     idx = get_idx(p)
     gamma = get_gamma(p)
 
@@ -106,8 +105,9 @@ end
 
 function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:fisher})
   lp = length(optpars)
-  cache_mat = DiffCache(zeros(lp, lp))
-  cache_vec = DiffCache(similar(optpars))
+  T = eltype(optpars)
+  lhs_mat = zeros(T, lp, lp)
+  rhs_vec = similar(optpars)
 
   function ode_func(dz, z, p, x)
     #=
@@ -130,8 +130,6 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:fisher})
     =#
     # Todo for Sasha: do not use pinv
 
-    lhs_mat = get_tmp(cache_mat, z)
-    rhs_vec = get_tmp(cache_vec, z)
     idx = get_idx(p)
     gamma = get_gamma(p)
 
@@ -155,8 +153,9 @@ end
 
 function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:hessian})
   lp = length(optpars)
-  cache_mat = DiffCache(zeros(lp, lp))
-  cache_vec = DiffCache(similar(optpars))
+  T = eltype(optpars)
+  lhs_mat = zeros(T, lp, lp)
+  rhs_vec = similar(optpars)
 
  function ode_func(dz, z, p, x)
     #=
@@ -168,8 +167,7 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:hessian})
 
     We note that dΘ2/dC = 1 and eliminate it from the system.
     =#
-    lhs_mat = get_tmp(cache_mat, z)
-    rhs_vec = get_tmp(cache_vec, z)
+
     idx = get_idx(p)
 
     hess! = optf.hess
@@ -187,9 +185,9 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:hessian})
       end
     end
     for i in 1:lp
-      lhs_mat[i, end] = 0.0
+      lhs_mat[i, end] = zero(T)
     end
-    lhs_mat[idx, end] = 1.0
+    lhs_mat[idx, end] = one(T)
 
     fill_x_full!(dz, pinv(lhs_mat)*rhs_vec, idx, 1.0)
   end
