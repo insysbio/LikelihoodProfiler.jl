@@ -1,4 +1,4 @@
-module CICOExt
+module CICOBaseExt
 
 using LikelihoodProfiler, CICOBase
 

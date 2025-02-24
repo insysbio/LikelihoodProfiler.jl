@@ -66,15 +66,15 @@ end
   
 end
 
-#=
+
 @testset "SIR model. CICOProfiler" begin
   
   idxs = 1:3
-  method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-3)
-  sol = profile(plprob, method)
+  atol=1e-3
+  method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
+  sol = LikelihoodProfiler.profile(plprob, method)
   for i in idxs
-    test_sir(sol, i)
+    test_sir(sol, i; atol)
   end
   
 end
-=#

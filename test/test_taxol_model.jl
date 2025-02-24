@@ -1,5 +1,5 @@
 using LikelihoodProfiler, Test
-using Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq
+using Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
 
 include("problems/taxol_model.jl")
 
@@ -80,3 +80,17 @@ end
   end
   
 end
+
+#=
+@testset "Taxol model. CICOProfiler" begin
+  
+  idxs = 1:5
+  atol=1e-3
+  method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
+  sol = LikelihoodProfiler.profile(plprob, method)
+  for i in idxs
+    test_taxol(sol, i; atol)
+  end
+  
+end
+=#

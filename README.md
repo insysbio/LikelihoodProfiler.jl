@@ -81,7 +81,7 @@ method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
 sol = profile(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```
-![Rosenbrock CICO profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/dev/docs/assets/rosenbrock_cico.png)
+![Rosenbrock CICO profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/cicoext/docs/assets/rosenbrock_cico.png)
 
 ## License
 
