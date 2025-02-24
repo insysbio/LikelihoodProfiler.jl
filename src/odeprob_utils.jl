@@ -49,8 +49,8 @@ function solver_init(sciml_prob::SciMLBase.AbstractODEProblem,
   # optimizer state, and register a callback.
   callback = nothing
   if method.reoptimize
-    sciml_prob_opt = build_optprob_reduced(deepcopy(plprob.optprob), deepcopy(plprob.optpars))
-    solver_state_opt = solver_init(sciml_prob_opt, deepcopy(plprob), method, idx, dir, profile_bound)
+    sciml_prob_opt = build_optprob_reduced(plprob.optprob, plprob.optpars)
+    solver_state_opt = solver_init(sciml_prob_opt, plprob, method, idx, dir, profile_bound)
     condition(u, t, integrator) = true
     function affect!(integrator)
       set_x_fixed!(solver_state_opt.reinit_cache.p, integrator.u[idx])
