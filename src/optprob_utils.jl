@@ -31,8 +31,9 @@ function solver_reinit!(solver_state::OptimizationBase.OptimizationCache, plprob
 end
 =#
 
+# Accept both OptimizationProfiler and IntegrationProfiler with reoptimize=true
 function solver_init(sciml_prob::SciMLBase.OptimizationProblem, 
-  plprob::PLProblem, method::OptimizationProfiler, idx, dir, profile_bound)
+  plprob::PLProblem, method::AbstractProfilerMethod, idx, dir, profile_bound)
   
   optprob = get_optprob(plprob)
   u0_full = get_optpars(plprob)
