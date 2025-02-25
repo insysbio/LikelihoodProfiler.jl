@@ -38,17 +38,23 @@ struct FixedParamCache{P}
   p::P
   idx::Base.RefValue{Int}
   x_fixed::Base.RefValue{Float64}
+  gamma::Base.RefValue{Float64}
 end
 
-function FixedParamCache(p, idx::Int, x_fixed::Real)
+function FixedParamCache(p, idx::Int, x_fixed::Real, gamma::Real)
+  # @assert gamma >= 0 # Todo for Sasha: justify
   _p = isnothing(p) ? SciMLBase.NullParameters() : p
-  return FixedParamCache{typeof(_p)}(_p, Ref(idx), Ref(float(x_fixed)))
+  return FixedParamCache{typeof(_p)}(_p, Ref(idx), Ref(float(x_fixed)), Ref(float(gamma)))
 end
 
+get_p(p::FixedParamCache) = p.p
 get_idx(p::FixedParamCache) = p.idx[]
 get_x_fixed(p::FixedParamCache) = p.x_fixed[]
+get_gamma(p::FixedParamCache) = p.gamma[]
+set_p!(p::FixedParamCache{P}, new_p::P) where {P} = p.p = new_p
 set_idx!(p::FixedParamCache, idx::Int) = p.idx[] = idx
 set_x_fixed!(p::FixedParamCache, x_fixed::Float64) = p.x_fixed[] = x_fixed
+set_gamma!(p::FixedParamCache, gamma::Float64) = p.gamma[] = gamma
 
 fill_x_full!(x_full::AbstractVector{T}, x_reduced::AbstractVector{T}, p::FixedParamCache) where T<:Number = 
   fill_x_full!(x_full, x_reduced, get_idx(p), get_x_fixed(p))

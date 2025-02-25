@@ -46,10 +46,55 @@ end
 
 @testset "Analytic funcs. IntegrationProfiler with full hessian" begin
 
-  method = IntegrationProfiler(integrator = FBDF(autodiff=false), integrator_opts = (dtmax=step,), matrix_type = :hessian)
+  method = IntegrationProfiler(
+    integrator = FBDF(autodiff=false), 
+    integrator_opts = (dtmax=step,), 
+    matrix_type = :hessian
+  )
   test_plmethod(method, funcs_dict)
   
 end
+
+
+
+@testset "Analytic funcs. IntegrationProfiler with identity matrix" begin
+
+  method = IntegrationProfiler(
+    integrator = FBDF(autodiff=false), 
+    integrator_opts = (dtmax=step,), 
+    matrix_type = :identity,
+    gamma=1.0
+  )
+  test_plmethod(method, funcs_dict)
+  
+end
+
+@testset "Analytic funcs. IntegrationProfiler with identity matrix + reoptimize" begin
+
+  method = IntegrationProfiler(
+    integrator = Rosenbrock23(autodiff=false),
+    integrator_opts = (dtmax=0.3,),
+    matrix_type = :identity,
+    gamma=0.2,            # (!!!) select "bad" gamma
+    reoptimize=true,
+    optimizer = Optimization.LBFGS()
+  )
+  test_plmethod(method, funcs_dict)
+
+end
+
+# @testset "Analytic funcs. IntegrationProfiler with Fisher matrix" begin
+
+#   method = IntegrationProfiler(
+#     integrator = AutoVern7(Rodas5()), 
+#     integrator_opts = (dtmax=step,), 
+#     matrix_type = :fisher,
+#     gamma=1e-1
+#   )
+#   test_plmethod(method, funcs_dict)
+  
+# end
+
 
 @testset "Analytic funcs. CICOProfiler" begin
 
