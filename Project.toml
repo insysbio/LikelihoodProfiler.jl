@@ -25,7 +25,7 @@ CICOBase = "33444335-3134-4342-4659-594331344435"
 CICOBaseExt = "CICOBase"
 
 [compat]
-CICOBase = "0.5.2"
+CICOBase = "0.5.3"
 DataFrames = "1.7.0"
 DataInterpolations = "6.5.2"
 ForwardDiff = "0.10.36"

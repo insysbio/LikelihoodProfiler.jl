@@ -47,7 +47,7 @@ plprob = PLProblem(optprob, p0, profile_range; threshold = sigmasq*chi2_quantile
   atol = [profile_step(p0, i)/2 for i in idxs]
   atol[3] = 0.041 # tmp fix as r0 upper bound fails to be within step/2 tolerance
   method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
-  sol = LikelihoodProfiler.profile(plprob, method)
+  sol = profile(plprob, method)
   for i in idxs
     test_taxol(sol, i; atol = atol[i])
   end
@@ -63,7 +63,7 @@ FIXME on macos
   atol = [profile_step(p0, i)/2 for i in idxs]
   atol[3] = 0.041 # tmp fix as r0 upper bound fails to be within step/2 tolerance
   method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=profile_step))
-  sol = LikelihoodProfiler.profile(plprob, method)
+  sol = profile(plprob, method)
   for i in idxs
     test_taxol(sol, i; atol = atol[i])
   end
@@ -76,7 +76,7 @@ end
   idxs = 1:5
   rtol = 1e-2 # how to set it?
   method = IntegrationProfiler(integrator = FBDF(autodiff=false), matrix_type = :hessian)
-  sol = LikelihoodProfiler.profile(plprob, method)
+  sol = profile(plprob, method)
   for i in idxs
     test_taxol(sol, i; rtol = rtol)
   end
@@ -89,7 +89,7 @@ end
   idxs = 1:5
   atol=1e-3
   method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
-  sol = LikelihoodProfiler.profile(plprob, method)
+  sol = profile(plprob, method)
   for i in idxs
     test_taxol(sol, i; atol)
   end
