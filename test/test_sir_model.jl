@@ -1,5 +1,5 @@
 using LikelihoodProfiler, Test
-using Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq
+using Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
 
 include("problems/sir_model.jl")
 
@@ -62,6 +62,19 @@ end
   sol = profile(plprob, method)
   for i in idxs
     test_sir(sol, i; rtol = rtol)
+  end
+  
+end
+
+
+@testset "SIR model. CICOProfiler" begin
+  
+  idxs = 1:3
+  atol=1e-3
+  method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
+  sol = profile(plprob, method)
+  for i in idxs
+    test_sir(sol, i; atol)
   end
   
 end

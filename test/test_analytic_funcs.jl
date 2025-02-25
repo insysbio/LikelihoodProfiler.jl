@@ -1,5 +1,5 @@
 using LikelihoodProfiler
-using Test, Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq
+using Test, Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
 
 const step = 0.3
 const atol = step/2
@@ -55,6 +55,8 @@ end
   
 end
 
+
+
 @testset "Analytic funcs. IntegrationProfiler with identity matrix" begin
 
   method = IntegrationProfiler(
@@ -93,11 +95,11 @@ end
   
 # end
 
-#=
+
 @testset "Analytic funcs. CICOProfiler" begin
 
-  method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-3)
+  method = CICOProfiler(optimizer = :LN_SBPLX, scan_tol = 1e-3)
   test_plmethod(method, funcs_dict)
   
 end
-=#
+
