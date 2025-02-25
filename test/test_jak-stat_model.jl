@@ -59,7 +59,7 @@ plprob = PLProblem(optprob, optpars, profile_range; threshold = chi2_quantile(0.
   profile_step(p0, i) = abs(p0[i]) * 0.05
   atol = [profile_step(optpars, i)/2 for i in idxs]
   method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
-  sol = profile(plprob, method)
+  sol = LikelihoodProfiler.profile(plprob, method)
   for i in idxs
     test_jakstat(sol, i; atol = atol[i])
   end
@@ -75,7 +75,7 @@ end
   profile_step(p0, i) = abs(p0[i]) * 0.05
   atol = [profile_step(optpars, i)/2 for i in idxs]
   method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=profile_step))
-  sol = profile(plprob, method)
+  sol = LikelihoodProfiler.profile(plprob, method)
   for i in idxs
     test_jakstat(sol, i; atol = atol[i])
   end
@@ -88,7 +88,7 @@ end
   idxs = 1:9
   rtol = 3e-2 # how to set it?
   method = IntegrationProfiler(integrator = FBDF(autodiff=false), matrix_type = :hessian)
-  sol = profile(plprob, method)
+  sol = LikelihoodProfiler.profile(plprob, method)
   for i in idxs
     test_jakstat(sol, i; rtol = rtol)
   end
