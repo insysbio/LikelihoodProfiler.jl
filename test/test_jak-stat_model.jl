@@ -94,3 +94,20 @@ end
   end
   
 end
+
+@testset "JAK2-STAT5 model. IntegrationProfiler with identity" begin
+
+  idxs = 1:9
+  rtol = 3e-2 # how to set it?
+  method = IntegrationProfiler(
+    integrator = FBDF(autodiff=false), 
+    matrix_type = :identity,
+    gamma=1000.0)
+    # reoptimize=true,
+    # optimizer = Optimization.LBFGS())
+  sol = profile(plprob, method)
+  for i in idxs
+    test_jakstat(sol, i; rtol = rtol)
+  end
+  
+end
