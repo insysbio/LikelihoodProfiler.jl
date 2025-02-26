@@ -18,12 +18,19 @@ RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 
+[weakdeps]
+CICOBase = "33444335-3134-4342-4659-594331344435"
+
+[extensions]
+CICOBaseExt = "CICOBase"
+
 [compat]
+CICOBase = "0.5.3"
 DataFrames = "1.7.0"
 DataInterpolations = "6.5.2"
 ForwardDiff = "0.10.36"
-OptimizationBase = "2.4.0"
 Optimization = "4.1.1"
+OptimizationBase = "2.4.0"
 OptimizationNLopt = "0.3.1"
 RecipesBase = "1.1"
 Reexport = "1.2.2"
@@ -31,6 +38,7 @@ SciMLBase = "2.0"
 julia = "1.10"
 
 [extras]
+CICOBase = "33444335-3134-4342-4659-594331344435"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
 OptimizationNLopt = "4e6fcdb7-1186-4e1f-a706-475e75c168bb"
@@ -39,4 +47,4 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "Plots", "ForwardDiff", "Optimization", "OptimizationNLopt", "OrdinaryDiffEq"]
+test = ["Test", "CICOBase", "Plots", "ForwardDiff", "Optimization", "OptimizationNLopt", "OrdinaryDiffEq"]

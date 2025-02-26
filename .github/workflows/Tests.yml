@@ -6,6 +6,7 @@ on:
     branches:
       - master
       - dev
+      - cicoext
     tags: '*'
 jobs:
   test:
@@ -42,7 +43,8 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
-      - uses: coverallsapp/github-action@master
+      - uses: codecov/codecov-action@v5
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: lcov.info
+          files: lcov.info
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_ci_if_error: false
