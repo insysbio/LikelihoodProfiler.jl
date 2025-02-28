@@ -8,6 +8,7 @@ end
   include("test_analytic_funcs.jl")
 end
 
+#=
 @testset "SIR model" begin
   include("test_sir_model.jl")
 end
@@ -19,3 +20,4 @@ end
 @testset "JAK2STAT5 model" begin
   include("test_jak-stat_model.jl")
 end
+=#

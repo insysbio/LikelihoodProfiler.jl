@@ -14,6 +14,7 @@ mutable struct ProfilerState{T,pvType,methodType,SS,SR,ID,parType,xType,statsTyp
   numiter::Int
   #curgrad::gradType
   #curhess::hessType
+  obj0::Float64
   obj_level::Float64
   maxiters::Int
   endpoint::Union{Nothing,Float64}
@@ -44,6 +45,7 @@ get_curobj(ps::ProfilerState) = ps.curobj
 get_numiter(ps::ProfilerState) = ps.numiter
 # get_curgrad(ps::ProfilerState) = ps.curgrad
 # get_curhess(ps::ProfilerState) = ps.curhess
+get_obj0(ps::ProfilerState) = ps.obj0
 get_obj_level(ps::ProfilerState) = ps.obj_level
 get_maxiters(ps::ProfilerState) = ps.maxiters
 get_endpoint(ps::ProfilerState) = ps.endpoint
@@ -87,11 +89,20 @@ function profiler_update_retcode!(profiler_state::ProfilerState)
 end
 
 
-function profiler_finalize!(profiler_state::ProfilerState)
+function profiler_finalize(profiler_state::ProfilerState)
   profile_values = get_profile_values(profiler_state)
-  isidentifiable(profiler_state) && (profiler_state.endpoint = interpolate_endpoint(profile_values))
-  isleft(profiler_state) && reverse_profile_values!(profile_values)
-  return nothing
+  endpoint = isidentifiable(profiler_state) ? interpolate_endpoint(profile_values) : nothing
+  if isleft(profiler_state)
+    endpoints = (lower=endpoint, upper=nothing)
+    retcodes = (lower=profiler_state.retcode, upper=:Default)
+    stats = (lower=profiler_state.stats, upper=nothing)
+    reverse_profile_values!(profile_values)
+  else
+    endpoints = (lower=nothing, upper=endpoint)
+    retcodes = (lower=:Default, upper=profiler_state.retcode)
+    stats = (lower=nothing, upper=profiler_state.stats)
+  end
+  return ProfileValues(Val(false), profile_values.plprob, profile_values.pars, profile_values.x, profile_values.obj, profile_values.obj_level, retcodes, endpoints, stats)
 end
 
 #=
@@ -129,8 +140,7 @@ function reverse_profile_values!(pv::ProfileValues)
   return nothing
 end
 
-function profiler_init(plprob::PLProblem{T}, method::AbstractProfilerMethod, sciml_prob, idx, dir;
-  maxiters = Int(1e4), verbose = false) where T
+function profiler_init(plprob::PLProblem{T}, method::AbstractProfilerMethod; maxiters = Int(1e4), verbose = false) where T
   
   verbose && @info "Computing initial values."
   optprob = get_optprob(plprob)
@@ -139,36 +149,53 @@ function profiler_init(plprob::PLProblem{T}, method::AbstractProfilerMethod, sci
   
   obj0 = compute_optf(optprob, optpars)
   obj_level = obj0 + threshold
-  x0 = optpars[idx]
+  
+  # init default values, which will be rewritten at __profile_dir
+  idx = 1
+  dir = 1
+  x0 = 0.
+  profile_bound = 0.
 
-  profile_range = get_profile_range(plprob)
-  profile_lb, profile_ub = profile_range isa Tuple ? profile_range : profile_range[idx]
-  profile_bound = dir == -1 ? profile_lb : profile_ub
-
-  solver_state = solver_init(sciml_prob, plprob, method, idx, dir, profile_bound)
+  solver_state = solver_init(plprob, method)
   #solver_reinit!(solver_state, plprob, method, idx, dir, profile_bound)
   profile_values = ProfileValues(Val(false), plprob, typeof(optpars),typeof(x0),typeof(obj0), obj_level)
 
   stats = get_solver_stats(solver_state)
   return ProfilerState{T,typeof(profile_values),typeof(method),typeof(solver_state),ReturnCode.T,typeof(idx),typeof(optpars),typeof(x0),typeof(stats)}(
-    profile_values, method, solver_state, ReturnCode.Default, idx, dir, profile_bound, similar(optpars), copy(optpars), x0, obj0, 1, obj_level, maxiters, nothing, :Default, stats, verbose)
+    profile_values, method, solver_state, ReturnCode.Default, idx, dir, profile_bound, similar(optpars), copy(optpars), x0, obj0, 1, obj0, obj_level, maxiters, nothing, :Default, stats, verbose)
 end
 
-#=
-function profiler_init(plprob::PLProblem{T}, method::IntegrationProfiler, solver_state, idx, dir, profile_bound, obj0, obj_level; maxiters = Int(1e4)) where T
-  
+function profiler_reinit!(profiler_state::ProfilerState; 
+  idx = 1, dir = 1, erase_sol = true)
+
+  plprob = get_plprob(profiler_state)
   optpars = get_optpars(plprob)
+
+  profiler_state.idx = idx
+  profiler_state.dir = dir
   x0 = optpars[idx]
 
-  #length(optpars)>1 && 
-  solver_state = solver_reinit!(solver_state, plprob, method, idx, dir, profile_bound)
-  profile_values = ProfileValues(Val(false), plprob, typeof(optpars),typeof(x0),typeof(obj0), obj_level)
+  profile_range = get_profile_range(plprob)
+  profile_lb, profile_ub = profile_range isa Tuple ? profile_range : profile_range[idx]
+  profiler_state.profile_bound = dir == -1 ? profile_lb : profile_ub
+  
+  erase_sol && (profiler_state.profile_values=ProfileValues(Val(false), plprob, typeof(optpars),typeof(x0),typeof(profiler_state.obj0), profiler_state.obj_level))
+ 
+  profiler_state.parscache .= optpars
+  profiler_state.curpars .= optpars
+  profiler_state.curx = x0
+  profiler_state.curobj = profiler_state.obj0  
+  profiler_state.numiter = 1
+  profiler_state.endpoint = nothing
+  profiler_state.retcode = :Default
 
-  stats = get_solver_stats(solver_state)
-  return ProfilerState{T,typeof(profile_values),typeof(method),typeof(solver_state),ReturnCode.T,typeof(idx),typeof(optpars),typeof(x0),typeof(stats)}(
-    profile_values, method, solver_state, ReturnCode.Default, idx, dir, profile_bound, similar(optpars), copy(optpars), x0, obj0, 1, obj_level, maxiters, nothing, :Default, stats)
+  solver_reinit!(profiler_state.solver_state, plprob, get_method(profiler_state), idx, dir, get_profile_bound(profiler_state))
+  profiler_state.solver_retcode = ReturnCode.Default
+  profiler_state.stats = get_solver_stats(profiler_state.solver_state)
+  return nothing
 end
-=#
+
+
 function merge_profiles(left_profile::ProfilerState, right_profile::ProfilerState)
   left_profile_values = get_profile_values(left_profile)
   right_profile_values = get_profile_values(right_profile)

@@ -1,6 +1,10 @@
-#=
+
 function solver_init(plprob::PLProblem, method::IntegrationProfiler)
   odeprob = build_scimlprob(plprob, method)
+
+  # If reoptimize is requested, then create an optimization problem, create an
+  # optimizer state, and register a callback.
+
   return SciMLBase.init(odeprob, get_integrator(method); get_integrator_opts(method)...)
 end
 
@@ -8,22 +12,25 @@ function solver_reinit!(solver_state::SciMLBase.AbstractODEIntegrator, plprob::P
   optpars = get_optpars(plprob)
   x0 = optpars[idx]
   
+  # FIXME Bad workaround. We need to update the ODEIntegrator with new tspan and dir.
   odeprob = solver_state.sol.prob
-  odeprob2 = remake(odeprob; u0=[optpars;0.0], tspan=(x0, profile_bound))
-  set_idx!(odeprob2.p, idx)
-  set_x_fixed!(odeprob2.p, 1.0)
-  return SciMLBase.init(odeprob2, get_integrator(method); get_integrator_opts(method)...)
+  odeprob2 = remake(odeprob; u0=[optpars; zero(eltype(optpars))], tspan=(x0, profile_bound))
+  @show odeprob2.tspan
+  @show odeprob2.u0
   #=
-  set_idx!(solver_state.sol.prob.p, idx)
-  set_x_fixed!(solver_state.sol.prob.p, 1.0)
   solver_state.tdir = dir
   SciMLBase.reinit!(solver_state, [optpars;0.0]; t0=x0, tf=profile_bound)
-  #@show first_tstop(solver_state)
-  return nothing
   =#
-end
-=#
 
+  # update p values
+  set_gamma!(odeprob2.p, -get_gamma(method))
+  set_idx!(odeprob2.p, idx)
+  set_x_fixed!(odeprob2.p, 1.0)
+
+  return SciMLBase.init(odeprob2, get_integrator(method); get_integrator_opts(method)...)
+end
+
+#=
 function solver_init(sciml_prob::SciMLBase.AbstractODEProblem, 
   plprob::PLProblem, method::IntegrationProfiler, idx, dir, profile_bound)
 
@@ -70,7 +77,7 @@ function solver_init(sciml_prob::SciMLBase.AbstractODEProblem,
     callback=callback
   )
 end
-
+=#
 
 function build_scimlprob(plprob::PLProblem, method::IntegrationProfiler)
   optprob = get_optprob(plprob)

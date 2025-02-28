@@ -1,4 +1,4 @@
-#=
+
 function solver_init(plprob::PLProblem, method::OptimizationProfiler)
   optprob_reduced = build_scimlprob(plprob, method)
   return SciMLBase.init(optprob_reduced, get_optimizer(method), get_optimizer_opts(method)...)
@@ -29,8 +29,8 @@ function solver_reinit!(solver_state::OptimizationBase.OptimizationCache, plprob
   #SciMLBase.reinit!(solver_state; p=p0)
   return nothing
 end
-=#
 
+#=
 # Accept both OptimizationProfiler and IntegrationProfiler with reoptimize=true
 function solver_init(sciml_prob::SciMLBase.OptimizationProblem, 
   plprob::PLProblem, method::AbstractProfilerMethod, idx, dir, profile_bound)
@@ -63,6 +63,7 @@ function solver_init(sciml_prob::SciMLBase.OptimizationProblem,
   
   return SciMLBase.init(sciml_prob, get_optimizer(method); get_optimizer_opts(method)...)
 end
+=#
 
 function build_scimlprob(plprob::PLProblem, method::OptimizationProfiler)
   optprob = get_optprob(plprob)
