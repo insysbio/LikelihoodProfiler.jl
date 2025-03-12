@@ -273,7 +273,7 @@ function profiler_step!(profiler::ProfilerState, method::IntegrationProfiler)
     profiler.numiter += 1
   else
     @warn "Solver returned $(integrator.sol.retcode) retcode at profile point x = $(get_curx(profiler)). Profiling is interrupted."
-    profiler.solver_retcode = sol.retcode
+    profiler.solver_retcode = integrator.sol.retcode
   end
 
 end

@@ -106,7 +106,7 @@ end
   
 end
 
-#=
+
 optf = OptimizationFunction((x,p) -> 5.0 + (1.0 - x[1])^2 + 100.0*(x[2] - x[1]^2)^2, Optimization.AutoForwardDiff())
 optprob = OptimizationProblem(optf, zeros(2))
 plprob = PLProblem(optprob, zeros(2), [(-10.,10.), (-10.,10.,)]; threshold=4.0)
@@ -117,5 +117,4 @@ method = IntegrationProfiler(
   matrix_type = :hessian
 )
 
-sol = profile(plprob, method; idxs=[1], verbose=true)
-=#
+sol = profile(plprob, method; verbose=true)
