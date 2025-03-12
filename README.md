@@ -1,21 +1,19 @@
 # LikelihoodProfiler
-*A package for [practical identifiability analysis](https://en.wikipedia.org/wiki/Identifiability_analysis) and confidence intervals (CI) estimation using profile likelihood approach. The package provides a single interface to different profile likelihood methods, including optimization-based, integration-based profiles, CI endpoints search and more.*
+*A package for practical identifiability analysis and confidence intervals (CI) estimation using profile likelihood approach. The package provides a single interface to different profile likelihood methods, including optimization-based, integration-based profiles, CI endpoints search and more.*
 
 #### !!! LikelihoodProfiler package underwent a huge redevelopment and now provides a single interface to different profile likelihood methods. If you are looking for a the CICO algorithm (initially implemented in LikelihoodProfiler package) you can use it through the new LikelihoodProfiler interface or directly with [CICOBase.jl package](https://github.com/insysbio/CICOBase.jl).
 
-#### !!! The new interface is at an early stage. Feedback and contributions are very welcome!  
+#### !!! The new interface is in the process of development. Feedback and contributions are very welcome!  
 
 ## Installation
 
-```julia
-julia> ]
+In Julia terminal run the following command:
 
-(v1.11) pkg> add LikelihoodProfiler
+```julia
+import Pkg; Pkg.add("LikelihoodProfiler")
 ```
 
 ## Getting started with LikelihoodProfiler
-
-#### !!! This section is the draft of the documentation. Detailed documentation of the interface and profiling methods is coming soon.
 
 To define a profile likelihood problem `PLProblem` in LikelihoodProfiler you should provide the objective function (usually negative log likelihood) and the optimal values of the parameters which correspond to the minimum of the objective function. LikelihoodProfiler relies on `Optimization.jl` interface and `PLProblem` is build on top of the `OptimizationProblem` defined in `Optimization.jl`. This can be best illustrated by an example.
 
@@ -72,7 +70,7 @@ plot(sol, size=(800,300), margins=5Plots.mm)
 ```
 ![Rosenbrock integration-based profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/dev/docs/assets/rosenbrock_integration.png)
 
-Likelihood profiling is mostly performed to assess if the profile has intersections with the given confidence level, hence if the parameter (or function of parameters) has finite confidence interval. Another approach to the problem of practical identifiability is to compute these intersections (endpoints of the confidence interval (CI)) without restoring the full shape of the profile. On of such methods is implemented in `CICOProfiler`. It estimates CI endpoints with an optimization procedure without following the exact trajectory of the profile. 
+Likelihood profiling is mostly performed to assess if the profile has intersections with the given confidence level, hence if the parameter (or function of parameters) has finite confidence interval. Another approach to the problem of practical identifiability is to compute these intersections (endpoints of the confidence interval (CI)) without restoring the full shape of the profile. One of such methods is implemented in `CICOProfiler`. It estimates CI endpoints with an optimization procedure without following the exact trajectory of the profile. 
 
 ```julia
 using CICOBase
@@ -81,12 +79,16 @@ method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
 sol = profile(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```
-![Rosenbrock CICO profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/cicoext/docs/assets/rosenbrock_cico.png)
+![Rosenbrock CICO profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/dev/docs/assets/rosenbrock_cico.png)
 
-## License
+## Related packages
 
-[MIT](./LICENSE) Public license
+Other implementations of the profile likelihood approach in Julia include:
+- [ProfileLikelihood.jl](https://github.com/DanielVandH/ProfileLikelihood.jl) implements fixed-step optimization-based profiles. Also supports bivariate profile likelihoods.
+- [InformationalGeometry.jl](https://github.com/RafaelArutjunjan/InformationGeometry.jl) implements various methods to study likelihood functions (including profile likelihood) with the tools of differential geometry.
 
-## How to cite
+Also there are well-known profile likelihood implementations in other languages, namely: [Data2Dynamics](https://github.com/Data2Dynamics/d2d), [dMod](https://github.com/dkaschek/dMod/), [pyPESTO](https://github.com/ICB-DCM/pyPESTO), [sbioparametersci](https://www.mathworks.com/help/simbio/ref/sbioparameterci.html)
 
-**Borisov I, Metelkin E** (2020) *Confidence intervals by constrained optimization—An algorithm and software package for practical identifiability analysis in systems biology.* PLoS Comput Biol 16(12): e1008495. Ref: <https://doi.org/10.1371/journal.pcbi.1008495>
+## Citation
+
+Borisov I., Metelkin E. An Algorithm for Practical Identifiability Analysis and Confidence Intervals Evaluation Based on Constrained Optimization. 2018. October. ICSB2018. https://doi.org/10.13140/RG.2.2.18935.06563

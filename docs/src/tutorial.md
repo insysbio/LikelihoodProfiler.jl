@@ -52,3 +52,12 @@ method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.3,
 sol = profile(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```
+Likelihood profiling is mostly performed to assess if the profile has intersections with the given confidence level, hence if the parameter (or function of parameters) has finite confidence interval. Another approach to the problem of practical identifiability is to compute these intersections (endpoints of the confidence interval (CI)) without restoring the full shape of the profile. One of such methods is implemented in `CICOProfiler`. It estimates CI endpoints with an optimization procedure without following the exact trajectory of the profile. 
+
+```@example example-1
+using CICOBase
+
+method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
+sol = profile(plprob, method)
+plot(sol, size=(800,300), margins=5Plots.mm)
+```
