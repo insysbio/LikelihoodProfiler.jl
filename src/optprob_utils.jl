@@ -64,7 +64,7 @@ function solver_init(sciml_prob::SciMLBase.OptimizationProblem,
   return SciMLBase.init(sciml_prob, get_optimizer(method); get_optimizer_opts(method)...)
 end
 
-function build_scimlprob(plprob::PLProblem, method::OptimizationProfiler)
+function build_scimlprob(plprob::PLProblem, method::OptimizationProfiler, idx, profile_bound)
   optprob = get_optprob(plprob)
   optpars = get_optpars(plprob)
 

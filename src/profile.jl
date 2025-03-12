@@ -45,12 +45,9 @@ end
 
 function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:none}, idxs; kwargs...)
 
-  sciml_prob = build_scimlprob(plprob, method)
-  #solver_state = solver_init(plprob, method)
-
   elapsed_time = @elapsed profile_data = map(idxs) do idx
-    left_profile  = __profile_dir(plprob, method, sciml_prob, idx, -1; kwargs...)
-    right_profile = __profile_dir(plprob, method, sciml_prob, idx,  1; kwargs...)
+    left_profile  = __profile_dir(plprob, method, idx, -1; kwargs...)
+    right_profile = __profile_dir(plprob, method, idx,  1; kwargs...)
     merge_profiles(left_profile, right_profile)
   end
 
@@ -59,9 +56,9 @@ end
 
 
 
-function __profile_dir(plprob::PLProblem, method::AbstractProfilerMethod, sciml_prob, idx::Int, dir::Int; kwargs...)
+function __profile_dir(plprob::PLProblem, method::AbstractProfilerMethod, idx::Int, dir::Int; kwargs...)
   
-  profiler_state = profiler_init(plprob, method, sciml_prob, idx, dir; kwargs...)
+  profiler_state = profiler_init(plprob, method, idx, dir; kwargs...)
   __profile_dir!(profiler_state)
 
   return profiler_state # ? return profiler_state or profile_values

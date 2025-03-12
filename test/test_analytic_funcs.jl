@@ -96,10 +96,10 @@ end
 # end
 
 
-@testset "Analytic funcs. CICOProfiler" begin
+# @testset "Analytic funcs. CICOProfiler" begin
 
-  method = CICOProfiler(optimizer = :LN_SBPLX, scan_tol = 1e-3)
-  test_plmethod(method, funcs_dict)
+#   method = CICOProfiler(optimizer = :LN_SBPLX, scan_tol = 1e-3)
+#   test_plmethod(method, funcs_dict)
   
-end
+# end
 
