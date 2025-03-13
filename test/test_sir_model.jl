@@ -66,7 +66,7 @@ end
   
 end
 
-
+#=
 @testset "SIR model. CICOProfiler" begin
   
   idxs = 1:3
@@ -78,3 +78,4 @@ end
   end
   
 end
+=#

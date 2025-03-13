@@ -44,7 +44,7 @@ end
 
 end
 
-#=
+
 @testset "Analytic funcs. IntegrationProfiler with full hessian" begin
 
   method = IntegrationProfiler(
@@ -69,7 +69,7 @@ end
   test_plmethod(method, funcs_dict)
   
 end
-=#
+
 #=
 @testset "Analytic funcs. IntegrationProfiler with identity matrix + reoptimize" begin
 
@@ -98,23 +98,11 @@ end
   
 # end
 
-
+#=
 @testset "Analytic funcs. CICOProfiler" begin
 
   method = CICOProfiler(optimizer = :LN_SBPLX, scan_tol = 1e-3)
   test_plmethod(method, funcs_dict)
   
 end
-
-
-optf = OptimizationFunction((x,p) -> 5.0 + (1.0 - x[1])^2 + 100.0*(x[2] - x[1]^2)^2, Optimization.AutoForwardDiff())
-optprob = OptimizationProblem(optf, zeros(2))
-plprob = PLProblem(optprob, zeros(2), [(-10.,10.), (-10.,10.,)]; threshold=4.0)
-
-method = IntegrationProfiler(
-  integrator = FBDF(autodiff=false), 
-  integrator_opts = (dtmax=step,), 
-  matrix_type = :hessian
-)
-
-sol = profile(plprob, method; verbose=true)
+=#

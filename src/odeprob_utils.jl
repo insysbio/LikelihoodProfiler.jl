@@ -12,21 +12,14 @@ function solver_reinit!(solver_state::SciMLBase.AbstractODEIntegrator, plprob::P
   optpars = get_optpars(plprob)
   x0 = optpars[idx]
   
-  # FIXME Bad workaround. We need to update the ODEIntegrator with new tspan and dir.
-  #=
-  odeprob = solver_state.sol.prob
-  odeprob2 = remake(odeprob; u0=[optpars; zero(eltype(optpars))], tspan=(x0, profile_bound))
-  =#
-
   # update p values
-  set_gamma!(solver_state.p, -get_gamma(method))
+  set_gamma!(solver_state.p, dir*get_gamma(method))
   set_idx!(solver_state.p, idx)
   set_x_fixed!(solver_state.p, 1.0)
 
   solver_state.tdir = dir
+  solver_state.opts.dtmax = dir == 1.0 ? abs(solver_state.opts.dtmax) : -abs(solver_state.opts.dtmax)
   SciMLBase.reinit!(solver_state, [optpars;0.0]; t0=x0, tf=profile_bound, reset_dt=true)
-  @show solver_state.dt
-  @show solver_state.opts
   return nothing
 end
 
