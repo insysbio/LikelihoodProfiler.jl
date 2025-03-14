@@ -52,9 +52,9 @@ function sir_obj(
   
   # current parameter values
   params = probcur.p
-  
+
   # observable
-  y = abs.(sol/params[3])
+  y = abs.(sol.u/params[3])
   
   # loss
   return sum(y) - sum(data.*log.(y))
