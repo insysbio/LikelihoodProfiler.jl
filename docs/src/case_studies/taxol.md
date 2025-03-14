@@ -1,6 +1,6 @@
 # Taxol model
 
-As an example of practical identifiability analysis we use **Cancer Taxol Treatment Model**. It is an ODE model with 3 state variables and 5 parameters. Identifiability of this model was studied in [Marisa C.Eisenberg, Harsh V.Jain. A confidence building exercise in data and identifiability](https://www.sciencedirect.com/science/article/pii/S0022519317303454). We have translated [author's Matlab code](https://github.com/marisae/cancer-chemo-identifiability) into Julia. The model is defined by the following system of differential equations:
+As an example of practical identifiability analysis, we use the **Cancer Taxol Treatment Model**. It is an ODE model with 3 state variables and 5 parameters. The identifiability of this model was studied in [Marisa C.Eisenberg, Harsh V.Jain. A confidence building exercise in data and identifiability](https://www.sciencedirect.com/science/article/pii/S0022519317303454). We have translated [author's MATLAB code](https://github.com/marisae/cancer-chemo-identifiability) into Julia. The model is defined by the following system of differential equations:
 
 ```julia
 using LikelihoodProfiler, Test
@@ -37,7 +37,7 @@ function ode_func(du, u, p, t, drug)
 end
 ```
 
-Experimental datasets are also provided in cancer-chemo-identifiability repo for four drug doses (5, 10, 40, 100)
+Experimental datasets are also provided in the cancer-chemo-identifiability repo for four drug doses (5, 10, 40, 100)
 
 ```julia
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m
@@ -79,7 +79,7 @@ data = [Cell005/C005, Cell010/C010, Cell040/C040, Cell100/C100]
 datamean = [C005, C010, C040, C100]
 ```
 
-Next we define solver options, initial values, optimal parameter values and tspan
+Next we define solver options, initial values, optimal parameter values, and tspan
 
 ```julia
 # solver algorithm and tolerances
@@ -99,7 +99,7 @@ p0 = [8.3170, 8.0959, 0.0582, 1.3307, 119.1363]
 tspan = (0.,15.)
 ```
  
- We use OLS for the objective function as it was proposed in the original code.
+ We use OLS for the objective function as proposed in the original code.
 
  ```julia
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L92
@@ -133,7 +133,7 @@ end
 sigmasq = (LikelihoodProfiler.mean([(Cerr005/C005); (Cerr010/C010); (Cerr040/C040); (Cerr100/C100)]))^2
 ```
 
-Next we construct the profile likelihood problem `PLProblem` and run the profiler for the five parameters:
+Next, we construct the profile likelihood problem `PLProblem` and run the profiler for the five parameters:
 
 ```julia
 optf = OptimizationFunction(taxol_obj, Optimization.AutoForwardDiff())
@@ -153,6 +153,6 @@ sol = profile(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```
 
-Finally we plot the resulting profiles:
+Finally, we plot the resulting profiles:
 
 ![taxol.png](taxol.svg)

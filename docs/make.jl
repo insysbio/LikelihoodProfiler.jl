@@ -3,7 +3,7 @@ using Documenter
 
 makedocs(
     modules = [LikelihoodProfiler],
-    sitename = "LikelihoodProfiler Documentation",
+    sitename = "LikelihoodProfiler.jl",
     pages = [
         "Home" => "index.md",
         "Tutorial" => "tutorial.md",

@@ -12,7 +12,7 @@ import Pkg; Pkg.add("LikelihoodProfiler")
 
 ## Methods
 
-LikelihoodProfiler.jl provides a single interface to various profile likelihood-based methods of practical identifiability: 
+LikelihoodProfiler.jl provides a unified interface for various profile likelihood-based methods of practical identifiability: 
 - Confidence intervals by Constrained Optimization method (CICO)
 - Optimization-based likelihood profiles
 - Integration-based likelihood profiles
