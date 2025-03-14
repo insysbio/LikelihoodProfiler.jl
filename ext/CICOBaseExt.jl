@@ -2,11 +2,7 @@ module CICOBaseExt
 
 using LikelihoodProfiler, CICOBase
 
-function LikelihoodProfiler.build_scimlprob(plprob::PLProblem, method::CICOProfiler)
-  return nothing
-end
-
-function LikelihoodProfiler.__profile_dir(plprob::PLProblem, method::CICOProfiler, sciml_prob, idx::Int, dir::Int; verbose=false, kwargs...)
+function LikelihoodProfiler.__profile_dir(plprob::PLProblem, method::CICOProfiler, idx::Int, dir::Int; verbose=false, kwargs...)
   
   verbose && @info "Computing initial values."
   optprob = LikelihoodProfiler.get_optprob(plprob)
