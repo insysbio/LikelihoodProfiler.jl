@@ -1,5 +1,5 @@
 # LikelihoodProfiler
-*A package for practical identifiability analysis and confidence intervals (CI) estimation using the profile likelihood approach. The package provides a unified interface for various profile likelihood methods, including optimization-based, integration-based profiles, CI endpoints search and more.*
+*A package for practical identifiability analysis and confidence intervals (CI) estimation using the profile likelihood approach. The package provides a unified interface for various profile likelihood methods, including optimization-based and integration-based profiles, CI endpoints search, and more.*
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://insysbio.github.io/LikelihoodProfiler.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://insysbio.github.io/LikelihoodProfiler.jl/latest)
