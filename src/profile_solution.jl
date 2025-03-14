@@ -32,24 +32,8 @@ struct ProfileValues{probType,parsType,xType,objType,retType,epType,statsType}
   obj_level::Float64
   retcodes::retType
   endpoints::epType
-  #=
-  retcode_lower::Symbol
-  retcode_upper::Symbol
-  endpoint_lower::EP1
-  endpoint_upper::EP2
-  stats_lower::S1
-  stats_upper::S2
-  =#
   stats::statsType
-  #deriv::dobjType
 end
-
-#=
-set_retcode!(pv::ProfileValues, ::Val{true}, retcode) = pv.lower_retcode[] = retcode
-set_retcode!(pv::ProfileValues, ::Val{false}, retcode) = pv.upper_retcode[] = retcode
-set_endpoint!(pv::ProfileValues, ::Val{true}, val) = pv.lower_endpoint[] = val
-set_endpoint!(pv::ProfileValues, ::Val{false}, val) = pv.upper_endpoint[] = val
-=#
 
 get_plprob(pv::ProfileValues) = pv.plprob
 get_optprob(pv::ProfileValues) = get_optprob(get_plprob(pv))

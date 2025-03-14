@@ -96,8 +96,3 @@ end
 function progress_msg(profiler_state::ProfilerState{<:ParameterProfile}) 
   @info "Current parameter-$(get_idx(profiler_state)) value: $(get_curx(profiler_state))"
 end
-#=
-function progress_msg(profiler_state::ProfilerState{<:FunctionProfile})
-  @info "Current profile function value: $(get_curx(profiler_state))"
-end
-=#

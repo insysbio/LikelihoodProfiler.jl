@@ -25,7 +25,6 @@ Base.@kwdef struct OptimizationProfiler{S, opType, optsType} <: AbstractProfiler
   optimizer::opType
   optimizer_opts::optsType = NamedTuple()
 end
-#!SciMLBase.allowsbounds(optalg) && error("Optimization alg used with `OptimizationProfiler` must support bounds.")
 
 get_stepper(op::OptimizationProfiler) = op.stepper
 get_optimizer(op::OptimizationProfiler) = op.optimizer

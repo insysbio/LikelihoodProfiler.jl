@@ -18,7 +18,6 @@ end
 prepare_initial_step(step::Number) = (p0,i) -> float(step)
 prepare_initial_step(step::Function) = step
 
-#get_step(s::AbstractProfilerStep{S}, pars, i) where S <: Number = s.step
 get_step(s::AbstractProfilerStep{S}, pars, i) where S <: Function = s.initial_step(pars, i)
 
 function compute_next_pars!(profiler::ProfilerState, s::FixedStep)

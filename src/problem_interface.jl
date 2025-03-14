@@ -59,13 +59,6 @@ get_optpars(prob::PLProblem) = prob.optpars
 get_parfunc(prob::PLProblem) = prob.parfunc
 get_profile_range(prob::PLProblem) = prob.profile_range
 get_threshold(prob::PLProblem) = prob.threshold
-#get_direction(prob::PLProblem) = prob.direction
-
-# moved to profile() level
-#get_conf_level(prob::PLProblem) = prob.conf_level
-#get_df(prob::PLProblem) = prob.df
-#get_optobj(prob::PLProblem) = prob.optobj
-#get_obj_level(prob::PLProblem) = prob.obj_level
 
 ############################### CONSTRUCTORS ###############################
 
@@ -81,21 +74,6 @@ function PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}
 
   build_plproblem(ParameterProfile(), optprob, optpars, nothing, Tprofile_range, float(threshold))
 end
-
-#=
-# template for FunctionProfile
-function PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real},
-  parfunc::OptimizationFunction, profile_range::Tuple{Real,Real};
-  conf_level::Float64 = 0.95, df::Int = 1, threshold::Real = chi2_quantile(conf_level, df))
-
-  threshold <= 0. && throw(ArgumentError("`threshold` must be positive definite."))
-  numpars = length(optpars)
-  validate_optpars(numpars, optprob.u0)
-  Tprofile_range = promote_profile_range(compute_optf(parfunc, optpars), profile_range)
-
-  build_plproblem(FunctionProfile(), optprob, optpars, parfunc, Tprofile_range, float(threshold))
-end
-=#
 
 function build_plproblem(
   profile_type::T,
@@ -159,27 +137,3 @@ function SciMLBase.remake(plprob::PLProblem{<:ParameterProfile};
 
   return PLProblem(optprob, optpars, profile_range; threshold)
 end
-
-#=
-function SciMLBase.remake(plprob::PLProblem{<:FunctionProfile};
-  optprob = missing, optpars = missing, parfunc = missing, profile_range = missing, threshold = missing)
-
-  if optprob === missing
-    optprob = get_optprob(plprob)
-  end
-  if optpars === missing
-    optpars = get_optpars(plprob)
-  end
-  if parfunc === missing
-    parfunc = get_parfunc(plprob)
-  end
-  if profile_range === missing
-    profile_range = get_profile_range(plprob)
-  end
-  if threshold === missing
-    threshold = get_threshold(plprob)
-  end
-
-  return PLProblem(optprob, optpars, parfunc, profile_range; threshold)
-end
-=#

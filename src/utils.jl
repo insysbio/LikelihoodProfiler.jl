@@ -7,13 +7,11 @@ chi2_quantile(α, df=1) = quantile(Chisq(df), α)
 
 compute_optf(prob::OptimizationProblem, u, p=prob.p) = compute_optf(prob.f, u, p)
 compute_optf(f::OptimizationFunction, u, p=SciMLBase.NullParameters()) = f(u, p)
-#compute_optf(f::GetindexFunction, u) = f(u)
 
 function compute_grad(prob::OptimizationProblem, u, p=prob.p)
   if !isnothing(prob.f.grad)
     return prob.f.grad(u,p)
   elseif prob.f.adtype isa SciMLBase.NoAD
-    # f = Base.Fix2(prob.f.f, prob.p)
     DifferentiationInterface.gradient(x->prob.f(x,p), prob.f.adtype, u)
   else
     grad_error()

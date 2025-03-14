@@ -1,29 +1,3 @@
-#=
-function solver_init(plprob::PLProblem, method::IntegrationProfiler)
-  odeprob = build_scimlprob(plprob, method)
-  return SciMLBase.init(odeprob, get_integrator(method); get_integrator_opts(method)...)
-end
-
-function solver_reinit!(solver_state::SciMLBase.AbstractODEIntegrator, plprob::PLProblem, method::IntegrationProfiler, idx, dir, profile_bound)
-  optpars = get_optpars(plprob)
-  x0 = optpars[idx]
-  
-  odeprob = solver_state.sol.prob
-  odeprob2 = remake(odeprob; u0=[optpars;0.0], tspan=(x0, profile_bound))
-  set_idx!(odeprob2.p, idx)
-  set_x_fixed!(odeprob2.p, 1.0)
-  return SciMLBase.init(odeprob2, get_integrator(method); get_integrator_opts(method)...)
-  #=
-  set_idx!(solver_state.sol.prob.p, idx)
-  set_x_fixed!(solver_state.sol.prob.p, 1.0)
-  solver_state.tdir = dir
-  SciMLBase.reinit!(solver_state, [optpars;0.0]; t0=x0, tf=profile_bound)
-  #@show first_tstop(solver_state)
-  return nothing
-  =#
-end
-=#
-
 function solver_init(sciml_prob::SciMLBase.AbstractODEProblem, 
   plprob::PLProblem, method::IntegrationProfiler, idx, dir, profile_bound)
 
@@ -35,10 +9,6 @@ function solver_init(sciml_prob::SciMLBase.AbstractODEProblem,
     sciml_prob.u0[i] = optpars[i]
   end
   sciml_prob.u0[end] = 0.0
-
-  # update tspan values
-  # Warning: Mutation of ODEProblem detected. SciMLBase v2.0 has made ODEProblem temporarily mutable in order to allow for interfacing with EnzymeRules due to a current limitation in the rule system. This change is only intended to be temporary and ODEProblem will return to being a struct in a later non-breaking release. Do not rely on this behavior, use with caution.
-  # sciml_prob.tspan = (x0, profile_bound)
 
   # update p values
   set_gamma!(sciml_prob.p, dir*get_gamma(sciml_prob.p))

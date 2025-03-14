@@ -1,35 +1,3 @@
-#=
-function solver_init(plprob::PLProblem, method::OptimizationProfiler)
-  optprob_reduced = build_scimlprob(plprob, method)
-  return SciMLBase.init(optprob_reduced, get_optimizer(method), get_optimizer_opts(method)...)
-end
-
-function solver_reinit!(solver_state::OptimizationBase.OptimizationCache, plprob::PLProblem, method::OptimizationProfiler, idx, dir, profiler_bound)
-  optprob = get_optprob(plprob)
-  
-  if !isnothing(solver_state.lb)
-    lb_full = optprob.lb
-    lb_reduced = solver_state.lb
-    fill_x_reduced!(lb_reduced, lb_full, idx)
-  end
-
-  if !isnothing(solver_state.ub)
-    ub_full = optprob.ub
-    ub_reduced = solver_state.ub
-    fill_x_reduced!(ub_reduced, ub_full, idx)
-  end
-
-  u0_full = get_optpars(plprob)
-  u0_reduced = solver_state.reinit_cache.u0
-  fill_x_reduced!(u0_reduced, u0_full, idx)
-
-  set_idx!(solver_state.reinit_cache.p, idx)
-  set_x_fixed!(solver_state.reinit_cache.p, u0_full[idx])
-  #p0 = FixedParamCache(solver_state.reinit_cache.p, idx, u0_full[idx])
-  #SciMLBase.reinit!(solver_state; p=p0)
-  return nothing
-end
-=#
 
 # Accept both OptimizationProfiler and IntegrationProfiler with reoptimize=true
 function solver_init(sciml_prob::SciMLBase.OptimizationProblem, 
@@ -68,17 +36,11 @@ function build_scimlprob(plprob::PLProblem, method::OptimizationProfiler, idx, p
   optprob = get_optprob(plprob)
   optpars = get_optpars(plprob)
 
-  #=
-  if length(optpars) == 1 
-    return remake(optprob, p=FixedParamCache(optprob.p, 1, optpars[1]))
-  else
-    =#
-    return build_optprob_reduced(optprob, optpars)
-  #end
+  return build_optprob_reduced(optprob, optpars)
+
 end
 
 function build_optprob_reduced(optprob::OptimizationProblem, optpars)
-  #remake(optprob, u0=optpars[idx], lb=optpars[idx], ub=optpars[idx], f=optf_reduced)
   lenpars = length(optpars)
   lenreduced = lenpars - 1
 
@@ -89,14 +51,6 @@ function build_optprob_reduced(optprob::OptimizationProblem, optpars)
     lb_reduced = nothing
   else
     lb_reduced = zeros(eltype(lb_full), lenreduced)
-    #=
-    for i in 1:idx-1
-      lb_reduced[i] = lb_full[i]
-    end
-    for i in idx+1:lenpars
-      lb_reduced[i-1] = lb_full[i]
-    end
-    =#
   end
 
   ub_full = optprob.ub
@@ -104,33 +58,12 @@ function build_optprob_reduced(optprob::OptimizationProblem, optpars)
     ub_reduced = nothing
   else
     ub_reduced = zeros(eltype(ub_full), lenreduced)
-    #=
-    for i in 1:idx-1
-      ub_reduced[i] = ub_full[i]
-    end
-    for i in idx+1:lenpars
-      ub_reduced[i-1] = ub_full[i]
-    end
-    =#
   end
 
   u0_full = optprob.u0
   u0_reduced = zeros(eltype(u0_full), lenreduced)
-  #=
-  for i in 1:idx-1
-    u0_reduced[i] = u0_full[i]
-  end
-  for i in idx+1:lenpars
-    u0_reduced[i-1] = u0_full[i]
-  end
-  =#
-  #OptimizationProblem(optf_reduced, u0_reduced, lb_reduced, ub_reduced)
   remake(optprob, f=optf_reduced, u0=u0_reduced, p=FixedParamCache(optprob.p, 1, u0_full[1], 1.0), lb=lb_reduced, ub=ub_reduced)
 end
-
-#build_optf_reduced(plprob::PLProblem, method) = nothing
-#build_optf_reduced(plprob::PLProblem, method::OptimizationProfiler) =
-#  build_optf_reduced(get_optprob(plprob), get_optpars(plprob))
 
 function build_optf_reduced(optprob::OptimizationProblem, optpars)
   lenpars = length(optpars)
@@ -182,8 +115,6 @@ function build_optf_reduced(optprob::OptimizationProblem, optpars)
       fill_x_full!(x_full, x_reduced, idx, x_fixed)
       
       H_full = get_tmp(hess_cache, x_full)
-      #@show H_full
-      #@show x_full
       hess_full!(H_full, x_full, p.p)
       fill_x_reduced!(H_reduced, H_full, idx)
 
