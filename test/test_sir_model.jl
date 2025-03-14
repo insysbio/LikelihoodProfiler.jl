@@ -58,7 +58,7 @@ end
   
   idxs = 1:3
   rtol = 3e-3 # how to set it?
-  method = IntegrationProfiler(integrator = FBDF(autodiff=false), matrix_type = :hessian)
+  method = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), matrix_type = :hessian)
   sol = profile(plprob, method)
   for i in idxs
     test_sir(sol, i; rtol = rtol)

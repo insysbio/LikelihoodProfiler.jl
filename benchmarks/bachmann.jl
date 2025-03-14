@@ -34,5 +34,5 @@ optmeth = OptimizationProfiler(optimizer = NLopt.LD_LBFGS(), stepper = FixedStep
 sol = profile(plprob, optmeth; idxs=profile_idxs, verbose=true)
 
 ## IntegrationProfiler
-odemeth = IntegrationProfiler(integrator = FBDF(autodiff=false), integrator_opts = (dtmax = 0.01, ), matrix_type = :hessian)
+odemeth = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), integrator_opts = (dtmax = 0.01, ), matrix_type = :hessian)
 sol = profile(plprob, odemeth; idxs=[profile_idxs[1]], verbose=true)

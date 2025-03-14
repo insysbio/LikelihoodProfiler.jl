@@ -87,7 +87,7 @@ end
   
   idxs = 1:9
   rtol = 3e-2 # how to set it?
-  method = IntegrationProfiler(integrator = FBDF(autodiff=false), matrix_type = :hessian)
+  method = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), matrix_type = :hessian)
   sol = profile(plprob, method)
   for i in idxs
     test_jakstat(sol, i; rtol = rtol)
@@ -100,7 +100,7 @@ end
   idxs = 1:9
   rtol = 3e-2 # how to set it?
   method = IntegrationProfiler(
-    integrator = FBDF(autodiff=false), 
+    integrator = FBDF(autodiff = AutoFiniteDiff()), 
     matrix_type = :identity,
     gamma=1000.0)
     # reoptimize=true,
