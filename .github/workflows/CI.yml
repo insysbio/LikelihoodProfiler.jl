@@ -1,4 +1,4 @@
-name: "Run Tests"
+name: CI
 
 on:
   pull_request:
@@ -6,7 +6,6 @@ on:
     branches:
       - master
       - dev
-      - cicoext
     tags: '*'
 jobs:
   test:
