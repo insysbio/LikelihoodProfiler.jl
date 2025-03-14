@@ -129,7 +129,7 @@ function reverse_profile_values!(pv::ProfileValues)
   return nothing
 end
 
-function profiler_init(plprob::PLProblem{T}, method::AbstractProfilerMethod, sciml_prob, idx, dir;
+function profiler_init(plprob::PLProblem{T}, method::AbstractProfilerMethod, idx, dir;
   maxiters = Int(1e4), verbose = false) where T
   
   verbose && @info "Computing initial values."
@@ -145,6 +145,7 @@ function profiler_init(plprob::PLProblem{T}, method::AbstractProfilerMethod, sci
   profile_lb, profile_ub = profile_range isa Tuple ? profile_range : profile_range[idx]
   profile_bound = dir == -1 ? profile_lb : profile_ub
 
+  sciml_prob = build_scimlprob(plprob, method, idx, profile_bound)
   solver_state = solver_init(sciml_prob, plprob, method, idx, dir, profile_bound)
   #solver_reinit!(solver_state, plprob, method, idx, dir, profile_bound)
   profile_values = ProfileValues(Val(false), plprob, typeof(optpars),typeof(x0),typeof(obj0), obj_level)

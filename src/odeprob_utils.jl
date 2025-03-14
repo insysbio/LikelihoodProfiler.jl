@@ -38,10 +38,10 @@ function solver_init(sciml_prob::SciMLBase.AbstractODEProblem,
 
   # update tspan values
   # Warning: Mutation of ODEProblem detected. SciMLBase v2.0 has made ODEProblem temporarily mutable in order to allow for interfacing with EnzymeRules due to a current limitation in the rule system. This change is only intended to be temporary and ODEProblem will return to being a struct in a later non-breaking release. Do not rely on this behavior, use with caution.
-  sciml_prob.tspan = (x0, profile_bound)
+  # sciml_prob.tspan = (x0, profile_bound)
 
   # update p values
-  set_gamma!(sciml_prob.p, -get_gamma(sciml_prob.p))
+  set_gamma!(sciml_prob.p, dir*get_gamma(sciml_prob.p))
   set_idx!(sciml_prob.p, idx)
   set_x_fixed!(sciml_prob.p, 1.0)
 
@@ -72,7 +72,7 @@ function solver_init(sciml_prob::SciMLBase.AbstractODEProblem,
 end
 
 
-function build_scimlprob(plprob::PLProblem, method::IntegrationProfiler)
+function build_scimlprob(plprob::PLProblem, method::IntegrationProfiler, idx, profile_bound)
   optprob = get_optprob(plprob)
   optpars = get_optpars(plprob)
   lp = length(optpars)
@@ -81,7 +81,7 @@ function build_scimlprob(plprob::PLProblem, method::IntegrationProfiler)
   odef = build_odefunc(optf, optpars, Val(get_matrix_type(method)))
 
   gamma = get_gamma(method)
-  xspan = (optpars[1], Inf)
+  xspan = (optpars[idx], profile_bound)
   p = FixedParamCache(gamma, 1, 1.0, gamma)
 
   return ODEProblem(odef, zeros(lp+1), xspan, p)

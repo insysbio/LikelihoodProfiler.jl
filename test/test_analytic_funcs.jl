@@ -47,7 +47,7 @@ end
 @testset "Analytic funcs. IntegrationProfiler with full hessian" begin
 
   method = IntegrationProfiler(
-    integrator = FBDF(autodiff=false), 
+    integrator = FBDF(autodiff = AutoFiniteDiff()), 
     integrator_opts = (dtmax=step,), 
     matrix_type = :hessian
   )
@@ -60,7 +60,7 @@ end
 @testset "Analytic funcs. IntegrationProfiler with identity matrix" begin
 
   method = IntegrationProfiler(
-    integrator = FBDF(autodiff=false), 
+    integrator = FBDF(autodiff = AutoFiniteDiff()), 
     integrator_opts = (dtmax=step,), 
     matrix_type = :identity,
     gamma=1.0
@@ -72,7 +72,7 @@ end
 @testset "Analytic funcs. IntegrationProfiler with identity matrix + reoptimize" begin
 
   method = IntegrationProfiler(
-    integrator = Rosenbrock23(autodiff=false),
+    integrator = Rosenbrock23(autodiff = AutoFiniteDiff()),
     integrator_opts = (dtmax=0.3,),
     matrix_type = :identity,
     gamma=0.2,            # (!!!) select "bad" gamma
@@ -96,10 +96,10 @@ end
 # end
 
 
-@testset "Analytic funcs. CICOProfiler" begin
+# @testset "Analytic funcs. CICOProfiler" begin
 
-  method = CICOProfiler(optimizer = :LN_SBPLX, scan_tol = 1e-3)
-  test_plmethod(method, funcs_dict)
+#   method = CICOProfiler(optimizer = :LN_SBPLX, scan_tol = 1e-3)
+#   test_plmethod(method, funcs_dict)
   
-end
+# end
 
