@@ -118,6 +118,17 @@ funcs_dict = Dict(
     :retcode => [(:Identifiable,:Identifiable),
                 (:Identifiable,:Identifiable)]
   ),
+  :rosenbrock_pars => Dict(
+    :func => (x,p) -> 5.0 + (p[1] - x[1])^2 + p[2]*(x[2] - x[1]^2)^2, 
+    :optim => [1.,1.],
+    :p => [1.0, 50.0],
+    :threshold => 4.0,
+    :ci => [(-1.,3.),
+            (-0.246,9.003)],
+    :profile_range => [(-10.,10.),(-10.,10.)],
+    :retcode => [(:Identifiable,:Identifiable),
+                (:Identifiable,:Identifiable)]
+  ),
   :f_5p => Dict(
     # Two global minima: x = [1, 1] and x = [2, 1].
     # The profile for the first parameter has three stationary points,

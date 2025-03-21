@@ -46,13 +46,14 @@ function build_scimlprob(plprob::PLProblem, method::IntegrationProfiler, idx, pr
   optprob = get_optprob(plprob)
   optpars = get_optpars(plprob)
   lp = length(optpars)
+
   optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=true, h=true)
 
   odef = build_odefunc(optf, optpars, Val(get_matrix_type(method)))
 
   gamma = get_gamma(method)
   xspan = (optpars[idx], profile_bound)
-  p = FixedParamCache(gamma, 1, 1.0, gamma)
+  p = FixedParamCache(optprob.p, 1, 1.0, gamma)
 
   return ODEProblem(odef, zeros(lp+1), xspan, p)
 end
@@ -66,7 +67,7 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:identity})
     gamma = get_gamma(p)
 
     grad! = optf.grad
-    grad!(rhs_vec, view(z, 1:lp))
+    grad!(rhs_vec, view(z, 1:lp), p.p)
     dz[1:lp] .= .- gamma .* rhs_vec
     dz[idx] = one(dz[idx])
     dz[end] = rhs_vec[idx] + dz[idx]
@@ -104,7 +105,7 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:fisher})
     gamma = get_gamma(p)
 
     grad! = optf.grad
-    grad!(rhs_vec, view(z, 1:lp))
+    grad!(rhs_vec, view(z, 1:lp), p.p)
     # Todo for Sasha: write the correct formula
     rhs_vec = 1 ./ rhs_vec
     lhs_mat = rhs_vec[1:lp] * rhs_vec[1:lp]'
@@ -137,10 +138,11 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:hessian})
 
     We note that dΘ2/dC = 1 and eliminate it from the system.
     =#
-
+    
     idx = get_idx(p)
 
     hess! = optf.hess
+    #hess!(lhs_mat, view(z, 1:lp), p.p)
     hess!(lhs_mat, view(z, 1:lp))
 
     # move idx column to the right side
