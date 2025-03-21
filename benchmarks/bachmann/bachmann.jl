@@ -3,7 +3,8 @@
 using PEtab, LikelihoodProfiler, ForwardDiff, Optimization, OptimizationNLopt, OrdinaryDiffEq, Sundials
 
 # Load the model
-path_yaml = joinpath(@__DIR__, "Bachmann_MSB2011", "Bachmann_MSB2011.yaml")
+model_name = "Bachmann_MSB2011"
+path_yaml = joinpath(@__DIR__, "../../models/", "$model_name/$model_name.yaml")
 petab_model = PEtabModel(path_yaml)
 
 # Optimization problem
