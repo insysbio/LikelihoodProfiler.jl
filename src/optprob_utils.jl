@@ -59,7 +59,7 @@ function build_optprob_reduced(optprob::OptimizationProblem, optpars)
   else
     ub_reduced = zeros(eltype(ub_full), lenreduced)
   end
-
+  
   u0_full = optprob.u0
   u0_reduced = zeros(eltype(u0_full), lenreduced)
   remake(optprob, f=optf_reduced, u0=u0_reduced, p=FixedParamCache(optprob.p, 1, u0_full[1], 1.0), lb=lb_reduced, ub=ub_reduced)

@@ -111,7 +111,6 @@ function validate_profile_bound(bound)
 end
 
 function validate_optpars(npars::Int, u)
-  npars < 2 && throw(DimensionMismatch("`optpars` length must be ≥ 2."))
   !(u isa AbstractVector && npars == length(u)) && 
     throw(ArgumentError("OptimizationProblem initial values must be of the same type and size as `optpars`."))
   return nothing
