@@ -46,13 +46,14 @@ function build_scimlprob(plprob::PLProblem, method::IntegrationProfiler, idx, pr
   optprob = get_optprob(plprob)
   optpars = get_optpars(plprob)
   lp = length(optpars)
+
   optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=true, h=true)
 
   odef = build_odefunc(optf, optpars, Val(get_matrix_type(method)))
 
   gamma = get_gamma(method)
   xspan = (optpars[idx], profile_bound)
-  p = FixedParamCache(gamma, 1, 1.0, gamma)
+  p = FixedParamCache(optprob.p, 1, 1.0, gamma)
 
   return ODEProblem(odef, zeros(lp+1), xspan, p)
 end
@@ -141,8 +142,9 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:hessian})
     idx = get_idx(p)
 
     hess! = optf.hess
-    hess!(lhs_mat, view(z, 1:lp), p.p)
-    
+    #hess!(lhs_mat, view(z, 1:lp), p.p)
+    hess!(lhs_mat, view(z, 1:lp))
+
     # move idx column to the right side
     for i in 1:lp
       rhs_vec[i] = -lhs_mat[i, idx]

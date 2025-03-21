@@ -14,7 +14,12 @@ function test_plmethod(method, funcs_dict)
       else
         optf = OptimizationFunction(_f[:func]; grad=_f[:grad!], hess=_f[:hess!])
       end
-      optprob = OptimizationProblem(optf, _f[:optim])
+      if !haskey(_f, :p)
+        optprob = OptimizationProblem(optf, _f[:optim])
+      else
+        optprob = OptimizationProblem(optf, _f[:optim], _f[:p])
+      end
+
       plprob = PLProblem(optprob, _f[:optim], _f[:profile_range]; threshold=_f[:threshold])
 
       sol = profile(plprob, method)
