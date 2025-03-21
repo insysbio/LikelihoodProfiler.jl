@@ -1,7 +1,7 @@
 
 funcs_dict = Dict(
 
-#=
+
   :f_1p => Dict(
     :func => (x,p) -> 5.0 + (x[1]-3.0)^2,
     :optim => [3.],
@@ -10,7 +10,7 @@ funcs_dict = Dict(
     :profile_range => [(-20.,20.)],
     :retcode => [(:Identifiable,:Identifiable)]
   ),
-=#
+
   :f_1p_ex => Dict(
     :func => (x,p) -> 5.0 + (x[1]-1e-8)^2 + 0.0*x[2], 
     :optim => [1e-8, 2.],

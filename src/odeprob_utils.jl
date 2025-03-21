@@ -25,7 +25,7 @@ function solver_init(sciml_prob::SciMLBase.AbstractODEProblem,
     function affect!(integrator)
       set_x_fixed!(solver_state_opt.reinit_cache.p, integrator.u[idx])
       solver_state_opt.reinit_cache.u0 = integrator.u[1:end-1][1:end .!= idx]
-      sol = solve!(solver_state_opt)
+      sol = solve_optcache(solver_state_opt)
       for i in 1:length(integrator.u)-1
         i == idx && continue
         integrator.u[i] = sol[i - (i>idx)]
