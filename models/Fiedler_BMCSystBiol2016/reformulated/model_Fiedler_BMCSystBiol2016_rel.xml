@@ -1,0 +1,1644 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" xmlns:layout="http://www.sbml.org/sbml/level3/version1/layout/version1" xmlns:render="http://www.sbml.org/sbml/level3/version1/render/version1" level="3" version="1" layout:required="false" render:required="false">
+  <model metaid="COPASI0" id="Fiedler_BMCSystBiol2016_rel" name="Fiedler_BMCSystBiol2016_rel" substanceUnits="substance" timeUnits="time" volumeUnits="volume" areaUnits="area" lengthUnits="length" extentUnits="substance">
+    <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+        <rdf:Description rdf:about="#benchmark_models_petab">
+          <bqbiol:isDescribedBy>
+            <rdf:Bag>
+              <rdf:li rdf:resource="http://identifiers.org/doi/10.1186/s12918-016-0319-7"/>
+            </rdf:Bag>
+          </bqbiol:isDescribedBy>
+        </rdf:Description>
+      </rdf:RDF>
+    </annotation>
+    <listOfUnitDefinitions>
+      <unitDefinition id="length" name="length">
+        <listOfUnits>
+          <unit kind="metre" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="area" name="area">
+        <listOfUnits>
+          <unit kind="metre" exponent="2" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="volume" name="volume">
+        <listOfUnits>
+          <unit kind="litre" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="time" name="time">
+        <listOfUnits>
+          <unit kind="second" exponent="1" scale="0" multiplier="3600"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="substance" name="substance">
+        <listOfUnits>
+          <unit kind="mole" exponent="1" scale="0" multiplier="1"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment metaid="COPASI1" id="cyt" name="cyt" spatialDimensions="3" size="1" units="volume" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI1"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </compartment>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species metaid="COPASI2" id="x1" name="x1" compartment="cyt" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+          </COPASI>
+        </annotation>
+      </species>
+      <species metaid="COPASI3" id="x2" name="x2" compartment="cyt" initialConcentration="0.999999999999996" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+          </COPASI>
+        </annotation>
+      </species>
+      <species metaid="COPASI4" id="x3" name="x3" compartment="cyt" initialConcentration="0.999999999999997" substanceUnits="substance" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+          </COPASI>
+        </annotation>
+      </species>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter metaid="COPASI5" id="k11_k10" name="k11_k10" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI5"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI6" id="tau1" name="tau1" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI6"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI7" id="tau2" name="tau2" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI7"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI8" id="K1_ERK0" name="K1_ERK0" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI8"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI9" id="k11" name="k11" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI10" id="k2" name="k2" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI10"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI11" id="K2" name="K2" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI11"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI12" id="k3_Raf0" name="k3_Raf0" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI12"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI13" id="k4" name="k4" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI13"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI14" id="K3" name="K3" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI14"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI15" id="k5_MEK0" name="k5_MEK0" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI15"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI16" id="k6" name="k6" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI16"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI17" id="k1max" name="k1max" constant="false">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI18" id="xi" name="xi" value="0" constant="false">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI19" id="Sorafenib" name="Sorafenib" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI19"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI20" id="UO126" name="UO126" value="0" constant="true">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI20"/>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+      </parameter>
+      <parameter metaid="COPASI21" id="k10" name="k10" constant="false">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+          </COPASI>
+        </annotation>
+      </parameter>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="x1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <plus/>
+                <apply>
+                  <times/>
+                  <ci> K1_ERK0 </ci>
+                  <ci> k10 </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <apply>
+                    <plus/>
+                    <apply>
+                      <times/>
+                      <apply>
+                        <power/>
+                        <ci> K1_ERK0 </ci>
+                        <cn> 2 </cn>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <ci> k10 </ci>
+                        <cn> 2 </cn>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <cn> 2 </cn>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                        <ci> k6 </ci>
+                        <apply>
+                          <power/>
+                          <ci> k10 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                      </apply>
+                      <ci> k5_MEK0 </ci>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k6 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k10 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <ci> k5_MEK0 </ci>
+                        <cn> 2 </cn>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k4 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k6 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <apply>
+                            <plus/>
+                            <ci> k10 </ci>
+                            <ci> k2 </ci>
+                          </apply>
+                          <cn> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <apply>
+                          <times/>
+                          <ci> k3_Raf0 </ci>
+                          <ci> k5_MEK0 </ci>
+                        </apply>
+                        <cn> 2 </cn>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <cn> 2 </cn>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                        <ci> k4 </ci>
+                        <apply>
+                          <power/>
+                          <ci> k6 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                        <ci> k10 </ci>
+                        <apply>
+                          <plus/>
+                          <ci> k10 </ci>
+                          <ci> k2 </ci>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <times/>
+                        <ci> k3_Raf0 </ci>
+                        <apply>
+                          <power/>
+                          <ci> k5_MEK0 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <cn> 2 </cn>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn> 2 </cn>
+                        </apply>
+                        <ci> k4 </ci>
+                        <ci> k6 </ci>
+                        <ci> k10 </ci>
+                        <apply>
+                          <plus/>
+                          <ci> k10 </ci>
+                          <ci> k2 </ci>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <times/>
+                        <ci> k3_Raf0 </ci>
+                        <ci> k5_MEK0 </ci>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <cn> 4 </cn>
+                        <ci> K1_ERK0 </ci>
+                        <ci> k2 </ci>
+                        <ci> k4 </ci>
+                        <ci> k6 </ci>
+                        <ci> k10 </ci>
+                      </apply>
+                      <apply>
+                        <times/>
+                        <ci> k3_Raf0 </ci>
+                        <ci> k5_MEK0 </ci>
+                      </apply>
+                    </apply>
+                  </apply>
+                  <cn> 0.5 </cn>
+                </apply>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <ci> K1_ERK0 </ci>
+                    <ci> k6 </ci>
+                    <ci> k10 </ci>
+                  </apply>
+                  <ci> k5_MEK0 </ci>
+                </apply>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <times/>
+                  <ci> K1_ERK0 </ci>
+                  <ci> k4 </ci>
+                  <ci> k6 </ci>
+                  <apply>
+                    <plus/>
+                    <ci> k10 </ci>
+                    <ci> k2 </ci>
+                  </apply>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> k3_Raf0 </ci>
+                  <ci> k5_MEK0 </ci>
+                </apply>
+              </apply>
+            </apply>
+            <apply>
+              <times/>
+              <cn> 2 </cn>
+              <apply>
+                <plus/>
+                <ci> k2 </ci>
+                <apply>
+                  <times/>
+                  <ci> K1_ERK0 </ci>
+                  <ci> k10 </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> K1_ERK0 </ci>
+                  <ci> k2 </ci>
+                </apply>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <ci> K1_ERK0 </ci>
+                    <ci> k2 </ci>
+                    <ci> k6 </ci>
+                  </apply>
+                  <ci> k5_MEK0 </ci>
+                </apply>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <ci> K1_ERK0 </ci>
+                    <ci> k6 </ci>
+                    <ci> k10 </ci>
+                  </apply>
+                  <ci> k5_MEK0 </ci>
+                </apply>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="x2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <minus/>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <power/>
+                    <apply>
+                      <plus/>
+                      <apply>
+                        <times/>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k10 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <cn type="integer"> 2 </cn>
+                          <apply>
+                            <power/>
+                            <ci> K1_ERK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <ci> k6 </ci>
+                          <apply>
+                            <power/>
+                            <ci> k10 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                        </apply>
+                        <ci> k5_MEK0 </ci>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <apply>
+                            <power/>
+                            <ci> K1_ERK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <apply>
+                            <power/>
+                            <ci> k6 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <apply>
+                            <power/>
+                            <ci> k10 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k5_MEK0 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <apply>
+                            <power/>
+                            <ci> K1_ERK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <apply>
+                            <power/>
+                            <ci> k4 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <apply>
+                            <power/>
+                            <ci> k6 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <apply>
+                            <power/>
+                            <apply>
+                              <plus/>
+                              <ci> k10 </ci>
+                              <ci> k2 </ci>
+                            </apply>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <apply>
+                            <times/>
+                            <ci> k3_Raf0 </ci>
+                            <ci> k5_MEK0 </ci>
+                          </apply>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <cn type="integer"> 2 </cn>
+                          <apply>
+                            <power/>
+                            <ci> K1_ERK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <ci> k4 </ci>
+                          <apply>
+                            <power/>
+                            <ci> k6 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <ci> k10 </ci>
+                          <apply>
+                            <plus/>
+                            <ci> k10 </ci>
+                            <ci> k2 </ci>
+                          </apply>
+                        </apply>
+                        <apply>
+                          <times/>
+                          <ci> k3_Raf0 </ci>
+                          <apply>
+                            <power/>
+                            <ci> k5_MEK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <cn type="integer"> 2 </cn>
+                          <apply>
+                            <power/>
+                            <ci> K1_ERK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <ci> k4 </ci>
+                          <ci> k6 </ci>
+                          <ci> k10 </ci>
+                          <apply>
+                            <plus/>
+                            <ci> k10 </ci>
+                            <ci> k2 </ci>
+                          </apply>
+                        </apply>
+                        <apply>
+                          <times/>
+                          <ci> k3_Raf0 </ci>
+                          <ci> k5_MEK0 </ci>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <cn type="integer"> 4 </cn>
+                          <ci> K1_ERK0 </ci>
+                          <ci> k2 </ci>
+                          <ci> k4 </ci>
+                          <ci> k6 </ci>
+                          <ci> k10 </ci>
+                        </apply>
+                        <apply>
+                          <times/>
+                          <ci> k3_Raf0 </ci>
+                          <ci> k5_MEK0 </ci>
+                        </apply>
+                      </apply>
+                    </apply>
+                    <cn> 0.5 </cn>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <ci> K1_ERK0 </ci>
+                    <ci> k10 </ci>
+                  </apply>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <ci> K1_ERK0 </ci>
+                      <ci> k6 </ci>
+                      <ci> k10 </ci>
+                    </apply>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                </apply>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <ci> K1_ERK0 </ci>
+                    <ci> k2 </ci>
+                    <ci> k4 </ci>
+                    <ci> k6 </ci>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <ci> k3_Raf0 </ci>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                </apply>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <times/>
+                  <ci> K1_ERK0 </ci>
+                  <ci> k4 </ci>
+                  <ci> k6 </ci>
+                  <ci> k10 </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> k3_Raf0 </ci>
+                  <ci> k5_MEK0 </ci>
+                </apply>
+              </apply>
+            </apply>
+            <apply>
+              <plus/>
+              <apply>
+                <power/>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <times/>
+                    <apply>
+                      <power/>
+                      <ci> K1_ERK0 </ci>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                    <apply>
+                      <power/>
+                      <ci> k10 </ci>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <cn type="integer"> 2 </cn>
+                      <apply>
+                        <power/>
+                        <ci> K1_ERK0 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                      <ci> k6 </ci>
+                      <apply>
+                        <power/>
+                        <ci> k10 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                    </apply>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <apply>
+                        <power/>
+                        <ci> K1_ERK0 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <ci> k6 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <ci> k10 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <power/>
+                      <ci> k5_MEK0 </ci>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <apply>
+                        <power/>
+                        <ci> K1_ERK0 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <ci> k4 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <ci> k6 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <apply>
+                          <plus/>
+                          <ci> k10 </ci>
+                          <ci> k2 </ci>
+                        </apply>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <power/>
+                      <apply>
+                        <times/>
+                        <ci> k3_Raf0 </ci>
+                        <ci> k5_MEK0 </ci>
+                      </apply>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <cn type="integer"> 2 </cn>
+                      <apply>
+                        <power/>
+                        <ci> K1_ERK0 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                      <ci> k4 </ci>
+                      <apply>
+                        <power/>
+                        <ci> k6 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                      <ci> k10 </ci>
+                      <apply>
+                        <plus/>
+                        <ci> k10 </ci>
+                        <ci> k2 </ci>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <times/>
+                      <ci> k3_Raf0 </ci>
+                      <apply>
+                        <power/>
+                        <ci> k5_MEK0 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <cn type="integer"> 2 </cn>
+                      <apply>
+                        <power/>
+                        <ci> K1_ERK0 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                      <ci> k4 </ci>
+                      <ci> k6 </ci>
+                      <ci> k10 </ci>
+                      <apply>
+                        <plus/>
+                        <ci> k10 </ci>
+                        <ci> k2 </ci>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <times/>
+                      <ci> k3_Raf0 </ci>
+                      <ci> k5_MEK0 </ci>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <cn type="integer"> 4 </cn>
+                      <ci> K1_ERK0 </ci>
+                      <ci> k2 </ci>
+                      <ci> k4 </ci>
+                      <ci> k6 </ci>
+                      <ci> k10 </ci>
+                    </apply>
+                    <apply>
+                      <times/>
+                      <ci> k3_Raf0 </ci>
+                      <ci> k5_MEK0 </ci>
+                    </apply>
+                  </apply>
+                </apply>
+                <cn> 0.5 </cn>
+              </apply>
+              <apply>
+                <times/>
+                <ci> K1_ERK0 </ci>
+                <ci> k10 </ci>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <times/>
+                  <ci> K1_ERK0 </ci>
+                  <ci> k6 </ci>
+                  <ci> k10 </ci>
+                </apply>
+                <ci> k5_MEK0 </ci>
+              </apply>
+              <apply>
+                <times/>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <ci> k2 </ci>
+                    <ci> k4 </ci>
+                  </apply>
+                  <ci> k3_Raf0 </ci>
+                </apply>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <times/>
+                    <cn type="integer"> 2 </cn>
+                    <ci> K1_ERK0 </ci>
+                  </apply>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <ci> K1_ERK0 </ci>
+                      <ci> k6 </ci>
+                    </apply>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+              </apply>
+              <apply>
+                <times/>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <ci> K1_ERK0 </ci>
+                    <ci> k4 </ci>
+                    <ci> k10 </ci>
+                  </apply>
+                  <ci> k3_Raf0 </ci>
+                </apply>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <divide/>
+                    <ci> k6 </ci>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="x3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <minus/>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <power/>
+                    <apply>
+                      <plus/>
+                      <apply>
+                        <times/>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k10 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <cn type="integer"> 2 </cn>
+                          <apply>
+                            <power/>
+                            <ci> K1_ERK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <ci> k6 </ci>
+                          <apply>
+                            <power/>
+                            <ci> k10 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                        </apply>
+                        <ci> k5_MEK0 </ci>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <apply>
+                            <power/>
+                            <ci> K1_ERK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <apply>
+                            <power/>
+                            <ci> k6 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <apply>
+                            <power/>
+                            <ci> k10 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k5_MEK0 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <apply>
+                            <power/>
+                            <ci> K1_ERK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <apply>
+                            <power/>
+                            <ci> k4 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <apply>
+                            <power/>
+                            <ci> k6 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <apply>
+                            <power/>
+                            <apply>
+                              <plus/>
+                              <ci> k10 </ci>
+                              <ci> k2 </ci>
+                            </apply>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <apply>
+                            <times/>
+                            <ci> k3_Raf0 </ci>
+                            <ci> k5_MEK0 </ci>
+                          </apply>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <cn type="integer"> 2 </cn>
+                          <apply>
+                            <power/>
+                            <ci> K1_ERK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <ci> k4 </ci>
+                          <apply>
+                            <power/>
+                            <ci> k6 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <ci> k10 </ci>
+                          <apply>
+                            <plus/>
+                            <ci> k10 </ci>
+                            <ci> k2 </ci>
+                          </apply>
+                        </apply>
+                        <apply>
+                          <times/>
+                          <ci> k3_Raf0 </ci>
+                          <apply>
+                            <power/>
+                            <ci> k5_MEK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <cn type="integer"> 2 </cn>
+                          <apply>
+                            <power/>
+                            <ci> K1_ERK0 </ci>
+                            <cn type="integer"> 2 </cn>
+                          </apply>
+                          <ci> k4 </ci>
+                          <ci> k6 </ci>
+                          <ci> k10 </ci>
+                          <apply>
+                            <plus/>
+                            <ci> k10 </ci>
+                            <ci> k2 </ci>
+                          </apply>
+                        </apply>
+                        <apply>
+                          <times/>
+                          <ci> k3_Raf0 </ci>
+                          <ci> k5_MEK0 </ci>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <divide/>
+                        <apply>
+                          <times/>
+                          <cn type="integer"> 4 </cn>
+                          <ci> K1_ERK0 </ci>
+                          <ci> k2 </ci>
+                          <ci> k4 </ci>
+                          <ci> k6 </ci>
+                          <ci> k10 </ci>
+                        </apply>
+                        <apply>
+                          <times/>
+                          <ci> k3_Raf0 </ci>
+                          <ci> k5_MEK0 </ci>
+                        </apply>
+                      </apply>
+                    </apply>
+                    <cn> 0.5 </cn>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <ci> K1_ERK0 </ci>
+                    <ci> k10 </ci>
+                  </apply>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <ci> K1_ERK0 </ci>
+                      <ci> k6 </ci>
+                      <ci> k10 </ci>
+                    </apply>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                </apply>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <ci> K1_ERK0 </ci>
+                    <ci> k2 </ci>
+                    <ci> k4 </ci>
+                    <ci> k6 </ci>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <ci> k3_Raf0 </ci>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                </apply>
+              </apply>
+              <apply>
+                <divide/>
+                <apply>
+                  <times/>
+                  <ci> K1_ERK0 </ci>
+                  <ci> k4 </ci>
+                  <ci> k6 </ci>
+                  <ci> k10 </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> k3_Raf0 </ci>
+                  <ci> k5_MEK0 </ci>
+                </apply>
+              </apply>
+            </apply>
+            <apply>
+              <plus/>
+              <apply>
+                <times/>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <divide/>
+                    <ci> k6 </ci>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                  <cn type="integer"> 1 </cn>
+                </apply>
+                <apply>
+                  <power/>
+                  <apply>
+                    <plus/>
+                    <apply>
+                      <times/>
+                      <apply>
+                        <power/>
+                        <ci> K1_ERK0 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <ci> k10 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <cn type="integer"> 2 </cn>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <ci> k6 </ci>
+                        <apply>
+                          <power/>
+                          <ci> k10 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <ci> k5_MEK0 </ci>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k6 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k10 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <ci> k5_MEK0 </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k4 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> k6 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <apply>
+                            <plus/>
+                            <ci> k10 </ci>
+                            <ci> k2 </ci>
+                          </apply>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <apply>
+                          <times/>
+                          <ci> k3_Raf0 </ci>
+                          <ci> k5_MEK0 </ci>
+                        </apply>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <cn type="integer"> 2 </cn>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <ci> k4 </ci>
+                        <apply>
+                          <power/>
+                          <ci> k6 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <ci> k10 </ci>
+                        <apply>
+                          <plus/>
+                          <ci> k10 </ci>
+                          <ci> k2 </ci>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <times/>
+                        <ci> k3_Raf0 </ci>
+                        <apply>
+                          <power/>
+                          <ci> k5_MEK0 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <cn type="integer"> 2 </cn>
+                        <apply>
+                          <power/>
+                          <ci> K1_ERK0 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <ci> k4 </ci>
+                        <ci> k6 </ci>
+                        <ci> k10 </ci>
+                        <apply>
+                          <plus/>
+                          <ci> k10 </ci>
+                          <ci> k2 </ci>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <times/>
+                        <ci> k3_Raf0 </ci>
+                        <ci> k5_MEK0 </ci>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <cn type="integer"> 4 </cn>
+                        <ci> K1_ERK0 </ci>
+                        <ci> k2 </ci>
+                        <ci> k4 </ci>
+                        <ci> k6 </ci>
+                        <ci> k10 </ci>
+                      </apply>
+                      <apply>
+                        <times/>
+                        <ci> k3_Raf0 </ci>
+                        <ci> k5_MEK0 </ci>
+                      </apply>
+                    </apply>
+                  </apply>
+                  <cn> 0.5 </cn>
+                </apply>
+              </apply>
+              <apply>
+                <times/>
+                <ci> K1_ERK0 </ci>
+                <ci> k10 </ci>
+                <apply>
+                  <power/>
+                  <apply>
+                    <plus/>
+                    <apply>
+                      <divide/>
+                      <ci> k6 </ci>
+                      <ci> k5_MEK0 </ci>
+                    </apply>
+                    <cn type="integer"> 1 </cn>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+              </apply>
+              <apply>
+                <times/>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <ci> k2 </ci>
+                    <ci> k4 </ci>
+                    <ci> k6 </ci>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <ci> k3_Raf0 </ci>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                </apply>
+                <apply>
+                  <plus/>
+                  <ci> K1_ERK0 </ci>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <ci> K1_ERK0 </ci>
+                      <ci> k6 </ci>
+                    </apply>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+              </apply>
+              <apply>
+                <times/>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <ci> K1_ERK0 </ci>
+                    <apply>
+                      <power/>
+                      <ci> k6 </ci>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                    <ci> k10 </ci>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <ci> k3_Raf0 </ci>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                </apply>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <divide/>
+                    <ci> k6 </ci>
+                    <ci> k5_MEK0 </ci>
+                  </apply>
+                  <cn type="integer"> 1 </cn>
+                </apply>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+    <listOfRules>
+      <assignmentRule variable="xi">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <ci> K1_ERK0 </ci>
+            <apply>
+              <plus/>
+              <ci> K1_ERK0 </ci>
+              <ci> x3 </ci>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="k10">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <ci> k11 </ci>
+            <ci> k11_k10 </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="k1max">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <ci> k10 </ci>
+            <apply>
+              <times/>
+              <ci> k11 </ci>
+              <apply>
+                <minus/>
+                <cn> 1 </cn>
+                <apply>
+                  <exp/>
+                  <apply>
+                    <minus/>
+                    <apply>
+                      <divide/>
+                      <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                      <ci> tau1 </ci>
+                    </apply>
+                  </apply>
+                </apply>
+              </apply>
+              <apply>
+                <exp/>
+                <apply>
+                  <minus/>
+                  <apply>
+                    <divide/>
+                    <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                    <ci> tau2 </ci>
+                  </apply>
+                </apply>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <rateRule variable="x1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <apply>
+              <times/>
+              <ci> k1max </ci>
+              <ci> xi </ci>
+              <apply>
+                <minus/>
+                <cn> 1 </cn>
+                <ci> x1 </ci>
+              </apply>
+            </apply>
+            <apply>
+              <times/>
+              <ci> k2 </ci>
+              <ci> x1 </ci>
+            </apply>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="x2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <apply>
+              <times/>
+              <apply>
+                <divide/>
+                <apply>
+                  <times/>
+                  <ci> k3_Raf0 </ci>
+                  <ci> K2 </ci>
+                  <ci> x1 </ci>
+                </apply>
+                <apply>
+                  <plus/>
+                  <ci> K2 </ci>
+                  <ci> Sorafenib </ci>
+                </apply>
+              </apply>
+              <apply>
+                <minus/>
+                <cn> 1 </cn>
+                <ci> x2 </ci>
+              </apply>
+            </apply>
+            <apply>
+              <times/>
+              <ci> k4 </ci>
+              <ci> x2 </ci>
+            </apply>
+          </apply>
+        </math>
+      </rateRule>
+      <rateRule variable="x3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <apply>
+              <times/>
+              <apply>
+                <divide/>
+                <apply>
+                  <times/>
+                  <ci> k5_MEK0 </ci>
+                  <ci> K3 </ci>
+                  <ci> x2 </ci>
+                </apply>
+                <apply>
+                  <plus/>
+                  <ci> K3 </ci>
+                  <ci> UO126 </ci>
+                </apply>
+              </apply>
+              <apply>
+                <minus/>
+                <cn> 1 </cn>
+                <ci> x3 </ci>
+              </apply>
+            </apply>
+            <apply>
+              <times/>
+              <ci> k6 </ci>
+              <ci> x3 </ci>
+            </apply>
+          </apply>
+        </math>
+      </rateRule>
+    </listOfRules>
+  </model>
+</sbml>
