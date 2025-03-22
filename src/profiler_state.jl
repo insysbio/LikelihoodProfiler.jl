@@ -67,7 +67,7 @@ function profiler_update_retcode!(profiler_state::ProfilerState)
     profiler_state.retcode = :MaxIters
   elseif dir*curx >= dir*profile_bound
     profiler_state.retcode = :NonIdentifiable
-  elseif hasthreshold(plprob) && (curobj >= obj_level)
+  elseif hasthreshold(plprob) && isfinite(curobj) && (curobj >= obj_level)
     profiler_state.retcode = :Identifiable
   else
     # continue profiling
