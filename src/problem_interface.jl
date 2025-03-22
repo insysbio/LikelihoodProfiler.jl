@@ -2,14 +2,15 @@
 abstract type AbstractPLProblem{T,PF} end
 
 """
-
+    PLProblem{T,probType,P,PF,PR}
+    
 Defines a profile likelihood problem.
 
 ## Mathematical Specification of a Profile Likelihood Problem:
 
 A profile likelihood problem is defined by 
-- an objective function (usually negative log-likelihood function) wrapped within an `optprob::OptimizationProblem` (see Optimization.jl docs https://docs.sciml.ai/Optimization/stable/API/optimization_problem/).
-- a set of parameters `optpars` that minimize the objective.
+- an objective function (usually negative log-likelihood function) wrapped within an `optprob::OptimizationProblem`. Consult [Optimization.jl docs](https://docs.sciml.ai/Optimization/stable/API/optimization_problem/) for details.
+- a set of optimal values of the parameters `optpars` that minimize the objective function.
 
 ### Constructors
 
@@ -28,7 +29,7 @@ PLProblem(optprob, optpars, profile_range = tuple.(optprob.lb, optprob.ub);
 
 - `conf_level`: The confidence level for the profile likelihood. Defaults to `0.95`.
 - `df`: The degrees of freedom for the profile likelihood. Defaults to `1`.
-- `threshold`: The threshold for the profile likelihood. Defaults to `chi2_quantile(conf_level, df)`.
+- `threshold`: The threshold for the profile likelihood. Can be set to `Inf` if confidence interval endpoint estimation is not required. Defaults to `chi2_quantile(conf_level, df)`.
 """
 struct PLProblem{T,probType,P,PF,PR} <: AbstractPLProblem{T,PF}
   profile_type::T

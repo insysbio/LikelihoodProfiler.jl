@@ -1,6 +1,10 @@
-# Overview
+## Overview
 
-LikelihoodProfiler is a [Julia](https://julialang.org/downloads/) package for practical identifiability analysis and confidence intervals estimation using the profile likelihood approach.
+LikelihoodProfiler is a [Julia](https://julialang.org/downloads/) package for practical identifiability analysis and confidence intervals estimation using the profile likelihood approach. The package provides a unified interface for various profile likelihood-based methods of practical identifiability: 
+- Confidence intervals by Constrained Optimization method (CICO)
+- Optimization-based likelihood profiles
+- Integration-based likelihood profiles
+- Hybrid approaches
 
 ## Installation
 
@@ -9,14 +13,6 @@ In Julia terminal run the following command:
 ```julia
 import Pkg; Pkg.add("LikelihoodProfiler")
 ```
-
-## Methods
-
-LikelihoodProfiler.jl provides a unified interface for various profile likelihood-based methods of practical identifiability: 
-- Confidence intervals by Constrained Optimization method (CICO)
-- Optimization-based likelihood profiles
-- Integration-based likelihood profiles
-- Hybrid approaches
 
 ## Citation
 

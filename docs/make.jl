@@ -10,6 +10,11 @@ makedocs(
         "Extended Tutorials" => [
             "Taxol model" => "case_studies/taxol.md"
         ],
+        "Basics" => [
+            "Problem interface" => "problem_interface.md",
+            "Profile likelihood methods" => "profile_methods.md",
+            "Solution interface" => "solution_interface.md",
+        ],
         "API" => "api.md",
     ],
 )

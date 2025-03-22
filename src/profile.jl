@@ -18,7 +18,8 @@ Profiles the likelihood function for the given problem `plprob` using the specif
 - `method::AbstractProfilerMethod`: The method to be used for profiling.
 - `idxs::AbstractVector{<:Int}`: Indices of the parameters to be profiled. Defaults to all parameters.
 - `parallel_type::Symbol`: Specifies the type of parallelism to be used. Defaults to `:none`.
-- `kwargs...`: Additional keyword arguments to be passed to the profiling method.
+- `maxiters::Int`: Maximum number of iterations for one branch (left and right) of the profiling process. Defaults to `1e4`.
+- `verbose::Bool`: Indicates whether to display the progress of the profiling process. Defaults to `false`.
 
 ### Returns
 
