@@ -27,7 +27,7 @@ CICOBaseExt = "CICOBase"
 [compat]
 CICOBase = "0.5.3"
 DataFrames = "1.7.0"
-DataInterpolations = "6.5.2"
+DataInterpolations = "6.5.2, 7"
 Distributions = "0.25"
 ForwardDiff = "0.10.36"
 Optimization = "4.1.1"
