@@ -16,7 +16,7 @@ sol1 = profile(plprob, method1; verbose=true)
 
 #################################### IntegrationProfiler ####################################
 
-method2 = IntegrationProfiler(integrator=FBDF(autodiff = AutoFiniteDiff()), integrator_opts=(dtmax=0.1,), matrix_type=:hessian)
+method2 = IntegrationProfiler(integrator=FBDF(), integrator_opts=(dtmax=0.1,), matrix_type=:hessian)
 sol2 = profile(plprob, method2; verbose=true)
 
 ######################################## CICOProfiler #######################################
