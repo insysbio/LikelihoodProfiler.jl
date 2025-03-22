@@ -6,7 +6,7 @@ using Optimization, OptimizationNLopt, Plots, OrdinaryDiffEq, ForwardDiff, CICOB
 optf = OptimizationFunction((x,p) -> 5.0 + (x[1]-3.0)^2 + (x[2]-4.0)^2, AutoForwardDiff())
 optprob = OptimizationProblem(optf, [0.,0.]; lb=[-3,-1], ub=[10,9])
 
-plprob = PLProblem(optprob, [3.,4.], [(-5,20), (-2,15)]; threshold=4.0)
+plprob = PLProblem(optprob, [3.,4.], [(-5,20), (-2,15)]; threshold=Inf)
 
 #################################### OptimizationProfiler ####################################
 
