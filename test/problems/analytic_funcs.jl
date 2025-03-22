@@ -1,7 +1,7 @@
 
 funcs_dict = Dict(
 
-#=
+
   :f_1p => Dict(
     :func => (x,p) -> 5.0 + (x[1]-3.0)^2,
     :optim => [3.],
@@ -10,7 +10,7 @@ funcs_dict = Dict(
     :profile_range => [(-20.,20.)],
     :retcode => [(:Identifiable,:Identifiable)]
   ),
-=#
+
   :f_1p_ex => Dict(
     :func => (x,p) -> 5.0 + (x[1]-1e-8)^2 + 0.0*x[2], 
     :optim => [1e-8, 2.],
@@ -114,6 +114,17 @@ funcs_dict = Dict(
     :threshold => 4.0,
     :ci => [(-1.,3.),
             (-0.174,9.)],
+    :profile_range => [(-10.,10.),(-10.,10.)],
+    :retcode => [(:Identifiable,:Identifiable),
+                (:Identifiable,:Identifiable)]
+  ),
+  :rosenbrock_pars => Dict(
+    :func => (x,p) -> 5.0 + (p[1] - x[1])^2 + p[2]*(x[2] - x[1]^2)^2, 
+    :optim => [1.,1.],
+    :p => [1.0, 50.0],
+    :threshold => 4.0,
+    :ci => [(-1.,3.),
+            (-0.246,9.003)],
     :profile_range => [(-10.,10.),(-10.,10.)],
     :retcode => [(:Identifiable,:Identifiable),
                 (:Identifiable,:Identifiable)]

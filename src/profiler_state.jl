@@ -155,9 +155,14 @@ end
 
 function profiler_step!(profiler::ProfilerState, method::OptimizationProfiler)
   stepper = get_stepper(method)
+  optcache = get_solver_state(profiler)
+  idx = get_idx(profiler)
 
   pars_guess = compute_next_pars!(profiler, stepper)
-  sol = solve_optcache(profiler)
+  fill_x_reduced!(optcache.reinit_cache.u0, pars_guess, idx)
+  set_x_fixed!(optcache.reinit_cache.p, pars_guess[idx])
+  
+  sol = solve_optcache(optcache)
 
   if SciMLBase.successful_retcode(sol.retcode)
     idx = get_idx(profiler)
@@ -173,15 +178,23 @@ function profiler_step!(profiler::ProfilerState, method::OptimizationProfiler)
 
 end
 
-function solve_optcache(profiler::ProfilerState)
-  optcache = get_solver_state(profiler)
-  pars_guess = get_parscache(profiler)
-  idx = get_idx(profiler)
+function solve_optcache(optcache::OptimizationCache)  
+  if isempty(optcache.reinit_cache.u0)
+    return solve_empty_optcache(optcache)
+  else
+    return solve!(optcache)
+  end
+end
 
-  fill_x_reduced!(optcache.reinit_cache.u0, pars_guess, idx)
-  set_x_fixed!(optcache.reinit_cache.p, pars_guess[idx])
+function solve_empty_optcache(optcache::OptimizationCache)
+  u = optcache.reinit_cache.u0
+  p = optcache.reinit_cache.p
+  
+  t = @elapsed obj = optcache.f(u, p)
+  stats = SciMLBase.OptimizationStats(; iterations = 1, time = t, fevals = 1)
 
-  return solve!(optcache)
+  return SciMLBase.build_solution(optcache, optcache.opt, u, obj; 
+    retcode = ReturnCode.Success, stats)
 end
 
 
@@ -200,7 +213,7 @@ function profiler_step!(profiler::ProfilerState, method::IntegrationProfiler)
     profiler.numiter += 1
   else
     @warn "Solver returned $(integrator.sol.retcode) retcode at profile point x = $(get_curx(profiler)). Profiling is interrupted."
-    profiler.solver_retcode = sol.retcode
+    profiler.solver_retcode = integrator.sol.retcode
   end
 
 end

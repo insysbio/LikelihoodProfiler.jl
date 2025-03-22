@@ -101,7 +101,7 @@ function promote_profile_range(x::Number, profile_range::Tuple)
   lb, ub = profile_range
   validate_profile_bound(lb)
   validate_profile_bound(ub)
-  !(lb <= x <= ub) && throw(ArgumentError("Inconsistent `profile_range`: profiling value `x` must be lb <= x <= ub ."))
+  !(lb <= x <= ub) && throw(ArgumentError("The initial values provided for profiling parameters must lie within the specified `profile_range`: `profile_range[1] ≤ x ≤ profile_range[2]`"))
   return (float(lb),float(ub))
 end
 
@@ -111,7 +111,6 @@ function validate_profile_bound(bound)
 end
 
 function validate_optpars(npars::Int, u)
-  npars < 2 && throw(DimensionMismatch("`optpars` length must be ≥ 2."))
   !(u isa AbstractVector && npars == length(u)) && 
     throw(ArgumentError("OptimizationProblem initial values must be of the same type and size as `optpars`."))
   return nothing

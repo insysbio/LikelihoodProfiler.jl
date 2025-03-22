@@ -3,7 +3,6 @@ using LikelihoodProfiler, Test
 # ParameterProfile tests
 optprob1 = OptimizationProblem((x,p)->x[1]^2+x[2]^2, [1., 2.0])
 
-@test_throws DimensionMismatch PLProblem(optprob1, [0.])
 @test_throws ArgumentError PLProblem(optprob1, [0.,0]) 
 @test_throws ArgumentError PLProblem(optprob1, [0.,0, 0.]) 
 @test_throws ArgumentError PLProblem(optprob1, [0.,0], (-Inf,4)) 

@@ -6,8 +6,8 @@
   for i in 1:ls
     @series begin
       subplot := i
-      xguide := "x[$(i)]"
-      yguide := "likelihood L(x)"
+      xguide --> "x[$(i)]"
+      yguide --> "likelihood L(x)"
       sol[i]
     end
   end
