@@ -89,6 +89,8 @@ end
 
 ################################ HELPERS ################################
 
+hasthreshold(prob::PLProblem) = isfinite(prob.threshold)
+
 function promote_profile_range(x::AbstractVector, profile_range::AbstractVector)
   length(profile_range) != length(x) && 
     throw(DimensionMismatch("`profile_range` must be either Tuple or AbstractVector of the same size as `optpars`."))
