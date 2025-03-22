@@ -1,6 +1,24 @@
 
 ############################################### PROFILE SOLUTION #########################################
+"""
+    PLSolution{probType,P}
 
+Contains the results of a profile likelihood analysis.
+
+### Fields
+
+- `prob::probType`: The profile likelihood problem `PLProblem`.
+- `profiles::P`: The computed profiles.
+- `elapsedTime::Float64`: The time elapsed during the computation.
+
+### Selectors
+
+A number of selectors are available to extract information from the `sol::PLSolution` object. These can be applied to each computed profile `sol[i]`:
+
+- `get_endpoints(sol[i])`: Returns the confidence interval (CI) endpoints, marking the intersection of the profile with the `threshold`.
+- `get_retcodes(sol[i])`: Returns the retcodes of the CI endpoints estimation.
+- `get_stats(sol[i])`: Returns the statistics of the profile computation.
+"""
 struct PLSolution{probType,P}
   prob::probType
   profiles::P
