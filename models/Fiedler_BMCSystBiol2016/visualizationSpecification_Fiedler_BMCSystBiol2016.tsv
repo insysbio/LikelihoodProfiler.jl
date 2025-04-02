@@ -1,0 +1,7 @@
+plotId	plotName	plotTypeSimulation	plotTypeData	xLabel	yValues	yLabel	datasetId
+pMek_control	pMek - control	LinePlot	replicate	time [h]	pMek	pMek	control
+pMek_Sorafenib	pMek - 5 muM Sorafenib	LinePlot	replicate	time [h]	pMek	pMek	Sorafenib
+pMek_UO126	pMek - 30 muM UO126	LinePlot	replicate	time [h]	pMek	pMek	UO126
+pErk_control	pErk - control	LinePlot	replicate	time [h]	pErk	pErk	control
+pErk_Sorafenib	pErk - 5 muM Sorafenib	LinePlot	replicate	time [h]	pErk	pErk	Sorafenib
+pErk_UO126	pErk - 30 muM UO126	LinePlot	replicate	time [h]	pErk	pErk	UO126
