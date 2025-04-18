@@ -1,7 +1,7 @@
 using LikelihoodProfiler, Test
 using Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
 
-include("problems/sir_model.jl")
+include(joinpath(@__DIR__, "../Models/SIR/sir_model.jl"))
 
 const sir_retcodes = ((:Identifiable,:Identifiable), (:Identifiable,:Identifiable), (:Identifiable,:Identifiable)) 
 const sir_ci = ((0.376, 0.428), (0.222, 0.277), (1.045e-5, 1.458e-5))
