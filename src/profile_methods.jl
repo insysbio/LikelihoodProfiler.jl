@@ -38,13 +38,13 @@ A profiler method that uses integration of differential equations system to prof
 
 ### Fields
 
-- `reoptimize::Bool`: Indicates whether to re-optimize during profiling. Defaults to `false`.
+- `reoptimize::Bool`: Indicates whether to re-optimization after each step of the `integrator`. Defaults to `false`.
 - `optimizer::opType`: The optimizer used for the optimization process. Defaults to `nothing`.
-- `optimizer_opts::optsType`: Options for the optimizer. Defaults to `nothing`.
+- `optimizer_opts::optsType`: Options for the optimizer. Defaults to `NamedTuple()`.
 - `integrator::DEAlg`: The differential equation algorithm used for integration.
-- `integrator_opts::DEOpts`: Options for the differential equation solver.
-- `matrix_type::Symbol`: The type of matrix to be used for the Hessian approximation. Defaults to `:hessian`.
-- `gamma::Float64`: Correction factor. Defaults to `1.0`.
+- `integrator_opts::DEOpts`: Options for the differential equation solver. Defaults to `NamedTuple()`.
+- `matrix_type::Symbol`: The type of matrix to be used for the Hessian approximation. Possible options are: `:hessian`, `:identity`. Defaults to `:hessian`.
+- `gamma::Float64`: Correction factor used in integration if full hessian is not computed (e.g. `matrix_type = :identity`). Defaults to `1.0`.
 
 ### Example
 
@@ -76,6 +76,7 @@ get_optimizer_opts(ip::IntegrationProfiler) = ip.optimizer_opts
     CICOProfiler
 
 Confidence Intervals by Constrained Optimization (CICO) method to find the intersections of the likelihood function with the threshold.
+See [CICOBase docs](https://github.com/insysbio/CICOBase.jl) for more details. Requires `using CICOBase`.
 
 ### Fields
 
