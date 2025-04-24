@@ -1,7 +1,7 @@
 using LikelihoodProfiler, Test
 using Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
 
-include("problems/taxol_model.jl")
+include(joinpath(@__DIR__, "../Models/Taxol/taxol_model.jl"))
 
 const taxol_retcodes = (
   a0 = (:Identifiable,:Identifiable), 
