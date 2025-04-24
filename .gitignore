@@ -1,3 +1,6 @@
 /docs/build/
 /Manifest.toml
 scripts/
+.ipynb_checkpoints
+.vscode
+

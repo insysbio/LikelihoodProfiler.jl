@@ -1,0 +1,11 @@
+[deps]
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+LikelihoodProfiler = "93acb638-a083-5915-8dce-d129bc6a3f59"
+Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
+OptimizationNLopt = "4e6fcdb7-1186-4e1f-a706-475e75c168bb"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+PEtab = "48d54b35-e43e-4a66-a5a1-dde6b987cf69"
+Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
+
+[compat]
+Optimization = "4.1.1"
