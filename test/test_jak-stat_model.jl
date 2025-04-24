@@ -1,7 +1,7 @@
 using LikelihoodProfiler, Test
 using Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq
 
-include(joinpath(@__DIR__, "../Models/JakStat/jak-stat_model.jl"))
+include(joinpath(@__DIR__, "../models/JakStat/jak-stat_model.jl"))
 
 const jakstat_retcodes = (
   Epo_degradation_BaF3 = (:Identifiable, :Identifiable), 

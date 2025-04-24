@@ -4,7 +4,7 @@ using Test, Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBa
 const step = 0.3
 const atol = step/2
 
-include(joinpath(@__DIR__, "../Models/AnalyticFuncs/analytic_funcs.jl"))
+include(joinpath(@__DIR__, "../models/AnalyticFuncs/analytic_funcs.jl"))
 
 function test_plmethod(method, funcs_dict)
   for (_fname,_f) in funcs_dict 
