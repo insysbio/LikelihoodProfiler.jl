@@ -36,7 +36,8 @@ sol = profile(plprob, method; idxs=[1])
 function profile(plprob::PLProblem{ParameterProfile}, method::AbstractProfilerMethod; 
   idxs::AbstractVector{<:Int} = eachindex(get_optpars(plprob)),
   parallel_type::Symbol=:none, kwargs...)
-   
+
+  @assert parallel_type in (:none, :threads)
   optpars = get_optpars(plprob)
   checkbounds(optpars, idxs)
 
@@ -55,7 +56,24 @@ function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:non
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
 
+function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:threads}, idxs; kwargs...)
 
+  input_data = reduce(vcat, [[(idx, dir) for dir in (-1, 1)] for idx in idxs])
+  output_data = Vector{Any}(undef, length(input_data))
+  elapsed_time = @elapsed Base.Threads.@threads for i in 1:length(input_data)
+    idx, dir = input_data[i]
+    profile_result = __profile_dir(plprob, method, idx, dir; kwargs...)
+    output_data[i] = profile_result
+  end
+
+  profile_data = Vector{Any}(undef, length(idxs))
+  for i in 1:length(idxs)
+    profile_data[i] = merge_profiles(
+      output_data[2*(i-1)+1], output_data[2*(i-1)+2])
+  end
+  
+  return build_profile_solution(plprob, profile_data, elapsed_time)
+end
 
 function __profile_dir(plprob::PLProblem, method::AbstractProfilerMethod, idx::Int, dir::Int; kwargs...)
   
