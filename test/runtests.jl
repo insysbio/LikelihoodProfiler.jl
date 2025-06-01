@@ -8,10 +8,6 @@ end
   include("test_analytic_funcs.jl")
 end
 
-@testset "Multithreading" begin
-  include("test_threads.jl")
-end
-
 @testset "SIR model" begin
   include("test_sir_model.jl")
 end

@@ -41,6 +41,14 @@ jobs:
             ${{ runner.os }}-
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
+
+      - name: Run parallel tests (threads + distributed)
+        env:
+          JULIA_NUM_THREADS: 4
+        run: |
+          echo "Running parallel tests with $JULIA_NUM_THREADS threads"
+          julia --project --threads auto -p 4 test/test_parallel.jl
+
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v5
         with:
