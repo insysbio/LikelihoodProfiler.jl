@@ -3,6 +3,8 @@ using Test, Base.Threads, Distributed
 
 @info "Running with $(nthreads()) threads and $(nprocs()) processes"
 
+addprocs(2)
+
 @everywhere using LikelihoodProfiler, Optimization, ForwardDiff, OrdinaryDiffEq, CICOBase
 
 @everywhere rosenbrock(x,p) = (1.0 - x[1])^2 + 100.0*(x[2] - x[1]^2)^2

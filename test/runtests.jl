@@ -8,6 +8,9 @@ end
   include("test_analytic_funcs.jl")
 end
 
+@testset "Parallel profiling" begin
+  include("test_parallel.jl")
+end
 @testset "SIR model" begin
   include("test_sir_model.jl")
 end
