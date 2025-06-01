@@ -17,7 +17,7 @@ Profiles the likelihood function for the given problem `plprob` using the specif
 - `plprob::PLProblem{ParameterProfile}`: The profiling problem instance containing the parameters and likelihood function to be profiled.
 - `method::AbstractProfilerMethod`: The method to be used for profiling.
 - `idxs::AbstractVector{<:Int}`: Indices of the parameters to be profiled. Defaults to all parameters.
-- `parallel_type::Symbol`: Specifies the type of parallelism to be used. Defaults to `:none`.
+- `parallel_type::Symbol`: Specifies the type of parallelism to be used. Supported values: `:none, :threads, :distributed`. Defaults to `:none`.
 - `maxiters::Int`: Maximum number of iterations for one branch (left and right) of the profiling process. Defaults to `1e4`.
 - `verbose::Bool`: Indicates whether to display the progress of the profiling process. Defaults to `false`.
 
@@ -36,7 +36,8 @@ sol = profile(plprob, method; idxs=[1])
 function profile(plprob::PLProblem{ParameterProfile}, method::AbstractProfilerMethod; 
   idxs::AbstractVector{<:Int} = eachindex(get_optpars(plprob)),
   parallel_type::Symbol=:none, kwargs...)
-   
+
+  @assert parallel_type in (:none, :threads, :distributed)
   optpars = get_optpars(plprob)
   checkbounds(optpars, idxs)
 
@@ -55,7 +56,48 @@ function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:non
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
 
+function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:threads}, idxs; kwargs...)
 
+  input_data = [(idx, dir) for idx in idxs for dir in (-1, 1)]
+  output_data = Vector{Any}(undef, length(input_data))
+
+  elapsed_time = @elapsed begin 
+    Base.Threads.@threads for i in 1:length(input_data)
+      idx, dir = input_data[i]
+      profile_result = __profile_dir(plprob, method, idx, dir; kwargs...)
+      output_data[i] = profile_result
+    end
+
+    profile_data = Vector{Any}(undef, length(idxs))
+    for i in 1:length(idxs)
+      left_profile  = output_data[2*(i-1)+1]
+      right_profile = output_data[2*(i-1)+2]
+      profile_data[i] = merge_profiles(left_profile, right_profile)
+    end
+  end
+  
+  return build_profile_solution(plprob, profile_data, elapsed_time)
+end
+
+function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:distributed}, idxs; kwargs...)
+
+  input_data = [(idx, dir) for idx in idxs for dir in (-1, 1)]
+
+  elapsed_time = @elapsed begin
+    output_data = Distributed.pmap(input_data) do (idx, dir)
+      __profile_dir(plprob, method, idx, dir; kwargs...)
+    end
+
+    profile_data = Vector{Any}(undef, length(idxs))
+    for i in 1:length(idxs)
+      left_profile  = output_data[2*(i-1)+1]
+      right_profile = output_data[2*(i-1)+2]
+      profile_data[i] = merge_profiles(left_profile, right_profile)
+    end
+  end
+  
+  return build_profile_solution(plprob, profile_data, elapsed_time)
+end
 
 function __profile_dir(plprob::PLProblem, method::AbstractProfilerMethod, idx::Int, dir::Int; kwargs...)
   
