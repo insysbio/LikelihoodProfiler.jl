@@ -8,7 +8,7 @@ path_yaml = joinpath(@__DIR__, "../../models/", "$model_name/$model_name.yaml")
 petab_model = PEtabModel(path_yaml)
 
 # Optimization problem
-osolver = ODESolver(CVODE_BDF(); abstol_adj = 1e-3, reltol_adj = 1e-6)
+osolver = ODESolver(Rodas5P(); abstol_adj = 1e-6, reltol_adj = 1e-6)
 petab_problem = PEtabODEProblem(petab_model; gradient_method = :ForwardDiff, hessian_method = :ForwardDiff,
   odesolver = osolver, odesolver_gradient = osolver)
 optprob = OptimizationProblem(petab_problem)
@@ -32,7 +32,7 @@ profile_idxs = [findfirst(isequal(p), parnames) for p in reported_pars]
 # PL methods
 ## OptimizationProfiler
 optmeth = OptimizationProfiler(optimizer = NLopt.LD_LBFGS(), stepper = FixedStep(; initial_step=(p0,i)->p0[i]*0.005))
-sol = profile(plprob, optmeth; idxs=profile_idxs, verbose=true)
+sol = profile(plprob, optmeth; idxs=[profile_idxs[1]], verbose=true)
 
 ## IntegrationProfiler
 odemeth = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), integrator_opts = (dtmax = 0.01, ), matrix_type = :hessian)
