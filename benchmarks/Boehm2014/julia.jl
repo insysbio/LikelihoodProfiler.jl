@@ -1,6 +1,6 @@
 # 1. Imports
-using Revise
-using PEtab, LikelihoodProfiler, ForwardDiff, Optimization, OptimizationNLopt, OrdinaryDiffEq, Sundials
+#using Revise
+using PEtab, LikelihoodProfiler, ForwardDiff, Optimization, OrdinaryDiffEq, CICOBase
 
 ###
 
@@ -9,25 +9,31 @@ model_name = "Boehm_JProteomeRes2014"
 path_yaml = joinpath(@__DIR__, "../../models/", "$model_name/$model_name.yaml")
 petab_model = PEtabModel(path_yaml)
 
-# 3. Define optimization problem
-osolver = ODESolver(CVODE_BDF(); abstol=1e-6, reltol=1e-6, abstol_adj = 1e-6, reltol_adj = 1e-6)
-petab_problem = PEtabODEProblem(petab_model; gradient_method = :ForwardDiff, hessian_method = :ForwardDiff,
-  odesolver = osolver, odesolver_gradient = osolver)
+# 3. Define the optimization problem
+petab_problem = PEtabODEProblem(petab_model)
+
+#petab_problem = PEtabODEProblem(petab_model)
 optprob = OptimizationProblem(petab_problem)
 
 # 4. Define profile likelihood problem
 optpars = petab_problem.xnominal_transformed
-optpars = collect(optpars)
 plprob = PLProblem(optprob, optpars)
 
 # 5. Profile
-parnames = petab_problem.xnames[1:1]
-profile_idxs = collect(1:length(parnames))
+parnames = petab_problem.xnames
 
 # PL methods
 ## OptimizationProfiler
-optmeth = OptimizationProfiler(optimizer = NLopt.LD_LBFGS(), stepper = FixedStep(; initial_step=0.01))
-sol1 = profile(plprob, optmeth; idxs=profile_idxs, verbose=true)
+optmeth = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.07))
+sol1 = profile(plprob, optmeth; verbose=true)
+
+## IntegrationProfiler
+intmeth = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.07,), matrix_type = :hessian)
+sol2 = profile(plprob, intmeth; verbose=true)
+
+## CICOProfiler
+cicometh = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-10)
+sol3 = profile(plprob2, cicometh; verbose=true)
 
 # 6. Display results
 println("CI, method: $optmeth")
