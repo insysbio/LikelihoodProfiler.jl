@@ -43,12 +43,18 @@ jobs:
       - uses: julia-actions/julia-runtest@v1
 
       - name: Run parallel tests (threads + distributed)
+        uses: julia-actions/julia-command@v1
+        with:
+          command: |
+            using Pkg
+            Pkg.activate(".")
+            Pkg.instantiate()
+            using Distributed
+            addprocs(4)
+            @info "Now running test/test_parallel.jl"
+            include("test/test_parallel.jl")
         env:
           JULIA_NUM_THREADS: 4
-        run: |
-          echo "Running parallel tests with $JULIA_NUM_THREADS threads"
-          cd $GITHUB_WORKSPACE
-          julia --project=. --threads auto -p 4 test/test_parallel.jl
 
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v5

@@ -8,6 +8,7 @@ using LinearAlgebra, DataInterpolations
 using Distributions
 using OptimizationBase
 using RecipesBase
+using Distributed
 
 abstract type AbstractProfile end
 
