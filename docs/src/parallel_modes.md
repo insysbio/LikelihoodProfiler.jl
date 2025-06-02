@@ -19,7 +19,7 @@ Supported values:
 ## Distributed workers example
 
 The following example illustrates how to compute profile likelihoods using distributed parallelism across Julia processes in a multi-core (or multi-node) environment.
-```@example example-parallel
+```julia
 using Distributed
 
 addprocs(2)
