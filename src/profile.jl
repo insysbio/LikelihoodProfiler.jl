@@ -16,7 +16,8 @@ Profiles the likelihood function for the given problem `plprob` using the specif
 
 - `plprob::PLProblem{ParameterProfile}`: The profiling problem instance containing the parameters and likelihood function to be profiled.
 - `method::AbstractProfilerMethod`: The method to be used for profiling.
-- `idxs::AbstractVector{<:Int}`: Indices of the parameters to be profiled. Defaults to all parameters.
+- `idxs::AbstractVector{<:Int}`: Indices of the parameters to be profiled. Defaults to all parameters. 
+  (note!) Ensure that each parameter index in `idxs` has a finite `(lower, upper)` range in the PLProblem’s `profile_range` – the profile procedure will validate this.
 - `parallel_type::Symbol`: Specifies the type of parallelism to be used. Supported values: `:none, :threads, :distributed`. Defaults to `:none`.
 - `maxiters::Int`: Maximum number of iterations for one branch (left and right) of the profiling process. Defaults to `1e4`.
 - `verbose::Bool`: Indicates whether to display the progress of the profiling process. Defaults to `false`.
@@ -161,7 +162,7 @@ end
 
 function validate_profile_range(x::Number, profile_range)
   !(profile_range isa Tuple) &&
-    throw(DimensionMismatch("`profile_range` must contain finite `(lower, upper)` tuples for all parameters selected for profiling."))
+    throw(ArgumentError("`profile_range` must contain finite `(lower, upper)` tuples for all parameters selected for profiling."))
   lb, ub = profile_range
   validate_profile_bound(lb)
   validate_profile_bound(ub)

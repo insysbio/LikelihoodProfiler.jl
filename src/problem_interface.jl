@@ -23,7 +23,10 @@ PLProblem(optprob, optpars, profile_range = tuple.(optprob.lb, optprob.ub);
 
 - `optprob`: The `OptimizationProblem` to be solved.
 - `optpars`: Initial (optimal) values of the parameters.
-- `profile_range`: The range over which the profile likelihood is computed. Defaults to `tuple.(lb,ub)` of the `OptimizationProblem`.
+- `profile_range`: The range over which the profile likelihood is computed. 
+  A tuple `(lower, upper)` specifying a common profiling interval for all parameters, or an array of such tuples (one per parameter). 
+  By default, it uses the `OptimizationProblem` bounds for each parameter (i.e., `tuple.(optprob.lb, optprob.ub)`).
+  (note!) If a parameter is not meant to be profiled, you may use  `nothing` or infinite bounds.
 
 ### Keyword arguments
 
@@ -97,7 +100,8 @@ function validate_dims(u, optpars::AbstractVector, profile_range)
   !(length(u) == length(optpars)) && throw(DimensionMismatch("`optprob.u0` and `optpars` must have the same length."))
   if profile_range isa AbstractVector
     !(length(profile_range) == length(optpars)) && 
-      throw(DimensionMismatch("`profile_range` must be either Tuple or AbstractVector of the same size as `optpars`."))
+      throw(DimensionMismatch("`profile_range` must be either Tuple or AbstractVector of the same size as `optpars`. 
+                                If a certain parameter is not meant to be profiled, you may use  `nothing` or infinite bounds for it."))
   end
   return nothing
 end

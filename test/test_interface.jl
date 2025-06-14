@@ -10,8 +10,9 @@ optprob1 = OptimizationProblem((x,p)->x[1]^2+x[2]^2, [1., 2.0])
 @test_throws ArgumentError profile(PLProblem(optprob1, [0.,0]), OptimizationProfiler(optimizer=Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.01))) 
 @test_throws ArgumentError profile(PLProblem(optprob1, [0.,0], [(-Inf,4), (-2,1)]), OptimizationProfiler(optimizer=Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.01)), idxs=[1])
 
-#parprob = PLProblem(optprob1, [0.,0], [(-5,4), (-2,1)])
-#@test_throws ArgumentError remake(parprob, profile_range=(-Inf,-1))
+plprob = PLProblem(optprob1, [0.,0], (-5,4))
+plprob2 = remake(plprob, profile_range = [nothing, (-5,4)] )
+@test_throws ArgumentError profile(plprob2, OptimizationProfiler(optimizer=Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.01)), idxs=[1])
 
 # FunctionProfile tests
 #=
