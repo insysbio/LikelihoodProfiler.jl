@@ -1,7 +1,7 @@
 using LikelihoodProfiler, Test
 
 @testset "Problem interface" begin
-  include("test_prob_interface.jl")
+  include("test_interface.jl")
 end
 
 @testset "Analytic functions" begin

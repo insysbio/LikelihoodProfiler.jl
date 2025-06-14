@@ -37,9 +37,11 @@ function profile(plprob::PLProblem{ParameterProfile}, method::AbstractProfilerMe
   idxs::AbstractVector{<:Int} = eachindex(get_optpars(plprob)),
   parallel_type::Symbol=:none, kwargs...)
 
+  # validation
   @assert parallel_type in (:none, :threads, :distributed)
   optpars = get_optpars(plprob)
   checkbounds(optpars, idxs)
+  validate_profile_range(plprob, idxs)
 
   return __profile(plprob, method, Val(parallel_type), idxs; kwargs...)
 end
@@ -138,4 +140,36 @@ end
 
 function progress_msg(profiler_state::ProfilerState{<:ParameterProfile}) 
   @info "Current parameter-$(get_idx(profiler_state)) value: $(get_curx(profiler_state))"
+end
+
+###################################### HELPERS ##################################
+
+function validate_profile_range(plprob::PLProblem{<:ParameterProfile}, idxs::AbstractVector{<:Int})
+  optpars = get_optpars(plprob)
+  profile_range = get_profile_range(plprob)
+  
+  if profile_range isa Tuple
+    for idx in idxs
+      validate_profile_range(optpars[idx], profile_range)
+    end
+  else
+    for idx in idxs
+      validate_profile_range(optpars[idx], profile_range[idx]) 
+    end
+  end
+end
+
+function validate_profile_range(x::Number, profile_range)
+  !(profile_range isa Tuple) &&
+    throw(DimensionMismatch("`profile_range` must contain finite `(lower, upper)` tuples for all parameters selected for profiling."))
+  lb, ub = profile_range
+  validate_profile_bound(lb)
+  validate_profile_bound(ub)
+  !(lb <= x <= ub) &&
+    throw(ArgumentError("The initial values provided for profiling parameters must lie within the specified `profile_range`: `profile_range[idx][1] ≤ x[idx] ≤ profile_range[idx][2]`"))
+end
+
+function validate_profile_bound(bound) 
+  (isnothing(bound) || isinf(bound)) &&
+    throw(ArgumentError("Each parameter selected for profiling must have a finite `(lower, upper)` range specified in `profile_range`"))
 end

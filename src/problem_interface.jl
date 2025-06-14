@@ -64,16 +64,16 @@ get_threshold(prob::PLProblem) = prob.threshold
 ############################### CONSTRUCTORS ###############################
 
 function PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real},
-  profile_range = tuple.(optprob.lb, optprob.ub); 
+  profile_range::Union{AbstractVector, Tuple} = tuple.(optprob.lb, optprob.ub); 
   conf_level::Float64 = 0.95, df::Int = 1, threshold::Real = chi2_quantile(conf_level, df))
 
   threshold <= 0. && throw(ArgumentError("`threshold` must be positive definite."))
-  numpars = length(optpars)
-  validate_optpars(numpars, optprob.u0)
-  #TODO check if opt_range is not inside profile_range
-  Tprofile_range = promote_profile_range(optpars, profile_range)
 
-  build_plproblem(ParameterProfile(), optprob, optpars, nothing, Tprofile_range, float(threshold))
+  validate_dims(optprob.u0, optpars, profile_range)
+  #TODO check if opt_range is not inside profile_range
+  #Tprofile_range = promote_profile_range(optpars, profile_range)
+
+  build_plproblem(ParameterProfile(), optprob, optpars, nothing, profile_range, float(threshold))
 end
 
 function build_plproblem(
@@ -92,30 +92,13 @@ end
 
 hasthreshold(prob::PLProblem) = isfinite(prob.threshold)
 
-function promote_profile_range(x::AbstractVector, profile_range::AbstractVector)
-  length(profile_range) != length(x) && 
-    throw(DimensionMismatch("`profile_range` must be either Tuple or AbstractVector of the same size as `optpars`."))
-  promote_profile_range.(x, profile_range)
-end
-
-promote_profile_range(x::AbstractVector, profile_range::Tuple) = promote_profile_range.(x, Ref(profile_range))
-
-function promote_profile_range(x::Number, profile_range::Tuple)
-  lb, ub = profile_range
-  validate_profile_bound(lb)
-  validate_profile_bound(ub)
-  !(lb <= x <= ub) && throw(ArgumentError("The initial values provided for profiling parameters must lie within the specified `profile_range`: `profile_range[1] ≤ x ≤ profile_range[2]`"))
-  return (float(lb),float(ub))
-end
-
-function validate_profile_bound(bound) 
-  (isnothing(bound) || isinf(bound)) &&
-    throw(ArgumentError("`profile_range` must contain finite values."))
-end
-
-function validate_optpars(npars::Int, u)
-  !(u isa AbstractVector && npars == length(u)) && 
-    throw(ArgumentError("OptimizationProblem initial values must be of the same type and size as `optpars`."))
+function validate_dims(u, optpars::AbstractVector, profile_range) 
+  !(u isa AbstractVector ) && throw(ArgumentError("Expected `optprob.u0` to be a vector (i.e., of `AbstractVector` type)."))
+  !(length(u) == length(optpars)) && throw(DimensionMismatch("`optprob.u0` and `optpars` must have the same length."))
+  if profile_range isa AbstractVector
+    !(length(profile_range) == length(optpars)) && 
+      throw(DimensionMismatch("`profile_range` must be either Tuple or AbstractVector of the same size as `optpars`."))
+  end
   return nothing
 end
 
