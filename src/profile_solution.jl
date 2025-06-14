@@ -9,7 +9,7 @@ Contains the results of a profile likelihood analysis.
 
 - `prob::probType`: The profile likelihood problem `PLProblem`.
 - `profiles::P`: The computed profiles.
-- `elapsedTime::Float64`: The time elapsed during the computation.
+- `elapsed_time::Float64`: The time elapsed during the computation.
 
 ### Selectors
 
@@ -22,7 +22,7 @@ A number of selectors are available to extract information from the `sol::PLSolu
 struct PLSolution{probType,P}
   prob::probType
   profiles::P
-  elapsedTime::Float64
+  elapsed_time::Float64
 end
 
 function build_profile_solution(plprob::PLProblem, prof_data, elapsed_time)

@@ -28,7 +28,7 @@ include("endpoints.jl")
 include("profiler_step.jl")
 include("plotting.jl")
 
-export PLProblem, profile
+export PLProblem, PLSolution, profile
 export FixedStep
 export chi2_quantile
 export OptimizationProfiler, IntegrationProfiler, CICOProfiler

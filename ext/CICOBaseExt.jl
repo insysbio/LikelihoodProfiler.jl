@@ -72,7 +72,7 @@ function cico_deduce_retcode(retcode::Symbol)
   elseif retcode == :MAX_ITER_REACHED
     return :MaxIters
   else
-    return :Failed
+    return :Failure
   end
 end
 

@@ -62,7 +62,7 @@ function profiler_update_retcode!(profiler_state::ProfilerState)
   solver_retcode = get_solver_retcode(profiler_state)
   
   if !SciMLBase.successful_retcode(solver_retcode)
-    profiler_state.retcode = :Failed
+    profiler_state.retcode = :Failure
   elseif numiter > maxiters
     profiler_state.retcode = :MaxIters
   elseif dir*curx >= dir*profile_bound
