@@ -67,7 +67,8 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:identity})
     gamma = get_gamma(p)
 
     grad! = optf.grad
-    grad!(rhs_vec, view(z, 1:lp), p.p)
+    #grad!(rhs_vec, view(z, 1:lp), p.p)
+    grad!(rhs_vec, z[1:lp], p.p)
     dz[1:lp] .= .- gamma .* rhs_vec
     dz[idx] = one(dz[idx])
     dz[end] = rhs_vec[idx] + dz[idx]
@@ -105,7 +106,8 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:fisher})
     gamma = get_gamma(p)
 
     grad! = optf.grad
-    grad!(rhs_vec, view(z, 1:lp), p.p)
+    #grad!(rhs_vec, view(z, 1:lp), p.p)
+    grad!(rhs_vec, z[1:lp], p.p)
     # Todo for Sasha: write the correct formula
     rhs_vec = 1 ./ rhs_vec
     lhs_mat = rhs_vec[1:lp] * rhs_vec[1:lp]'
@@ -143,7 +145,8 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:hessian})
 
     hess! = optf.hess
     #hess!(lhs_mat, view(z, 1:lp), p.p)
-    hess!(lhs_mat, view(z, 1:lp))
+    #hess!(lhs_mat, view(z, 1:lp))
+    hess!(lhs_mat, z[1:lp], p.p)
 
     # move idx column to the right side
     for i in 1:lp
