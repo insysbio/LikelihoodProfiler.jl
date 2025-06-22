@@ -7,7 +7,7 @@ mutable struct ProfilerState{T,pvType,methodType,SS,SR,ID,parType,xType,statsTyp
   idx::ID
   dir::Int
   profile_bound::Float64
-  parscache::parType
+  pars_cache::parType
   curpars::parType
   curx::xType
   curobj::Float64
@@ -33,7 +33,7 @@ get_solver_retcode(ps::ProfilerState) = ps.solver_retcode
 get_idx(ps::ProfilerState) = ps.idx
 get_dir(ps::ProfilerState) = ps.dir
 get_profile_bound(ps::ProfilerState) = ps.profile_bound
-get_parscache(ps::ProfilerState) = ps.parscache
+get_pars_cache(ps::ProfilerState) = ps.pars_cache
 get_curpars(ps::ProfilerState) = ps.curpars
 get_curx(ps::ProfilerState) = ps.curx
 get_curobj(ps::ProfilerState) = ps.curobj
@@ -159,7 +159,7 @@ function profiler_step!(profiler::ProfilerState, method::OptimizationProfiler)
   optcache = get_solver_state(profiler)
   idx = get_idx(profiler)
 
-  pars_guess = compute_next_pars!(profiler, stepper)
+  pars_guess = propose_next_pars!(profiler, stepper)
   fill_x_reduced!(optcache.reinit_cache.u0, pars_guess, idx)
   set_x_fixed!(optcache.reinit_cache.p, pars_guess[idx])
   
