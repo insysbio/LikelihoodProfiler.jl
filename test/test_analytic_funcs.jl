@@ -49,6 +49,13 @@ end
 
 end
 
+@testset "Analytic funcs. Adaptive LineSearchStep OptimizationProfiler with gradient-based optimizer" begin
+
+  method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = LineSearchStep(; initial_step=step, direction=:Secant, linesearch=InterpolationLineSearch()))
+  test_plmethod(method, funcs_dict)
+
+end
+
 @testset "Analytic funcs. IntegrationProfiler with full hessian" begin
 
   method = IntegrationProfiler(
