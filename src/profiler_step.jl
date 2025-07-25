@@ -174,7 +174,74 @@ function compute_direction(profiler_state::ProfilerState, direction::Val{:Gradie
   return grad ./ abs(grad[θ_idx])
 end
 
+function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationLineSearch, ls_dir)
+  θ_cur = get_curpars(profiler_state)
+  x_cur = get_curx(profiler_state)
+  x_prev = get_prevx(profiler_state)
+  θ_bounds = get_profile_range(profiler_state)
+  opt_prob = get_optprob(profiler_state)
+  obj_cur = get_curobj(profiler_state)
+  obj_prev = get_prevobj(profiler_state)
+  Δ_obj_prev = abs(obj_cur - obj_prev)
 
+  # try previous step_size (extrapolate_profile)
+  step_next = abs(x_cur - x_prev)
+  @. profiler_state.pars_cache = θ_cur + ls_dir*step_next
+  θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
+  obj_next = evaluate_optf(opt_prob, profiler_state.pars_cache)
+
+  increasing_profile = obj_next > obj_cur
+  obj_target = increasing_profile ? obj_cur + ls_alg.objective_factor*Δ_obj_prev : obj_cur - ls_alg.objective_factor*Δ_obj_prev
+  #obj_target = increasing_profile ? obj_cur + ls_alg.objective_factor*obj_cur : obj_cur - ls_alg.objective_factor*obj_cur
+
+  # TODO add tolerance arg to the alg
+  (abs(obj_next - obj_target) < 1e-6) && return step_next, :Success
+  
+  undershoot = increasing_profile ? 
+    (obj_val -> obj_val < obj_target) : 
+    (obj_val -> obj_val > obj_target)
+
+  bracketing_cond = increasing_profile ?
+    ((obj_low, obj_high) -> obj_low < obj_target < obj_high) :
+    ((obj_low, obj_high) -> obj_low > obj_target > obj_high)
+
+  #increase_step = undershoot(obj_next)
+  #factor = increase_step ? ls_alg.step_size_factor : 1/ls_alg.step_size_factor
+  factor = ls_alg.step_size_factor
+  iter = 0
+  # tmp fixing step_low, obj_low to current point
+  step_low, obj_low = 0.0, obj_cur
+  step_high, obj_high = step_next, obj_next
+  while !bracketing_cond(obj_low, obj_high)
+    iter += 1
+    if iter > ls_alg.maxiters
+      #@show step_low, step_high, obj_low, obj_high, obj_target
+      return step_low, :MaxIters
+    end
+    
+    step_next *= factor
+    @. profiler_state.pars_cache = θ_cur + ls_dir * step_next
+    θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
+    obj_next = evaluate_optf(opt_prob, θ_next)
+    #@show step_next, obj_next, obj_target
+    
+    # TODO add tolerance arg to the alg
+    (abs(obj_next - obj_target) < 1e-6) && return step_next, :Success
+
+    # tmp removing undershoot condition
+    step_high, obj_high = step_next, obj_next
+    #=
+    if undershoot(obj_next)
+      step_low, obj_low = step_next, obj_next
+    else
+      step_high, obj_high = step_next, obj_next
+    end
+    =#
+  end
+  return interpolate_step_size(step_low, step_high, obj_low, obj_high, obj_target), :Success
+end
+
+#=
 function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationLineSearch, ls_dir)
   θ_cur = get_curpars(profiler_state)
   x_cur = get_curx(profiler_state)
@@ -215,6 +282,7 @@ function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationL
   while !bracketing_cond(obj_low, obj_high)
     iter += 1
     if iter > ls_alg.maxiters
+      @show step_low, step_high, obj_low, obj_high, obj_target
       return step_low, :MaxIters
     end
     
@@ -222,7 +290,7 @@ function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationL
     @. profiler_state.pars_cache = θ_cur + ls_dir * step_next
     θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
     obj_next = evaluate_optf(opt_prob, θ_next)
-
+    @show step_next, obj_next, obj_target
     # TODO add tolerance arg to the alg
     (abs(obj_next - obj_target) < 1e-6) && return step_next, :Success
 
@@ -235,6 +303,7 @@ function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationL
   end
   return interpolate_step_size(step_low, step_high, obj_low, obj_high, obj_target), :Success
 end
+=#
 
 # Clamp a number within specified bounds, handling various cases for bounds
 clamp_within_bounds(x::Number, bounds::Tuple) = clamp_within_bounds(x, bounds[1], bounds[2])
