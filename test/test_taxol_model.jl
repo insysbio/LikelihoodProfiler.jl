@@ -29,7 +29,7 @@ function test_taxol(sol, i; kwargs...)
 end
 
 optf = OptimizationFunction(taxol_obj, Optimization.AutoForwardDiff())
-optprob = OptimizationProblem(optf, p0)
+optprob = OptimizationProblem(optf, p0; lb =[2.,2.,0.01,0.05,30.], ub=[30.,30.,0.6,5.,250.])
 profile_range = [
   (2., 30.),
   (2.0, 30.),
@@ -46,7 +46,10 @@ plprob = PLProblem(optprob, p0, profile_range; threshold = sigmasq*chi2_quantile
   profile_step(p0, i) = p0[i] * 0.1
   atol = [profile_step(p0, i)/2 for i in idxs]
   atol[3] = 0.041 # tmp fix as r0 upper bound fails to be within step/2 tolerance
-  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
+  #method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), 
+  stepper = LineSearchStep(; initial_step = profile_step, 
+  linesearch = InterpolationLineSearch(; objective_factor=1.25, step_size_factor=1.5)))
   sol = profile(plprob, method)
   for i in idxs
     test_taxol(sol, i; atol = atol[i])

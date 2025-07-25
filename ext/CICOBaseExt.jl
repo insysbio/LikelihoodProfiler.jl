@@ -13,7 +13,7 @@ function LikelihoodProfiler.__profile_dir(plprob::PLProblem, method::CICOProfile
   threshold = LikelihoodProfiler.get_threshold(plprob)
   
   x0 = optpars[idx]
-  obj0 = LikelihoodProfiler.compute_optf(optprob, optpars)
+  obj0 = LikelihoodProfiler.evaluate_optf(optprob, optpars)
   obj_level = obj0 + threshold
   
   profile_range = LikelihoodProfiler.get_profile_range(plprob)

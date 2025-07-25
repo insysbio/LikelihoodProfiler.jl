@@ -59,6 +59,9 @@ get_obj_level(pv::ProfileValues) = pv.obj_level
 get_retcodes(pv::ProfileValues) = pv.retcodes
 get_endpoints(pv::ProfileValues) = pv.endpoints
 get_stats(pv::ProfileValues) = pv.stats
+get_prevpars(pv::ProfileValues) = pv.pars[end-1]
+get_prevx(pv::ProfileValues) = pv.x[end-1]
+get_prevobj(pv::ProfileValues) = pv.obj[end-1]
 
 function ProfileValues(::Val{false}, plprob::PLProblem, ::Type{parsType}, ::Type{xType}, ::Type{objType}, obj_level) where {parsType, xType, objType}
   ProfileValues{typeof(plprob), parsType, xType, objType, Nothing, Nothing, Nothing}(false, plprob, Vector{parsType}(), Vector{xType}(), Vector{objType}(), obj_level, nothing, nothing, nothing)

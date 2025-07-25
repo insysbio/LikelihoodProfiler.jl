@@ -4,6 +4,7 @@ using SciMLBase, PreallocationTools
 using Reexport
 @reexport import SciMLBase: OptimizationFunction, OptimizationProblem, remake
 @reexport using DataFrames
+using LineSearch
 using LinearAlgebra, DataInterpolations
 using Distributions
 using OptimizationBase
@@ -11,6 +12,7 @@ using RecipesBase
 using Distributed
 
 abstract type AbstractProfile end
+abstract type AbstractSolverCache end
 
 struct ParameterProfile <: AbstractProfile end
 #struct FunctionProfile <: AbstractProfile end
@@ -29,9 +31,9 @@ include("profiler_step.jl")
 include("plotting.jl")
 
 export PLProblem, PLSolution, profile
-export FixedStep
+export FixedStep, LineSearchStep, InterpolationLineSearch
 export chi2_quantile
 export OptimizationProfiler, IntegrationProfiler, CICOProfiler
 export get_endpoints, get_stats, get_retcodes, get_obj_level
 
-end #module 
+end #module LikelihoodProfiler

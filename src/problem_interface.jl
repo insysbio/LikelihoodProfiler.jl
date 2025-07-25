@@ -15,24 +15,25 @@ A profile likelihood problem is defined by
 ### Constructors
 
 ```julia
-PLProblem(optprob, optpars, profile_range = tuple.(optprob.lb, optprob.ub); 
-  conf_level = 0.95, df = 1, threshold = chi2_quantile(conf_level, df))
+PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real},
+  profile_range::Union{AbstractVector, Tuple} = tuple.(optprob.lb, optprob.ub); 
+  conf_level::Float64 = 0.95, df::Int = 1, threshold::Real = chi2_quantile(conf_level, df))
 ```
 
 ### Arguments
 
-- `optprob`: The `OptimizationProblem` to be solved.
-- `optpars`: Initial (optimal) values of the parameters.
-- `profile_range`: The range over which the profile likelihood is computed. 
+- `optprob::OptimizationProblem`: The `OptimizationProblem` to be solved.
+- `optpars::AbstractVector{<:Real}`: Initial (optimal) values of the parameters.
+- `profile_range::Union{AbstractVector, Tuple}`: The range over which the profile likelihood is computed. 
   A tuple `(lower, upper)` specifying a common profiling interval for all parameters, or an array of such tuples (one per parameter). 
   By default, it uses the `OptimizationProblem` bounds for each parameter (i.e., `tuple.(optprob.lb, optprob.ub)`).
-  (note!) If a parameter is not meant to be profiled, you may use  `nothing` or infinite bounds.
+  (note!) If a parameter is not meant to be profiled, you may use `nothing` or infinite bounds.
 
 ### Keyword arguments
 
-- `conf_level`: The confidence level for the profile likelihood. Defaults to `0.95`.
-- `df`: The degrees of freedom for the profile likelihood. Defaults to `1`.
-- `threshold`: The threshold for the profile likelihood. Can be set to `Inf` if confidence interval endpoint estimation is not required. Defaults to `chi2_quantile(conf_level, df)`.
+- `conf_level::Float64`: The confidence level for the profile likelihood. Defaults to `0.95`.
+- `df::Int`: The degrees of freedom for the profile likelihood. Defaults to `1`.
+- `threshold::Real`: The threshold for the profile likelihood. Can be set to `Inf` if confidence interval endpoint estimation is not required. Defaults to `chi2_quantile(conf_level, df)`.
 """
 struct PLProblem{T,probType,P,PF,PR} <: AbstractPLProblem{T,PF}
   profile_type::T
