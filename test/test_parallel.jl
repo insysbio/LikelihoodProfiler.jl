@@ -22,9 +22,9 @@ for method in [
 ]
   
   idxs = vcat([1 for _ in 1:500], [2 for _ in 1:500])
-  @time sol_serial = profile(plprob, method, idxs=idxs)
-  @time sol_threads = profile(plprob, method, idxs=idxs, parallel_type=:threads)
-  @time sol_distributed = profile(plprob, method, idxs=idxs, parallel_type=:distributed)
+  @time sol_serial = solve(plprob, method, idxs=idxs)
+  @time sol_threads = solve(plprob, method, idxs=idxs, parallel_type=:threads)
+  @time sol_distributed = solve(plprob, method, idxs=idxs, parallel_type=:distributed)
 
   
   @test [sol_serial.profiles[i].endpoints for i in 1:length(sol_serial)] == [sol_threads.profiles[i].endpoints for i in 1:length(sol_threads)]

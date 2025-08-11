@@ -4,10 +4,10 @@
 
 ## Available parallel modes
 
-Parallelization is controlled via the `parallel_type` keyword argument in the `profile` function.
+Parallelization is controlled via the `parallel_type` keyword argument in the `solve` function.
 
 ```julia
-profile(plprob, method; parallel_type = :none)
+solve(plprob, method; parallel_type = :none)
 ```
 
 Supported values:
@@ -35,5 +35,5 @@ optprob = OptimizationProblem(optf, x0)
 plprob = PLProblem(optprob, x0, (-5.,5.); threshold = 1.0)
 meth = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.1))
 
-sol = profile(plprob, meth; parallel_type=:distributed)
+sol = solve(plprob, meth; parallel_type=:distributed)
 ```

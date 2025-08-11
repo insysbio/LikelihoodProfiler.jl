@@ -6,6 +6,6 @@
 - add `AdaptiveStep` to `OptimizationProfiler`
 - add `HybridProfiler`
 - add `PLProblem{function}` interface to profile functions of parameters
-- add Venzon Moolgavkar `profile` method
+- add Venzon Moolgavkar `solve` method
 - add Prediction Profile Problem and Validation Profile Problem
 

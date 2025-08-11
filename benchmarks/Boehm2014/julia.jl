@@ -25,11 +25,11 @@ profile_idxs = collect(1:length(parnames))
 # PL methods
 ## OptimizationProfiler
 optmeth = OptimizationProfiler(optimizer = NLopt.LD_LBFGS(), stepper = FixedStep(; initial_step=(p0,i)->p0[i]*0.005))
-sol1 = profile(plprob, optmeth; idxs=profile_idxs, verbose=true)
+sol1 = solve(plprob, optmeth; idxs=profile_idxs, verbose=true)
 
 ## IntegrationProfiler
 odemeth = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), integrator_opts = (dtmax = 0.01, ), matrix_type = :hessian)
-sol2 = profile(plprob, odemeth; idxs=profile_idxs, verbose=true)
+sol2 = solve(plprob, odemeth; idxs=profile_idxs, verbose=true)
 
 # 6. Display results
 println("CI, method: $optmeth")

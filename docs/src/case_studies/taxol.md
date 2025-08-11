@@ -149,7 +149,7 @@ plprob = PLProblem(optprob, p0, profile_range; threshold = sigmasq*chi2_quantile
 
 profile_step(p0, i) = p0[i] * 0.1
 method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
-sol = profile(plprob, method)
+sol = solve(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```
 

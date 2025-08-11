@@ -2,7 +2,7 @@ module CICOBaseExt
 
 using LikelihoodProfiler, CICOBase
 
-function LikelihoodProfiler.__profile_dir(plprob::PLProblem, method::CICOProfiler, idx::Int, dir::Int; verbose=false, kwargs...)
+function LikelihoodProfiler.__solve_dir(plprob::PLProblem, method::CICOProfiler, idx::Int, dir::Int; verbose=false, kwargs...)
   
   # TODO add check_prob_method()
   !LikelihoodProfiler.hasthreshold(plprob) && throw(ArgumentError("`CICOProfiler` doesn't support profiling with infinite `threshold`. Use other profile methods."))

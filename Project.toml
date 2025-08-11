@@ -8,6 +8,7 @@ repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
 version = "1.0.2"
 
 [deps]
+CommonSolve = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
@@ -28,6 +29,7 @@ CICOBaseExt = "CICOBase"
 
 [compat]
 CICOBase = "0.5.3"
+CommonSolve = "0.2.4"
 DataFrames = "1.7.0"
 DataInterpolations = "6.5.2, 7"
 Distributed = "1.10"

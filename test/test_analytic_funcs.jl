@@ -22,7 +22,7 @@ function test_plmethod(method, funcs_dict)
 
       plprob = PLProblem(optprob, _f[:optim], _f[:profile_range]; threshold=_f[:threshold])
 
-      sol = profile(plprob, method)
+      sol = solve(plprob, method)
       for i in eachindex(_f[:optim])
         ret = get_retcodes(sol[i])
         ci = get_endpoints(sol[i])

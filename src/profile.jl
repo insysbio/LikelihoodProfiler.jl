@@ -1,12 +1,12 @@
 #=
-function profile(plprob::PLProblem{<:FunctionProfile}, method::IntegrationProfiler, obj0::Float64, obj_level::Float64; kwargs...)
+function CommonSolve.solve(plprob::PLProblem{<:FunctionProfile}, method::IntegrationProfiler, obj0::Float64, obj_level::Float64; kwargs...)
   error("Interface for profiling functions of parameters is not implemented yet...")
 end
 =#
 
 
 """
-    profile(plprob::PLProblem, method::AbstractProfilerMethod; 
+    solve(plprob::PLProblem, method::AbstractProfilerMethod; 
             idxs::AbstractVector{<:Int} = eachindex(get_optpars(plprob)),
             parallel_type::Symbol=:none, kwargs...)
 
@@ -31,10 +31,10 @@ Profiles the likelihood function for the given problem `plprob` using the specif
 ```julia
 plprob = PLProblem(optprob, optpars, [(-10.,10.), (-5.,5.)])
 method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep())
-sol = profile(plprob, method; idxs=[1])
+sol = solve(plprob, method; idxs=[1])
 ```
 """
-function profile(plprob::PLProblem{ParameterProfile}, method::AbstractProfilerMethod; 
+function CommonSolve.solve(plprob::PLProblem{ParameterProfile}, method::AbstractProfilerMethod; 
   idxs::AbstractVector{<:Int} = eachindex(get_optpars(plprob)),
   parallel_type::Symbol=:none, kwargs...)
 
@@ -44,22 +44,21 @@ function profile(plprob::PLProblem{ParameterProfile}, method::AbstractProfilerMe
   checkbounds(optpars, idxs)
   validate_profile_range(plprob, idxs)
 
-  return __profile(plprob, method, Val(parallel_type), idxs; kwargs...)
+  return __solve(plprob, method, Val(parallel_type), idxs; kwargs...)
 end
 
-
-function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:none}, idxs; kwargs...)
+function __solve(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:none}, idxs; kwargs...)
 
   elapsed_time = @elapsed profile_data = map(idxs) do idx
-    left_profile  = __profile_dir(plprob, method, idx, -1; kwargs...)
-    right_profile = __profile_dir(plprob, method, idx,  1; kwargs...)
+    left_profile  = __solve_dir(plprob, method, idx, -1; kwargs...)
+    right_profile = __solve_dir(plprob, method, idx,  1; kwargs...)
     merge_profiles(left_profile, right_profile)
   end
 
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
 
-function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:threads}, idxs; kwargs...)
+function __solve(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:threads}, idxs; kwargs...)
 
   input_data = [(idx, dir) for idx in idxs for dir in (-1, 1)]
   output_data = Vector{Any}(undef, length(input_data))
@@ -67,7 +66,7 @@ function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:thr
   elapsed_time = @elapsed begin 
     Base.Threads.@threads for i in 1:length(input_data)
       idx, dir = input_data[i]
-      profile_result = __profile_dir(plprob, method, idx, dir; kwargs...)
+      profile_result = __solve_dir(plprob, method, idx, dir; kwargs...)
       output_data[i] = profile_result
     end
 
@@ -82,13 +81,13 @@ function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:thr
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
 
-function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:distributed}, idxs; kwargs...)
+function __solve(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:distributed}, idxs; kwargs...)
 
   input_data = [(idx, dir) for idx in idxs for dir in (-1, 1)]
 
   elapsed_time = @elapsed begin
     output_data = Distributed.pmap(input_data) do (idx, dir)
-      __profile_dir(plprob, method, idx, dir; kwargs...)
+      __solve_dir(plprob, method, idx, dir; kwargs...)
     end
 
     profile_data = Vector{Any}(undef, length(idxs))
@@ -102,16 +101,16 @@ function __profile(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:dis
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
 
-function __profile_dir(plprob::PLProblem, method::AbstractProfilerMethod, idx::Int, dir::Int; kwargs...)
+function __solve_dir(plprob::PLProblem, method::AbstractProfilerMethod, idx::Int, dir::Int; kwargs...)
   
   profiler_state = profiler_init(plprob, method, idx, dir; kwargs...)
-  __profile_dir!(profiler_state)
+  __solve_dir!(profiler_state)
 
   return profiler_state # ? return profiler_state or profile_values
 end
 
 
-function __profile_dir!(profiler_state::ProfilerState)
+function __solve_dir!(profiler_state::ProfilerState)
   
   verbose = get_verbose(profiler_state)
   verbose && init_msg(profiler_state)
