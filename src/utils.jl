@@ -5,31 +5,34 @@ Computes α quantile for Chi2 distribution with df degrees of freedom
 """
 chi2_quantile(α, df=1) = quantile(Chisq(df), α)
 
-compute_optf(prob::OptimizationProblem, u, p=prob.p) = compute_optf(prob.f, u, p)
-compute_optf(f::OptimizationFunction, u, p=SciMLBase.NullParameters()) = f(u, p)
+evaluate_optf(prob::OptimizationProblem, u, p=prob.p) = evaluate_optf(prob.f, u, p)
+evaluate_optf(f::OptimizationFunction, u, p=SciMLBase.NullParameters()) = f(u, p)
 
-function compute_grad(prob::OptimizationProblem, u, p=prob.p)
-  if !isnothing(prob.f.grad)
-    return prob.f.grad(u,p)
-  elseif prob.f.adtype isa SciMLBase.NoAD
-    DifferentiationInterface.gradient(x->prob.f(x,p), prob.f.adtype, u)
+evaluate_gradf(prob::OptimizationProblem, u, p=prob.p) = evaluate_gradf(prob.f, u, p)
+function evaluate_gradf(f::OptimizationFunction, u, p=SciMLBase.NullParameters())
+  if !isnothing(f.grad)
+    return f.grad(u,p)
+  elseif !(f.adtype isa SciMLBase.NoAD)
+    OptimizationBase.DifferentiationInterface.gradient(x->f(x,p), f.adtype, u)
   else
     grad_error()
   end
 end
 
-function compute_hess(prob::OptimizationProblem, u, p=prob.p)
-  if !isnothing(prob.f.hess)
-    return prob.f.hess(u_modified!,p)
-  elseif prob.f.adtype isa SciMLBase.NoAD
-    DifferentiationInterface.hessian(x->prob.f(x,p), prob.f.adtype, u)
+evaluate_hessf(prob::OptimizationProblem, u, p=prob.p) = evaluate_hessf(prob.f, u, p)
+function evaluate_hessf(f::OptimizationFunction, u, p=SciMLBase.NullParameters())
+  if !isnothing(f.hess)
+    return f.hess(u,p)
+  elseif !(f.adtype isa SciMLBase.NoAD)
+    OptimizationBase.DifferentiationInterface.hessian(x->f(x,p), f.adtype, u)
   else
-    hess_error()  
+    hess_error()
   end
-end
+end 
 
 grad_error() = throw(ArgumentError("Gradient is not provided. Use `OptimizationFunction` either with a valid AD backend https://docs.sciml.ai/Optimization/stable/API/ad/ or a provided 'grad' function."))
 hess_error() = throw(ArgumentError("Hessian is not provided. Use `OptimizationFunction` either with a valid AD backend https://docs.sciml.ai/Optimization/stable/API/ad/ or a provided 'hess' function."))
+
 
 # helper type used in parameter profiling
 struct FixedParamCache{P}

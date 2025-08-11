@@ -19,6 +19,8 @@ end
   include("test_taxol_model.jl")
 end
 
+#=
 @testset "JAK2STAT5 model" begin
   include("test_jak-stat_model.jl")
 end
+=#

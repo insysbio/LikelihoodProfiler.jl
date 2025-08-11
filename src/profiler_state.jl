@@ -7,7 +7,7 @@ mutable struct ProfilerState{T,pvType,methodType,SS,SR,ID,parType,xType,statsTyp
   idx::ID
   dir::Int
   profile_bound::Float64
-  parscache::parType
+  pars_cache::parType
   curpars::parType
   curx::xType
   curobj::Float64
@@ -26,6 +26,17 @@ isidentifiable(ps::ProfilerState) = get_retcode(ps::ProfilerState) == :Identifia
 
 get_profile_values(ps::ProfilerState) = ps.profile_values
 get_plprob(ps::ProfilerState) = get_plprob(get_profile_values(ps))
+get_profile_range(ps::ProfilerState) = get_profile_range(get_plprob(ps))
+function get_profile_range(ps::ProfilerState, idx::Int) 
+  profile_range = get_profile_range(ps)
+  if profile_range isa Tuple
+    return profile_range
+  else
+    return profile_range[idx]
+  end
+end
+get_prevpars(ps::ProfilerState) = get_prevpars(get_profile_values(ps))
+get_prevx(ps::ProfilerState) = get_prevx(get_profile_values(ps))
 get_optprob(ps::ProfilerState) = get_optprob(get_plprob(ps))
 get_method(ps::ProfilerState) = ps.method
 get_solver_state(ps::ProfilerState) = ps.solver_state
@@ -33,10 +44,11 @@ get_solver_retcode(ps::ProfilerState) = ps.solver_retcode
 get_idx(ps::ProfilerState) = ps.idx
 get_dir(ps::ProfilerState) = ps.dir
 get_profile_bound(ps::ProfilerState) = ps.profile_bound
-get_parscache(ps::ProfilerState) = ps.parscache
+get_pars_cache(ps::ProfilerState) = ps.pars_cache
 get_curpars(ps::ProfilerState) = ps.curpars
 get_curx(ps::ProfilerState) = ps.curx
 get_curobj(ps::ProfilerState) = ps.curobj
+get_prevobj(ps::ProfilerState) = get_prevobj(get_profile_values(ps))
 get_numiter(ps::ProfilerState) = ps.numiter
 get_obj_level(ps::ProfilerState) = ps.obj_level
 get_maxiters(ps::ProfilerState) = ps.maxiters
@@ -107,7 +119,7 @@ function profiler_init(plprob::PLProblem{T}, method::AbstractProfilerMethod, idx
   optpars = get_optpars(plprob)
   threshold = get_threshold(plprob)
   
-  obj0 = compute_optf(optprob, optpars)
+  obj0 = evaluate_optf(optprob, optpars)
   obj_level = obj0 + threshold
   x0 = optpars[idx]
 
@@ -159,7 +171,8 @@ function profiler_step!(profiler::ProfilerState, method::OptimizationProfiler)
   optcache = get_solver_state(profiler)
   idx = get_idx(profiler)
 
-  pars_guess = compute_next_pars!(profiler, stepper)
+  pars_guess = propose_next_pars!(profiler, stepper)
+
   fill_x_reduced!(optcache.reinit_cache.u0, pars_guess, idx)
   set_x_fixed!(optcache.reinit_cache.p, pars_guess[idx])
   
@@ -209,7 +222,7 @@ function profiler_step!(profiler::ProfilerState, method::IntegrationProfiler)
 
     profiler.curpars .= view(integrator.u, 1:length(integrator.u)-1)
     profiler.curx = integrator.u[idx]
-    profiler.curobj = compute_optf(get_optprob(profiler), get_curpars(profiler))
+    profiler.curobj = evaluate_optf(get_optprob(profiler), get_curpars(profiler))
     profiler.solver_retcode = integrator.sol.retcode
     profiler.numiter += 1
   else
@@ -218,3 +231,14 @@ function profiler_step!(profiler::ProfilerState, method::IntegrationProfiler)
   end
 
 end
+
+#=
+struct SolverState{T,ID} <: AbstractSolverState{T}
+  u::T
+  p::T
+  sol::SciMLBase.AbstractSolution
+  retcode::ReturnCode.T
+  stats::SciMLBase.OptimizationStats
+  reinit_cache::SciMLBase.ReinitCache{ID}
+end
+=#
