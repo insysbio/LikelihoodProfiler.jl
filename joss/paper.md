@@ -106,10 +106,11 @@ The optimal profiling method and settings depend on the complexity of the model 
 All profiling methods benefit from the unified interface provided by LikelihoodProfiler.jl:
 - Integration with SciML packages gives users access to a wide range of optimizers, differential equation solvers, and AD backends, enabling efficient profiling configurations.
 - Compatibility with Heta, PEtab and SBML formats broadens the accessibility of the package across different modeling frameworks.
+- `solve()` interface provided by `CommonSolve.jl` provides unified access various profiling methods 
 - A common parallelization setup, controlled via the `parallel_type` argument in the `solve()` function, is supported across all methods and can significantly accelerate computations.
 - The interface facilitates integration of new profiling methods and stepping algorithms.
 
-Future work will include adding new methods of parameters and functions profiling and enabling adaptive switching between strategies.
+Future work will include adding new methods of parameters, functions and predictions profiling and enabling adaptive switching between strategies.
 
 ## Availability
 
