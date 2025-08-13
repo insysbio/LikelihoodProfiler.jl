@@ -11,18 +11,18 @@ plprob = PLProblem(optprob, [3.,4.], [(-5,20), (-2,15)]; threshold=Inf)
 #################################### OptimizationProfiler ####################################
 
 method1 = OptimizationProfiler(optimizer=NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=0.1))
-sol1 = profile(plprob, method1; verbose=true)
+sol1 = solve(plprob, method1; verbose=true)
 
 
 #################################### IntegrationProfiler ####################################
 
 method2 = IntegrationProfiler(integrator=FBDF(autodiff = AutoFiniteDiff()), integrator_opts=(dtmax=0.1,), matrix_type=:hessian)
-sol2 = profile(plprob, method2; verbose=true)
+sol2 = solve(plprob, method2; verbose=true)
 
 ######################################## CICOProfiler #######################################
 
 method3 = CICOProfiler(optimizer=:LN_NELDERMEAD, scan_tol=1e-3)
-sol3 = profile(plprob, method3; verbose=true)
+sol3 = solve(plprob, method3; verbose=true)
 
 
 ######################################### PLProblem w parameters ##########################################
@@ -35,14 +35,14 @@ plprob = PLProblem(optprob, [1.,1.], (-20,20); threshold=4.0)
 #################################### OptimizationProfiler ####################################
 
 method1 = OptimizationProfiler(optimizer=Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.01))
-sol1 = profile(plprob, method1; verbose=true)
+sol1 = solve(plprob, method1; verbose=true)
 
 #################################### IntegrationProfiler ####################################
 
 method2 = IntegrationProfiler(integrator=FBDF(autodiff = AutoFiniteDiff()), integrator_opts=(dtmax=0.1,), matrix_type=:hessian)
-sol2 = profile(plprob, method2; verbose=true)
+sol2 = solve(plprob, method2; verbose=true)
 
 ######################################## CICOProfiler #######################################
 
 method3 = CICOProfiler(optimizer=:LN_NELDERMEAD, scan_tol=1e-14)
-sol3 = profile(plprob, method3; verbose=true)
+sol3 = solve(plprob, method3; verbose=true)

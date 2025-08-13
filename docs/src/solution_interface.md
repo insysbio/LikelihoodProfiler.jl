@@ -12,7 +12,7 @@ LikelihoodProfiler.PLSolution
 
 - `:Identifiable` - the profile has intersection with the predefined `threshold`.
 - `:NonIdentifiable` - the profile doesn't intersect the predefined `threshold`.
-- `:MaxIters` - maximum number of iterations reached while computing the profile. See `maxiters` argument to the [`profile`](@ref).
+- `:MaxIters` - maximum number of iterations reached while computing the profile. See `maxiters` argument to the [`solve`](@ref).
 - `:Failure` - the solver (optimizer or integrator) reported failure status, profiling was interrupted. 
 
 ### Visualization and tabular representation

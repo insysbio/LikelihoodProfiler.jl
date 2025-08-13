@@ -35,21 +35,21 @@ plprob = PLProblem(optprob, optpars, (-10.,10.); threshold = 4.0)
 
 ### Profile likelihood methods
 
-LikelihoodProfiler provides a range of methods to profile likelihood functions and explore practical identifiability. The most common and simple "profiler" is the `OptimizationProfiler` method. It is based on stepwise re-optimization of the likelihood function with the constraint on the parameter (or function) of interest. We define the method and run the `profile` procedure. Please consult `?profile` on the details of the interface.
+LikelihoodProfiler provides a range of methods to profile likelihood functions and explore practical identifiability. The most common and simple "profiler" is the `OptimizationProfiler` method. It is based on stepwise re-optimization of the likelihood function with the constraint on the parameter (or function) of interest. We define the method and run the `solve` procedure. Please consult `?solve` on the details of the interface.
 
 ```@example example-1
 method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.15))
-sol = profile(plprob, method)
+sol = solve(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```
 
-The same `profile` interface can be used with other profiling methods. For example, a more advanced way to compute profiles is proposed by `IntegrationProfiler`. It obtains the profiles as solutions to the differential equation system. To solve this internally generated system, we need to provide a differential equations solver (`integrator`).
+The same `solve` interface can be used with other profiling methods. For example, a more advanced way to compute profiles is proposed by `IntegrationProfiler`. It obtains the profiles as solutions to the differential equation system. To solve this internally generated system, we need to provide a differential equations solver (`integrator`).
 
 ```@example example-1
 using OrdinaryDiffEq
 
 method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.3,), matrix_type = :hessian)
-sol = profile(plprob, method)
+sol = solve(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```
 Likelihood profiling is mostly performed to assess if the profile has intersections with the given confidence level, hence if the parameter (or function of parameters) has finite confidence interval. Another approach to the problem of practical identifiability is to compute these intersections (endpoints of the confidence interval (CI)) without restoring the full shape of the profile. One of such methods is implemented in `CICOProfiler`. It estimates CI endpoints with an optimization procedure without following the exact trajectory of the profile. 
@@ -58,6 +58,6 @@ Likelihood profiling is mostly performed to assess if the profile has intersecti
 using CICOBase
 
 method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
-sol = profile(plprob, method)
+sol = solve(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```

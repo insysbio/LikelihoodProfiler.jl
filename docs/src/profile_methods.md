@@ -1,7 +1,7 @@
 
 ## Profile likelihood methods
 
-LikelihoodProfiler provides a range of methods to profile likelihood functions and explore practical identifiability. The method should be provided as the second argument to the [`profile`](@ref) function.
+LikelihoodProfiler provides a range of methods to profile likelihood functions and explore practical identifiability. The method should be provided as the second argument to the [`solve`](@ref) function.
 
 ### Optimization-based profiles
 

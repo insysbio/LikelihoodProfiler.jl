@@ -32,8 +32,8 @@ profile_idxs = [findfirst(isequal(p), parnames) for p in reported_pars]
 # PL methods
 ## OptimizationProfiler
 optmeth = OptimizationProfiler(optimizer = NLopt.LD_LBFGS(), stepper = FixedStep(; initial_step=(p0,i)->p0[i]*0.005))
-sol = profile(plprob, optmeth; idxs=profile_idxs, verbose=true)
+sol = solve(plprob, optmeth; idxs=profile_idxs, verbose=true)
 
 ## IntegrationProfiler
 odemeth = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), integrator_opts = (dtmax = 0.01, ), matrix_type = :hessian)
-sol = profile(plprob, odemeth; idxs=[profile_idxs[1]], verbose=true)
+sol = solve(plprob, odemeth; idxs=[profile_idxs[1]], verbose=true)

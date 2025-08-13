@@ -29,7 +29,7 @@ plprob = PLProblem(optprob, optpars, (-20.,20.); threshold = chi2_quantile(0.95,
   profile_step(p0, i) = p0[i] * 0.05
   atol = [profile_step(optpars, i)/2 for i in idxs]
   method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
-  sol = profile(plprob, method)
+  sol = solve(plprob, method)
   for i in idxs
     test_sir(sol, i; atol = atol[i])
   end
@@ -46,7 +46,7 @@ end
   profile_step(p0, i) = p0[i] * 0.05
   atol = [profile_step(optpars, i)/2 for i in idxs]
   method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=profile_step))
-  sol = profile(plprob, method)
+  sol = solve(plprob, method)
   for i in idxs
     test_sir(sol, i; atol = atol[i])
   end
@@ -59,7 +59,7 @@ end
   idxs = 1:3
   rtol = 3e-3 # how to set it?
   method = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), matrix_type = :hessian)
-  sol = profile(plprob, method)
+  sol = solve(plprob, method)
   for i in idxs
     test_sir(sol, i; rtol = rtol)
   end
@@ -72,7 +72,7 @@ end
   idxs = 1:3
   atol=1e-3
   method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
-  sol = profile(plprob, method)
+  sol = solve(plprob, method)
   for i in idxs
     test_sir(sol, i; atol)
   end

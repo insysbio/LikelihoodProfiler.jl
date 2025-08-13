@@ -1,5 +1,6 @@
 module LikelihoodProfiler
 
+using CommonSolve: CommonSolve, init, solve!, solve
 using SciMLBase, PreallocationTools
 using Reexport
 @reexport import SciMLBase: OptimizationFunction, OptimizationProblem, remake
@@ -29,8 +30,10 @@ include("odeprob_utils.jl")
 include("endpoints.jl")
 include("profiler_step.jl")
 include("plotting.jl")
+include("deprecated.jl")
 
-export PLProblem, PLSolution, profile
+export PLProblem, PLSolution
+export profile, solve
 export FixedStep, LineSearchStep, InterpolationLineSearch
 export chi2_quantile
 export OptimizationProfiler, IntegrationProfiler, CICOProfiler
