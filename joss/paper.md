@@ -66,7 +66,7 @@ plprob = PLProblem(optprob, get_x(petab_problem))
 LikelihoodProfiler.jl offers a suite of methods for profiling likelihood functions and assessing practical identifiability. Each method includes several configurable options, such as optimizer or integrator selection, tolerances, and step size. The most straightforward method is OptimizationProfiler, which follows the classical approach of stepwise re-optimization of the likelihood function under a constraint on the parameter of interest.
 
 ```julia
-alg1 = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = LineSearchStep(; initial_step=0.07))
+alg1 = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.07))
 ```
 
 A more advanced method is the IntegrationProfiler, which computes likelihood profiles by solving a system of differential equations derived from the underlying optimization problem. This method requires a differential equation solver (integrator) to be specified.
@@ -92,9 +92,21 @@ All three profiling approaches yielded comparable confidence intervals, emphasiz
 
 Below are the profile likelihoods for the first three parameters of the JAK/STAT model, computed using the three methods:
 
-*figure: Profile likelihoods for the first three parameters of the JAK/STAT model using OptimizationProfiler, IntegrationProfiler, and CICOProfiler*
+![Profiles.\label{fig:profiles}](profiles.png){ width=60% }
 
 All three methods reported similar CI for the JAK/STAT model, which can be accessed using the `get_endpoint()` function.
+
+| **Parameter**<br>     | **OptimizationProfiler**<br> | **IntegrationProfiler**<br> | **CICOProfiler**<br> |
+|------------------------------:|----------------------------------------------:|---------------------------------------------:|--------------------------------------:|
+| log10\_Epo\_degradation\_BaF3 | (-1.79612, -1.33173)                          | (-1.79748, -1.33172)                         | (-1.79661, -1.3302)                   |
+| log10\_k\_exp\_hetero         | (nothing, -2.65263)                           | (nothing, -2.65244)                          | (nothing, -2.8089)                    |
+| log10\_k\_exp\_homo           | (-2.68323, -1.73872)                          | (-2.68661, -1.73886)                         | (-2.68367, -1.73888)                  |
+| log10\_k\_imp\_hetero         | (-1.94661, -1.62555)                          | (-1.94707, -1.6217)                          | (-1.94888, -1.62229)                  |
+| log10\_k\_imp\_homo           | (-0.109411, nothing)                          | (-0.109301, nothing)                         | (-0.109678, nothing)                  |
+| log10\_k\_phos                | (4.08355, 4.33082)                            | (4.08025, 4.33155)                           | (4.07836, 4.33194)                    |
+| log10\_sd\_pSTAT5A\_rel       | (0.364585, 0.870501)                          | (0.364487, 0.869323)                         | (0.362142, 0.870803)                  |
+| log10\_sd\_pSTAT5B\_rel       | (0.625924, 1.08439)                           | (0.624763, 1.08514)                          | (0.62272, 1.0853)                     |
+| log10\_sd\_rSTAT5A\_rel       | (0.312047, 0.762828)                          | (0.312496, 0.763286)                         | (0.307907, 0.763785)                  |
 
 The optimal profiling method and settings depend on the complexity of the model and the goal of the analysis:
 - OptimizationProfiler benefits from the choice of optimization algorithm (e.g., gradient-based or derivative-free) but may be computationally intensive.
@@ -122,6 +134,8 @@ import Pkg; Pkg.add("LikelihoodProfiler")
 ```
 
 Tutorials and documentation are available at: https://insysbio.github.io/LikelihoodProfiler.jl/stable/
+
+Benchmarks and profile methods comparison are available as Jupyter notebooks in the `/benchmark` directory of the `LikelihoodProfiler.jl` repository.
 
 ## Acknowledgments
 

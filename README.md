@@ -6,10 +6,6 @@
 [![Build Status](https://github.com/insysbio/LikelihoodProfiler.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/insysbio/LikelihoodProfiler.jl/actions/workflows/CI.yml?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/insysbio/LikelihoodProfiler.jl/graph/badge.svg)](https://codecov.io/gh/insysbio/LikelihoodProfiler.jl)
 
-#### !!! The LikelihoodProfiler package has undergone major redevelopment and now provides a unified interface for various profile likelihood methods. If you are looking for the CICO algorithm (initially implemented in the LikelihoodProfiler package), you can use it through either the new LikelihoodProfiler interface or directly with [CICOBase.jl](https://github.com/insysbio/CICOBase.jl).
-
-#### !!! The new interface is under active development. Feedback and contributions are welcome! 
-
 ## Installation
 
 In Julia terminal run the following command:

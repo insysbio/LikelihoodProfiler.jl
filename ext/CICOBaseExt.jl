@@ -34,8 +34,8 @@ function LikelihoodProfiler.__solve_dir(plprob::ProfileLikelihoodProblem, method
 
   verbose && @info "Computing $direction-side profile"
 
-  ep = CICOBase.get_endpoint(optpars, idx, x->optprob.f.f(x,optprob.p), :CICO_ONE_PASS, direction;
-    loss_crit = obj_level, theta_bounds=optprob_bounds, scan_bound=profile_bound, local_alg=LikelihoodProfiler.get_optimizer(method), scan_tol=LikelihoodProfiler.get_scan_tol(method), silent=!verbose)
+  ep = CICOBase.get_endpoint(Vector(optpars), idx, x->optprob.f.f(x,optprob.p), :CICO_ONE_PASS, direction;
+    loss_crit = obj_level, theta_bounds=Vector(optprob_bounds), scan_bound=profile_bound, local_alg=LikelihoodProfiler.get_optimizer(method), scan_tol=LikelihoodProfiler.get_scan_tol(method), silent=!verbose)
 
   return cico_to_profile_values(plprob, ep, optpars, x0, obj0, obj_level)
 end
