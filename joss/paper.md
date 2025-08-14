@@ -1,5 +1,5 @@
 ---
-title: "LikelihoodProfiler.jl: A Unified Julia Package for Practical Identifiability Analysis and Confidence Interval Estimation"
+title: "LikelihoodProfiler.jl: Unified profile-likelihood workflows for identifiability and confidence intervals"
 tags:
   - profile likelihood
   - identifiability analysis
@@ -11,13 +11,13 @@ authors:
   - name: "Ivan Borisov"
     orcid: 0000-0002-2887-1903
     affiliation: 1
+  - name: "Aleksander Demin"
+    affiliation: 1
   - name: "Evgeny Metelkin"
     orcid: 0000-0001-6612-5373
     affiliation: 1
-  - name: "Aleksander Demin"
-    affiliation: 1
 affiliations:
-  - name: "InSysBio LLC"
+  - name: "InSysBio CY LTD"
     index: 1
 date: 12 August 2025
 bibliography: paper.bib
@@ -25,7 +25,7 @@ bibliography: paper.bib
 
 ## Summary
 
-Practical identifiability addresses the critical question of how well a mechanistic model is determined by the available experimental data. In a typical model's calibration workflow practical identifiability implies prior structural identifiability, which studies and resolves the uncertainty within the model structure independently from the available data. However, in many cases, profile likelihood-based methods are also used as a proxy for structural identifiability analysis, particularly when the complexity of a model makes structural methods inapplicable or computationally prohibitive [@Wieland2021]. Moreover, profile likelihood techniques can be extended beyond parameter analysis to assess the identifiability of model states and predictions. This versatility makes profile likelihood analysis an essential component in the development and validation of models in Systems Biology and Quantitative Systems Pharmacology (QSP).
+Practical identifiability addresses the critical question of how well a mechanistic model is determined by the available experimental data. In a typical model's calibration workflow practical identifiability implies prior structural identifiability, which studies and resolves the uncertainty within the model structure independently from the available data. However, in many cases, profile likelihood-based methods are also used as a proxy for structural identifiability analysis, particularly when the complexity of a model makes structural methods inapplicable or computationally prohibitive [@Wieland2021]. Moreover, profile likelihood techniques can be extended beyond parameter analysis to assess the identifiability of model states and predictions. This versatility makes profile likelihood analysis an essential component in the development and validation of models in Systems Biology (SB) and Quantitative Systems Pharmacology (QSP).
 
 LikelihoodProfiler.jl is an open-source Julia package designed to perform profile likelihood-based identifiability analyses by offering a unified and extensible interface.
 
@@ -96,7 +96,7 @@ Below are the profile likelihoods for the first three parameters of the JAK/STAT
 
 All three methods reported similar CI for the JAK/STAT model, which can be accessed using the `get_endpoint()` function.
 
-| **Parameter**<br>     | **OptimizationProfiler**<br> | **IntegrationProfiler**<br> | **CICOProfiler**<br> |
+| **Parameter**     | **OptimizationProfiler** | **IntegrationProfiler** | **CICOProfiler** |
 |------------------------------:|----------------------------------------------:|---------------------------------------------:|--------------------------------------:|
 | log10\_Epo\_degradation\_BaF3 | (-1.79612, -1.33173)                          | (-1.79748, -1.33172)                         | (-1.79661, -1.3302)                   |
 | log10\_k\_exp\_hetero         | (nothing, -2.65263)                           | (nothing, -2.65244)                          | (nothing, -2.8089)                    |
@@ -108,10 +108,12 @@ All three methods reported similar CI for the JAK/STAT model, which can be acces
 | log10\_sd\_pSTAT5B\_rel       | (0.625924, 1.08439)                           | (0.624763, 1.08514)                          | (0.62272, 1.0853)                     |
 | log10\_sd\_rSTAT5A\_rel       | (0.312047, 0.762828)                          | (0.312496, 0.763286)                         | (0.307907, 0.763785)                  |
 
+\* `nothing` here means that the parameter is not restricted within the parameter range, i.e. it does not meet the threshold for being considered identifiable.
+
 The optimal profiling method and settings depend on the complexity of the model and the goal of the analysis:
 - OptimizationProfiler benefits from the choice of optimization algorithm (e.g., gradient-based or derivative-free) but may be computationally intensive.
 - IntegrationProfiler provides smooth profile trajectories but requires Hessian computation or approximation, which may be challenging for large-scale models.
-- CICOProfiler is often more efficient for CI estimation when the full profile is not needed.
+- CICOProfiler is often more efficient for fast CI estimation when the full profile is not needed.
 
 ## Implementation and Extensibility
 
@@ -137,6 +139,32 @@ Tutorials and documentation are available at: https://insysbio.github.io/Likelih
 
 Benchmarks and profile methods comparison are available as Jupyter notebooks in the `/benchmark` directory of the `LikelihoodProfiler.jl` repository.
 
-## Acknowledgments
+## Related packages
+
+In the Julia ecosystem, ProfileLikelihood.jl provides fixed-step, optimization-based profiles and also supports 
+bivariate profile likelihoods, offering a direct and practical workflow for many ODE models. 
+
+InformationGeometry.jl approaches the problem from a differential-geometric perspective, exposing tools to analyze 
+likelihood surfaces (e.g., via Fisher information) and thereby complementing profile-based diagnostics. 
+While these packages target overlapping use cases, their APIs and underlying methods are specialized 
+and not designed around a single, unified profiling interface.
+
+Outside Julia, widely used workflows include Data2Dynamics (MATLAB) and dMod (R), which combine parameter estimation, 
+sensitivity analysis, and profile likelihoods within end-to-end modeling environments. 
+In Python, pyPESTO offers an extensible toolkit for parameter inference with support for 
+profile likelihood computation and close ties to the PEtab standard. 
+Additional domain-specific toolboxes exist and are routinely used in applied modeling studies. 
+
+Collectively, these tools demonstrate the maturity and utility of profile-based identifiability analysis,
+ but they also illustrate fragmentation: different methods (stepwise re-optimization, integration-based approaches, 
+ direct interval estimation) are often confined to different packages and languages,
+  with heterogeneous APIs and varying levels of compatibility with community formats.
+
+LikelihoodProfiler.jl is designed to complement this landscape by bringing multiple profiling strategies under a single, 
+Julia-native interface. 
+It unifies optimization-based, integration-based, and direct confidence-interval estimation methods behind 
+a common solve API, integrates with the SciML stack for efficient solvers and automatic differentiation. 
+This combination aims to reduce context-switching between tools and to make method selection 
+a matter of configuration rather than of changing software stacks.
 
 ## References
