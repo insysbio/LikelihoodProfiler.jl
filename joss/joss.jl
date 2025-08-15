@@ -7,8 +7,8 @@ petab_model = PEtabModel(path_yaml)
 petab_problem = PEtabODEProblem(petab_model)
 
 
-optprob = OptimizationProblem(petab_problem)
-plprob = PLProblem(optprob, get_x(petab_problem))
+optprob = OptimizationProblem(petab_problem) # theta_bounds = (-5.0, 5.0)
+plprob = PLProblem(optprob, get_x(petab_problem), (-4.5, 4.5))
 plprob2 = PLProblem(optprob, get_x(petab_problem), (-5.0+1e-7, 5.0-1e-7))
 
 alg1 = OptimizationProfiler(; optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.07))
