@@ -141,24 +141,18 @@ Benchmarks and profile methods comparison are available as Jupyter notebooks in 
 
 ## Related packages
 
-In the Julia ecosystem, ProfileLikelihood.jl provides fixed-step, optimization-based profiles and also supports 
-bivariate profile likelihoods, offering a direct and practical workflow for many ODE models. 
+In the Julia ecosystem, `ProfileLikelihood.jl` provides fixed-step, optimization-based profiles and also supports 
+bivariate profile likelihoods. 
 
-InformationGeometry.jl approaches the problem from a differential-geometric perspective, exposing tools to analyze 
-likelihood surfaces (e.g., via Fisher information) and thereby complementing profile-based diagnostics. 
+`InformationGeometry.jl` approaches the problem from a differential-geometric perspective, exposing tools to analyze 
+likelihood surfaces (including profiles support). 
 While these packages target overlapping use cases, their APIs and underlying methods are specialized 
-and not designed around a single, unified profiling interface.
+and not designed around a single, unified profile likelihood interface.
 
-Outside Julia, widely used workflows include Data2Dynamics (MATLAB) and dMod (R), which combine parameter estimation, 
-sensitivity analysis, and profile likelihoods within end-to-end modeling environments. 
-In Python, pyPESTO offers an extensible toolkit for parameter inference with support for 
-profile likelihood computation and close ties to the PEtab standard. 
-Additional domain-specific toolboxes exist and are routinely used in applied modeling studies. 
+Outside Julia, widely used workflows include `Data2Dynamics (MATLAB)`, `dMod (R)`, `pyPESTO (Python)` which combine parameter estimation, sensitivity analysis, and profile likelihoods within end-to-end modeling environments. 
+Additional domain-specific toolboxes (e.g. MATLAB SimBiology) provide tools to estimate likelihood profiles. 
 
-Collectively, these tools demonstrate the maturity and utility of profile-based identifiability analysis,
- but they also illustrate fragmentation: different methods (stepwise re-optimization, integration-based approaches, 
- direct interval estimation) are often confined to different packages and languages,
-  with heterogeneous APIs and varying levels of compatibility with community formats.
+Collectively, different methods (stepwise re-optimization, integration-based approaches, direct interval estimation) are often confined to different packages and languages, with heterogeneous APIs and varying levels of compatibility with community formats.
 
 LikelihoodProfiler.jl is designed to complement this landscape by bringing multiple profiling strategies under a single, 
 Julia-native interface. 
