@@ -1,7 +1,7 @@
 
 # Accept both OptimizationProfiler and IntegrationProfiler with reoptimize=true
 function solver_init(sciml_prob::SciMLBase.OptimizationProblem, 
-  plprob::PLProblem, method::AbstractProfilerMethod, idx, dir, profile_bound)
+  plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod, idx, dir, profile_bound)
   
   optprob = get_optprob(plprob)
   u0_full = get_optpars(plprob)
@@ -32,7 +32,7 @@ function solver_init(sciml_prob::SciMLBase.OptimizationProblem,
   return SciMLBase.init(sciml_prob, get_optimizer(method); get_optimizer_opts(method)...)
 end
 
-function build_scimlprob(plprob::PLProblem, method::OptimizationProfiler, idx, profile_bound)
+function build_scimlprob(plprob::ProfileLikelihoodProblem, method::OptimizationProfiler, idx, profile_bound)
   optprob = get_optprob(plprob)
   optpars = get_optpars(plprob)
 

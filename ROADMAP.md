@@ -5,7 +5,7 @@
 - Parallel workflow options
 - add `AdaptiveStep` to `OptimizationProfiler`
 - add `HybridProfiler`
-- add `PLProblem{function}` interface to profile functions of parameters
+- add `ProfileLikelihoodProblem{function}` interface to profile functions of parameters
 - add Venzon Moolgavkar `solve` method
 - add Prediction Profile Problem and Validation Profile Problem
 

@@ -20,7 +20,7 @@ function test_plmethod(method, funcs_dict)
         optprob = OptimizationProblem(optf, _f[:optim], _f[:p])
       end
       target = ParameterTarget(; idxs=eachindex(_f[:optim]), lb=_f[:lb], ub=_f[:ub])
-      plprob = PLProblem(optprob, _f[:optim], target; threshold=_f[:threshold])
+      plprob = ProfileLikelihoodProblem(optprob, _f[:optim], target; threshold=_f[:threshold])
 
       sol = solve(plprob, method)
       for i in eachindex(_f[:optim])

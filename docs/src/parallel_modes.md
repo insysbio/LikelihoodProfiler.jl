@@ -32,7 +32,7 @@ x0 = [1., 1.]
 optf = OptimizationFunction(rosenbrock, AutoForwardDiff())
 optprob = OptimizationProblem(optf, x0)
 
-plprob = PLProblem(optprob, x0, (-5.,5.); threshold = 1.0)
+plprob = ProfileLikelihoodProblem(optprob, x0, (-5.,5.); threshold = 1.0)
 meth = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.1))
 
 sol = solve(plprob, meth; parallel_type=:distributed)

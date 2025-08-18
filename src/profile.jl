@@ -1,12 +1,12 @@
 #=
-function CommonSolvesolve(plprob::PLProblem{<:FunctionProfile}, method::IntegrationProfiler, obj0::Float64, obj_level::Float64; kwargs...)
+function CommonSolvesolve(plprob::ProfileLikelihoodProblem{<:FunctionProfile}, method::IntegrationProfiler, obj0::Float64, obj_level::Float64; kwargs...)
   error("Interface for profiling functions of parameters is not implemented yet...")
 end
 =#
 
 
 """
-    solve(plprob::PLProblem, method::AbstractProfilerMethod; 
+    solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod; 
             idxs::AbstractVector{<:Int} = eachindex(get_optpars(plprob)),
             parallel_type::Symbol=:none, kwargs...)
 
@@ -14,27 +14,27 @@ Profiles the likelihood function for the given problem `plprob` using the specif
 
 ### Arguments
 
-- `plprob::PLProblem{ParameterTarget}`: The profiling problem instance containing the parameters and likelihood function to be profiled.
+- `plprob::ProfileLikelihoodProblem{ParameterTarget}`: The profiling problem instance containing the parameters and likelihood function to be profiled.
 - `method::AbstractProfilerMethod`: The method to be used for profiling.
 - `idxs::AbstractVector{<:Int}`: Indices of the parameters to be profiled. Defaults to all parameters. 
-  (note!) Ensure that each parameter index in `idxs` has a finite `(lower, upper)` range in the PLProblem’s `profile_range` – the profile procedure will validate this.
+  (note!) Ensure that each parameter index in `idxs` has a finite `(lower, upper)` range in the ProfileLikelihoodProblem’s `profile_range` – the profile procedure will validate this.
 - `parallel_type::Symbol`: Specifies the type of parallelism to be used. Supported values: `:none, :threads, :distributed`. Defaults to `:none`.
 - `maxiters::Int`: Maximum number of iterations for one branch (left and right) of the profiling process. Defaults to `1e4`.
 - `verbose::Bool`: Indicates whether to display the progress of the profiling process. Defaults to `false`.
 
 ### Returns
 
-- Returns the profiling results `PLSolution`.
+- Returns the profiling results `ProfileLikelihoodSolution`.
 
 ### Example
 
 ```julia
-plprob = PLProblem(optprob, optpars, [(-10.,10.), (-5.,5.)])
+plprob = ProfileLikelihoodProblem(optprob, optpars, [(-10.,10.), (-5.,5.)])
 method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep())
 sol = solve(plprob, method; idxs=[1])
 ```
 """
-function CommonSolve.solve(plprob::PLProblem, method::AbstractProfilerMethod; 
+function CommonSolve.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod; 
   idxs::AbstractVector{<:Int} = eachindex(get_optpars(plprob)),
   parallel_type::Symbol=:none, kwargs...)
 
@@ -44,7 +44,7 @@ function CommonSolve.solve(plprob::PLProblem, method::AbstractProfilerMethod;
   return __solve(plprob, method, Val(parallel_type), idxs; kwargs...)
 end
 
-function __solve(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:none}, idxs; kwargs...)
+function __solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod, ::Val{:none}, idxs; kwargs...)
 
   elapsed_time = @elapsed profile_data = map(idxs) do idx
     left_profile  = __solve_dir(plprob, method, idx, -1; kwargs...)
@@ -55,7 +55,7 @@ function __solve(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:none}
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
 
-function __solve(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:threads}, idxs; kwargs...)
+function __solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod, ::Val{:threads}, idxs; kwargs...)
 
   input_data = [(idx, dir) for idx in idxs for dir in (-1, 1)]
   output_data = Vector{Any}(undef, length(input_data))
@@ -78,7 +78,7 @@ function __solve(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:threa
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
 
-function __solve(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:distributed}, idxs; kwargs...)
+function __solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod, ::Val{:distributed}, idxs; kwargs...)
 
   input_data = [(idx, dir) for idx in idxs for dir in (-1, 1)]
 
@@ -98,7 +98,7 @@ function __solve(plprob::PLProblem, method::AbstractProfilerMethod, ::Val{:distr
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
 
-function __solve_dir(plprob::PLProblem, method::AbstractProfilerMethod, idx::Int, dir::Int; kwargs...)
+function __solve_dir(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod, idx::Int, dir::Int; kwargs...)
   
   profiler_state = profiler_init(plprob, method, idx, dir; kwargs...)
   __solve_dir!(profiler_state)
@@ -141,7 +141,7 @@ end
 
 ###################################### HELPERS ##################################
 
-function validate_profile_range(plprob::PLProblem{<:ParameterTarget}, idxs::AbstractVector{<:Int})
+function validate_profile_range(plprob::ProfileLikelihoodProblem{<:ParameterTarget}, idxs::AbstractVector{<:Int})
   optpars = get_optpars(plprob)
   profile_range = get_profile_range(plprob)
   

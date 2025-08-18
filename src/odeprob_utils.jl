@@ -1,5 +1,5 @@
 function solver_init(sciml_prob::SciMLBase.AbstractODEProblem, 
-  plprob::PLProblem, method::IntegrationProfiler, idx, dir, profile_bound)
+  plprob::ProfileLikelihoodProblem, method::IntegrationProfiler, idx, dir, profile_bound)
 
   optpars = get_optpars(plprob)
   x0 = optpars[idx]
@@ -42,7 +42,7 @@ function solver_init(sciml_prob::SciMLBase.AbstractODEProblem,
 end
 
 
-function build_scimlprob(plprob::PLProblem, method::IntegrationProfiler, idx, profile_bound)
+function build_scimlprob(plprob::ProfileLikelihoodProblem, method::IntegrationProfiler, idx, profile_bound)
   optprob = get_optprob(plprob)
   optpars = get_optpars(plprob)
   lp = length(optpars)

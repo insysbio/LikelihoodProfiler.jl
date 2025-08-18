@@ -2,7 +2,7 @@ module CICOBaseExt
 
 using LikelihoodProfiler, CICOBase
 
-function LikelihoodProfiler.__solve_dir(plprob::PLProblem, method::CICOProfiler, idx::Int, dir::Int; verbose=false, kwargs...)
+function LikelihoodProfiler.__solve_dir(plprob::ProfileLikelihoodProblem, method::CICOProfiler, idx::Int, dir::Int; verbose=false, kwargs...)
   
   # TODO add check_prob_method()
   !LikelihoodProfiler.hasthreshold(plprob) && throw(ArgumentError("`CICOProfiler` doesn't support profiling with infinite `threshold`. Use other profile methods."))
@@ -40,7 +40,7 @@ function LikelihoodProfiler.__solve_dir(plprob::PLProblem, method::CICOProfiler,
   return cico_to_profile_values(plprob, ep, optpars, x0, obj0, obj_level)
 end
 
-function cico_to_profile_values(plprob::PLProblem, ep::CICOBase.EndPoint, optpars, x0, obj0, obj_level)
+function cico_to_profile_values(plprob::ProfileLikelihoodProblem, ep::CICOBase.EndPoint, optpars, x0, obj0, obj_level)
 
   ep_retcode = cico_deduce_retcode(ep.status)
   ep_val = ep.value

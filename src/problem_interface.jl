@@ -1,10 +1,10 @@
 """
-   AbstractPLProblem
+   AbstractProfileLikelihoodProblem
 
 Abstract type for all profile likelihood problems. Concrete subtypes carry the
 information required to define a specific profile likelihood problem.
 """
-abstract type AbstractPLProblem{T} end
+abstract type AbstractProfileLikelihoodProblem{T} end
 
 """
     AbstractProfileTarget
@@ -89,7 +89,7 @@ ParameterTarget(idxs::AbstractVector{<:Integer}, lb::Real, ub::Real) =
 
 
 """
-    PLProblem{T,probType,P}
+    ProfileLikelihoodProblem{T,probType,P}
     
 Defines a profile likelihood problem.
 
@@ -102,7 +102,7 @@ A profile likelihood problem is defined by
 ### Constructors
 
 ```julia
-PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, target::AbstractProfileTarget; 
+ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, target::AbstractProfileTarget; 
   conf_level::Float64 = 0.95, df::Int = 1, threshold::Real = chi2_quantile(conf_level, df))
 ```
 
@@ -118,18 +118,18 @@ PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, target:
 - `df::Int`: The degrees of freedom for the profile likelihood. Defaults to `1`.
 - `threshold::Real`: The threshold for the profile likelihood. Can be set to `Inf` if confidence interval endpoint estimation is not required. Defaults to `chi2_quantile(conf_level, df)`.
 """
-struct PLProblem{T,probType,P} <: AbstractPLProblem{T}
+struct ProfileLikelihoodProblem{T,probType,P} <: AbstractProfileLikelihoodProblem{T}
   optprob::probType
   optpars::P
   target::T
   threshold::Float64
 end
 
-sym_profile_type(plprob::PLProblem) = nameof(typeof(get_profile_target(plprob)))
-#sym_profile_type(plprob::PLProblem{<:FunctionProfile}) = :function
-#isparprofile(::PLProblem{ipp}) where {ipp} = ipp
+sym_profile_type(plprob::ProfileLikelihoodProblem) = nameof(typeof(get_profile_target(plprob)))
+#sym_profile_type(plprob::ProfileLikelihoodProblem{<:FunctionProfile}) = :function
+#isparprofile(::ProfileLikelihoodProblem{ipp}) where {ipp} = ipp
 
-function Base.show(io::IO, mime::MIME"text/plain", plprob::PLProblem) 
+function Base.show(io::IO, mime::MIME"text/plain", plprob::ProfileLikelihoodProblem) 
   profile_type = sym_profile_type(plprob)
   println(io, "Profile Likelihood Problem. Profile type: $profile_type")
   println(io, "Parameters' optimal values: ")
@@ -138,28 +138,28 @@ end
 
 ############################### SELECTORS ###############################
 
-get_profile_type(prob::PLProblem) = prob.profile_type
-get_profile_target(prob::PLProblem) = prob.target
-get_optprob(prob::PLProblem) = prob.optprob
-get_optpars(prob::PLProblem) = prob.optpars
-get_profile_range(prob::PLProblem) = get_profile_range(get_profile_target(prob))
-get_threshold(prob::PLProblem) = prob.threshold
+get_profile_type(prob::ProfileLikelihoodProblem) = prob.profile_type
+get_profile_target(prob::ProfileLikelihoodProblem) = prob.target
+get_optprob(prob::ProfileLikelihoodProblem) = prob.optprob
+get_optpars(prob::ProfileLikelihoodProblem) = prob.optpars
+get_profile_range(prob::ProfileLikelihoodProblem) = get_profile_range(get_profile_target(prob))
+get_threshold(prob::ProfileLikelihoodProblem) = prob.threshold
 
 ############################### CONSTRUCTORS ###############################
 
-function PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, target::AbstractProfileTarget; 
+function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, target::AbstractProfileTarget; 
   conf_level::Float64 = 0.95, df::Int = 1, threshold::Real = chi2_quantile(conf_level, df))
 
   threshold <= 0. && throw(ArgumentError("`threshold` must be positive definite."))
   check_prob_target(optprob, optpars, target)
   # promote_target(optprob, optpars, target)
 
-  PLProblem(optprob, optpars, target, float(threshold))
+  ProfileLikelihoodProblem(optprob, optpars, target, float(threshold))
 end
 
 ################################ HELPERS ################################
 
-hasthreshold(prob::PLProblem) = isfinite(prob.threshold)
+hasthreshold(prob::ProfileLikelihoodProblem) = isfinite(prob.threshold)
 
 function check_prob_target(optprob::OptimizationProblem, optpars::AbstractVector, target::ParameterTarget) 
   u = optprob.u0
@@ -182,7 +182,7 @@ end
 
 ################################ REMAKE ################################
 
-function SciMLBase.remake(plprob::PLProblem;
+function SciMLBase.remake(plprob::ProfileLikelihoodProblem;
   optprob = missing, optpars = missing, target = missing, threshold = missing)
   
   if optprob === missing
@@ -198,5 +198,5 @@ function SciMLBase.remake(plprob::PLProblem;
     threshold = get_threshold(plprob)
   end
 
-  return PLProblem(optprob, optpars, profile_range; threshold)
+  return ProfileLikelihoodProblem(optprob, optpars, profile_range; threshold)
 end

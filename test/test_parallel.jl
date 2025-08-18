@@ -14,7 +14,7 @@ optf = OptimizationFunction(rosenbrock, AutoForwardDiff())
 optprob = OptimizationProblem(optf, x0)
 target = ParameterTarget(; idxs=1:2, lb=[-5., -5.], ub=[5., 5.])
 
-plprob = PLProblem(optprob, x0, target; threshold = 1.0)
+plprob = ProfileLikelihoodProblem(optprob, x0, target; threshold = 1.0)
 
 for method in [
   IntegrationProfiler(integrator = Tsit5()),

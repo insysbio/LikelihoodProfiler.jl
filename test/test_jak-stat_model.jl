@@ -58,7 +58,7 @@ target = ParameterTarget(
   ub=profile_ub
 )
 
-plprob = PLProblem(optprob, optpars, target; threshold = chi2_quantile(0.95, 1))
+plprob = ProfileLikelihoodProblem(optprob, optpars, target; threshold = chi2_quantile(0.95, 1))
 
 @testset "JAK2-STAT5 model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
   

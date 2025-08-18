@@ -21,7 +21,7 @@ optprob = OptimizationProblem(optf, p0)
 
 optpars = [0.3998583528283355, 0.24676816253516404, 1.2460180516141481e-5]
 target = ParameterTarget(; idxs=1:3, lb=[-20., -20., -20.], ub=[20., 20., 20.])
-plprob = PLProblem(optprob, optpars, target; threshold = chi2_quantile(0.95, 3)/2)
+plprob = ProfileLikelihoodProblem(optprob, optpars, target; threshold = chi2_quantile(0.95, 3)/2)
 
 
 @testset "SIR model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
