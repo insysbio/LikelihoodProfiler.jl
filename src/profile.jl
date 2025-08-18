@@ -1,5 +1,5 @@
 #=
-function CommonSolve.solve(plprob::PLProblem{<:FunctionProfile}, method::IntegrationProfiler, obj0::Float64, obj_level::Float64; kwargs...)
+function CommonSolvesolve(plprob::PLProblem{<:FunctionProfile}, method::IntegrationProfiler, obj0::Float64, obj_level::Float64; kwargs...)
   error("Interface for profiling functions of parameters is not implemented yet...")
 end
 =#
@@ -14,7 +14,7 @@ Profiles the likelihood function for the given problem `plprob` using the specif
 
 ### Arguments
 
-- `plprob::PLProblem{ParameterProfile}`: The profiling problem instance containing the parameters and likelihood function to be profiled.
+- `plprob::PLProblem{ParameterTarget}`: The profiling problem instance containing the parameters and likelihood function to be profiled.
 - `method::AbstractProfilerMethod`: The method to be used for profiling.
 - `idxs::AbstractVector{<:Int}`: Indices of the parameters to be profiled. Defaults to all parameters. 
   (note!) Ensure that each parameter index in `idxs` has a finite `(lower, upper)` range in the PLProblem’s `profile_range` – the profile procedure will validate this.
@@ -34,15 +34,12 @@ method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedS
 sol = solve(plprob, method; idxs=[1])
 ```
 """
-function CommonSolve.solve(plprob::PLProblem{ParameterProfile}, method::AbstractProfilerMethod; 
+function CommonSolve.solve(plprob::PLProblem, method::AbstractProfilerMethod; 
   idxs::AbstractVector{<:Int} = eachindex(get_optpars(plprob)),
   parallel_type::Symbol=:none, kwargs...)
 
   # validation
   @assert parallel_type in (:none, :threads, :distributed)
-  optpars = get_optpars(plprob)
-  checkbounds(optpars, idxs)
-  validate_profile_range(plprob, idxs)
 
   return __solve(plprob, method, Val(parallel_type), idxs; kwargs...)
 end
@@ -138,13 +135,13 @@ function init_msg(profiler_state::ProfilerState)
   @info "Computing $dir-side profile"
 end
 
-function progress_msg(profiler_state::ProfilerState{<:ParameterProfile}) 
+function progress_msg(profiler_state::ProfilerState{<:ParameterTarget}) 
   @info "Current parameter-$(get_idx(profiler_state)) value: $(get_curx(profiler_state))"
 end
 
 ###################################### HELPERS ##################################
 
-function validate_profile_range(plprob::PLProblem{<:ParameterProfile}, idxs::AbstractVector{<:Int})
+function validate_profile_range(plprob::PLProblem{<:ParameterTarget}, idxs::AbstractVector{<:Int})
   optpars = get_optpars(plprob)
   profile_range = get_profile_range(plprob)
   
@@ -169,7 +166,4 @@ function validate_profile_range(x::Number, profile_range)
     throw(ArgumentError("The initial values provided for profiling parameters must lie within the specified `profile_range`: `profile_range[idx][1] ≤ x[idx] ≤ profile_range[idx][2]`"))
 end
 
-function validate_profile_bound(bound) 
-  (isnothing(bound) || isinf(bound)) &&
-    throw(ArgumentError("Each parameter selected for profiling must have a finite `(lower, upper)` range specified in `profile_range`"))
-end
+

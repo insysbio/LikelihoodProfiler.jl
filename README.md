@@ -46,7 +46,7 @@ using LikelihoodProfiler, Plots
 optpars = sol.u
 
 # profile likelihood problem
-plprob = PLProblem(optprob, optpars, (-10.,10.); threshold = 4.0)
+plprob = PLProblem(optprob, optpars, [(-10.,10.), (-10.,10.)]; threshold = 4.0)
 ```
 
 ### Profile likelihood methods

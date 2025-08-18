@@ -8,6 +8,8 @@ funcs_dict = Dict(
     :threshold => 4.0,
     :ci => [(1.,5.)],
     :profile_range => [(-20.,20.)],
+    :lb => [-20.],
+    :ub => [20.],
     :retcode => [(:Identifiable,:Identifiable)]
   ),
 
@@ -20,6 +22,8 @@ funcs_dict = Dict(
     :ci => [(-2+1e-8,2+1e-8), 
                    (nothing, nothing)],
     :profile_range => [(-20.,20.), (-20.,20.)],
+    :lb => [-20.,-20.],
+    :ub => [20.,20.],
     :retcode => [(:Identifiable,:Identifiable),
                 (:NonIdentifiable,:NonIdentifiable)]
   ),
@@ -33,6 +37,8 @@ funcs_dict = Dict(
     :ci => [(1.,5.),
                    (nothing,nothing)],
     :profile_range => [(-20.,20.),(-20.,20.)],
+    :lb => [-20.,-20.],
+    :ub => [20.,20.],
     :retcode => [(:Identifiable,:Identifiable),
                 (:NonIdentifiable,:NonIdentifiable)]
   ),
@@ -46,6 +52,8 @@ funcs_dict = Dict(
     :ci => [(1.,5.),
                    (2.,6.)],
     :profile_range => [(-20.,20.),(-20.,20.)],
+    :lb => [-20.,-20.],
+    :ub => [20.,20.],
     :retcode => [(:Identifiable,:Identifiable),
                 (:Identifiable,:Identifiable)]
   ),
@@ -60,6 +68,8 @@ funcs_dict = Dict(
                   (2.0-2.0*sqrt(2.),2.0+2.0*sqrt(2.)),
                   (nothing,nothing)], 
     :profile_range => [(-20.,20.),(-20.,20.),(-20.,20.)],
+    :lb => [-20.,-20.,-20.],
+    :ub => [20.,20.,20.],
     :retcode => [(:Identifiable,:Identifiable),
                 (:Identifiable,:Identifiable),
                 (:NonIdentifiable,:NonIdentifiable)]
@@ -75,6 +85,8 @@ funcs_dict = Dict(
                    (nothing,log(3)),
                    (nothing,nothing)],
     :profile_range => [(-20.,20.),(-20.,20.),(-20.,20.)],
+    :lb => [-20.,-20.,-20.],
+    :ub => [20.,20.,20.],
     :retcode => [(:Identifiable,:Identifiable),
                 (:NonIdentifiable,:Identifiable),
                 (:NonIdentifiable,:NonIdentifiable)]
@@ -103,6 +115,8 @@ funcs_dict = Dict(
                   (nothing,nothing),
                   (nothing,nothing)],
     :profile_range => [(-20.,20.),(-20.,20.),(-20.,20.),(-20.,20.)],
+    :lb => [-20.,-20.,-20.,-20.],
+    :ub => [20.,20.,20.,20.],
     :retcode => [(:Identifiable,:Identifiable),
                 (:Identifiable,:Identifiable),
                 (:NonIdentifiable,:NonIdentifiable),
@@ -115,6 +129,8 @@ funcs_dict = Dict(
     :ci => [(-1.,3.),
             (-0.174,9.)],
     :profile_range => [(-10.,10.),(-10.,10.)],
+    :lb => [-10.,-10.],
+    :ub => [10.,10.],
     :retcode => [(:Identifiable,:Identifiable),
                 (:Identifiable,:Identifiable)]
   ),
@@ -126,6 +142,8 @@ funcs_dict = Dict(
     :ci => [(-1.,3.),
             (-0.246,9.003)],
     :profile_range => [(-10.,10.),(-10.,10.)],
+    :lb => [-10.,-10.],
+    :ub => [10.,10.],
     :retcode => [(:Identifiable,:Identifiable),
                 (:Identifiable,:Identifiable)]
   ),
@@ -139,6 +157,8 @@ funcs_dict = Dict(
     :ci => [(((3 - sqrt(9 - 4*(2 - 1/sqrt(5)))) / 2),((3 + sqrt(9 - 4*(2 - 1/sqrt(5)))) / 2)),
             (-1.,3.),],
     :profile_range => [(-20.,20.),(-20.,20.)],
+    :lb => [-20.,-20.],
+    :ub => [20.,20.],
     :retcode => [(:Identifiable,:Identifiable),
                 (:Identifiable,:Identifiable)]
   ),

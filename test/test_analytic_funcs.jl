@@ -19,8 +19,8 @@ function test_plmethod(method, funcs_dict)
       else
         optprob = OptimizationProblem(optf, _f[:optim], _f[:p])
       end
-
-      plprob = PLProblem(optprob, _f[:optim], _f[:profile_range]; threshold=_f[:threshold])
+      target = ParameterTarget(; idxs=eachindex(_f[:optim]), lb=_f[:lb], ub=_f[:ub])
+      plprob = PLProblem(optprob, _f[:optim], target; threshold=_f[:threshold])
 
       sol = solve(plprob, method)
       for i in eachindex(_f[:optim])

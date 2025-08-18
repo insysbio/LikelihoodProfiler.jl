@@ -1,8 +1,95 @@
+"""
+   AbstractPLProblem
 
-abstract type AbstractPLProblem{T,PF} end
+Abstract type for all profile likelihood problems. Concrete subtypes carry the
+information required to define a specific profile likelihood problem.
+"""
+abstract type AbstractPLProblem{T} end
 
 """
-    PLProblem{T,probType,P,PF,PR}
+    AbstractProfileTarget
+
+Abstract type for all profile targets. Concrete subtypes carry the
+information required to define what is being profiled. 
+"""
+abstract type AbstractProfileTarget end
+
+"""
+    ParameterTarget{I,V}
+
+Profile target representing profiling of model parameters.
+
+### Fields
+
+- `idxs::AbstractVector{<:Integer}`: Indices of the parameters being profiled.
+- `lb::AbstractVector{<:Real}`: Lower bounds for the profile likelihood. 
+- `ub::AbstractVector{<:Real}`: Upper bounds for the profile likelihood. 
+
+Profile bounds `lb` and `ub` should be set to finite numerical values.
+
+### Constructors
+
+Create a target with explicit lower and upper bounds for each index.
+```julia
+ParameterTarget(; idxs::AbstractVector{<:Integer}, lb::AbstractVector{<:Real}, ub::AbstractVector{<:Real})
+```
+"""
+struct ParameterTarget{I,V} <: AbstractProfileTarget
+  idxs::I
+  lb::V
+  ub::V
+
+  function ParameterTarget(idxs::I, lb::AbstractVector{<:Real}, ub::AbstractVector{<:Real}) where {I<:AbstractVector{<:Integer}}
+    n = length(idxs)
+    (n == length(lb) == length(ub) ) ||
+      throw(DimensionMismatch("idxs, lb and ub must have the same length"))
+    all(lb .<= ub) || throw(ArgumentError("lower bounds must not exceed upper bounds"))
+    T = promote_type(eltype(lb), eltype(ub))
+    lb_typed = T.(lb)
+    ub_typed = T.(ub)
+    new{I,typeof(lb_typed)}(idxs, lb_typed, ub_typed)
+  end
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", target::ParameterTarget)
+  println(io, "ParameterTarget: $(length(target.idxs)) parameters to profile.")
+end
+
+############################### SELECTORS ###############################
+
+get_profile_range(prob::ParameterTarget) = tuple.(prob.lb, prob.ub)
+
+############################### CONSTRUCTORS ###############################
+
+# Vector of bounds
+ParameterTarget(; idxs::AbstractVector{<:Integer}, lb::AbstractVector{<:Real}, ub::AbstractVector{<:Real}) =
+  ParameterTarget(idxs, lb, ub)
+
+#=
+# Single parameter
+ParameterTarget(idx::Integer; lb::Real, ub::Real) =
+  ParameterTarget(; idxs=[idx], lb=[lb], ub=[ub])
+
+
+# Vector of ranges, one per index
+ParameterTarget(idxs::AbstractVector{<:Integer}, profile_range::AbstractVector{<:Tuple{<:Real,<:Real}}) =
+  ParameterTarget(idxs, map(first, profile_range), map(last, profile_range))
+
+ParameterTarget(idx::Integer, profile_range::Tuple{<:Real,<:Real}) =
+  ParameterTarget([idx], [first(profile_range)], [last(profile_range)])
+
+# Single range applied to all indices
+ParameterTarget(idxs::AbstractVector{<:Integer}, range::Tuple{<:Real,<:Real}) =
+  ParameterTarget(idxs, fill(first(range), length(idxs)), fill(last(range), length(idxs)))
+
+# Scalar bounds applied to all indices
+ParameterTarget(idxs::AbstractVector{<:Integer}, lb::Real, ub::Real) =
+  ParameterTarget(idxs, fill(lb, length(idxs)), fill(ub, length(idxs)))
+=#
+
+
+"""
+    PLProblem{T,probType,P}
     
 Defines a profile likelihood problem.
 
@@ -15,8 +102,7 @@ A profile likelihood problem is defined by
 ### Constructors
 
 ```julia
-PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real},
-  profile_range::Union{AbstractVector, Tuple} = tuple.(optprob.lb, optprob.ub); 
+PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, target::AbstractProfileTarget; 
   conf_level::Float64 = 0.95, df::Int = 1, threshold::Real = chi2_quantile(conf_level, df))
 ```
 
@@ -24,10 +110,7 @@ PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real},
 
 - `optprob::OptimizationProblem`: The `OptimizationProblem` to be solved.
 - `optpars::AbstractVector{<:Real}`: Initial (optimal) values of the parameters.
-- `profile_range::Union{AbstractVector, Tuple}`: The range over which the profile likelihood is computed. 
-  A tuple `(lower, upper)` specifying a common profiling interval for all parameters, or an array of such tuples (one per parameter). 
-  By default, it uses the `OptimizationProblem` bounds for each parameter (i.e., `tuple.(optprob.lb, optprob.ub)`).
-  (note!) If a parameter is not meant to be profiled, you may use `nothing` or infinite bounds.
+- `target::AbstractProfileTarget`: The function of parameters to be profiled. Consult the documentation for details.
 
 ### Keyword arguments
 
@@ -35,17 +118,14 @@ PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real},
 - `df::Int`: The degrees of freedom for the profile likelihood. Defaults to `1`.
 - `threshold::Real`: The threshold for the profile likelihood. Can be set to `Inf` if confidence interval endpoint estimation is not required. Defaults to `chi2_quantile(conf_level, df)`.
 """
-struct PLProblem{T,probType,P,PF,PR} <: AbstractPLProblem{T,PF}
-  profile_type::T
+struct PLProblem{T,probType,P} <: AbstractPLProblem{T}
   optprob::probType
   optpars::P
-  parfunc::PF
-  profile_range::PR
-#  direction::D
+  target::T
   threshold::Float64
 end
 
-sym_profile_type(plprob::PLProblem{<:ParameterProfile}) = :parameter
+sym_profile_type(plprob::PLProblem) = nameof(typeof(get_profile_target(plprob)))
 #sym_profile_type(plprob::PLProblem{<:FunctionProfile}) = :function
 #isparprofile(::PLProblem{ipp}) where {ipp} = ipp
 
@@ -59,58 +139,51 @@ end
 ############################### SELECTORS ###############################
 
 get_profile_type(prob::PLProblem) = prob.profile_type
+get_profile_target(prob::PLProblem) = prob.target
 get_optprob(prob::PLProblem) = prob.optprob
 get_optpars(prob::PLProblem) = prob.optpars
-get_parfunc(prob::PLProblem) = prob.parfunc
-get_profile_range(prob::PLProblem) = prob.profile_range
+get_profile_range(prob::PLProblem) = get_profile_range(get_profile_target(prob))
 get_threshold(prob::PLProblem) = prob.threshold
 
 ############################### CONSTRUCTORS ###############################
 
-function PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real},
-  profile_range::Union{AbstractVector, Tuple} = tuple.(optprob.lb, optprob.ub); 
+function PLProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, target::AbstractProfileTarget; 
   conf_level::Float64 = 0.95, df::Int = 1, threshold::Real = chi2_quantile(conf_level, df))
 
   threshold <= 0. && throw(ArgumentError("`threshold` must be positive definite."))
+  check_prob_target(optprob, optpars, target)
+  # promote_target(optprob, optpars, target)
 
-  validate_dims(optprob.u0, optpars, profile_range)
-  #TODO check if opt_range is not inside profile_range
-  #Tprofile_range = promote_profile_range(optpars, profile_range)
-
-  build_plproblem(ParameterProfile(), optprob, optpars, nothing, profile_range, float(threshold))
-end
-
-function build_plproblem(
-  profile_type::T,
-  optprob::OptimizationProblem,
-  optpars::AbstractVector{<:Real},
-  parfunc::Union{Nothing,OptimizationFunction},
-  profile_range,
-  threshold::Float64
-) where T
-  return PLProblem{T,typeof(optprob), typeof(optpars), typeof(parfunc), typeof(profile_range)}(
-    profile_type, optprob, optpars, parfunc, profile_range, threshold)
+  PLProblem(optprob, optpars, target, float(threshold))
 end
 
 ################################ HELPERS ################################
 
 hasthreshold(prob::PLProblem) = isfinite(prob.threshold)
 
-function validate_dims(u, optpars::AbstractVector, profile_range) 
+function check_prob_target(optprob::OptimizationProblem, optpars::AbstractVector, target::ParameterTarget) 
+  u = optprob.u0
   !(u isa AbstractVector ) && throw(ArgumentError("Expected `optprob.u0` to be a vector (i.e., of `AbstractVector` type)."))
   !(length(u) == length(optpars)) && throw(DimensionMismatch("`optprob.u0` and `optpars` must have the same length."))
-  if profile_range isa AbstractVector
-    !(length(profile_range) == length(optpars)) && 
-      throw(DimensionMismatch("`profile_range` must be either Tuple or AbstractVector of the same size as `optpars`. 
-                                If a certain parameter is not meant to be profiled, you may use  `nothing` or infinite bounds for it."))
+  
+  idxs = target.idxs
+  checkbounds(optpars, idxs)
+
+  lb = target.lb
+  ub = target.ub
+  
+  for idx in idxs
+    !(isfinite(lb[idx]) && isfinite(ub[idx])) && throw(ArgumentError("Profile bounds must be finite numbers."))
+    !(lb[idx] <= optpars[idx] <= ub[idx]) && throw(ArgumentError("The initial values provided for profiling parameters must lie within the specified `lb[idx] ≤ x[idx] ≤ ub[idx]`"))
   end
+
   return nothing
 end
 
 ################################ REMAKE ################################
 
-function SciMLBase.remake(plprob::PLProblem{<:ParameterProfile};
-  optprob = missing, optpars = missing, profile_range = missing, threshold = missing)
+function SciMLBase.remake(plprob::PLProblem;
+  optprob = missing, optpars = missing, target = missing, threshold = missing)
   
   if optprob === missing
     optprob = get_optprob(plprob)
@@ -118,8 +191,8 @@ function SciMLBase.remake(plprob::PLProblem{<:ParameterProfile};
   if optpars === missing
     optpars = get_optpars(plprob)
   end
-  if profile_range === missing
-    profile_range = get_profile_range(plprob)
+  if target === missing
+    target = get_profile_target(plprob)
   end
   if threshold === missing
     threshold = get_threshold(plprob)

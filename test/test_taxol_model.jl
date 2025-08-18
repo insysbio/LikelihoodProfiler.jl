@@ -37,7 +37,10 @@ profile_range = [
   (0.05, 5.),
   (30., 250.)
 ]
-plprob = PLProblem(optprob, p0, profile_range; threshold = sigmasq*chi2_quantile(0.95, 5))
+profile_lb = [2., 2., 0.01, 0.05, 30.]
+profile_ub = [30., 30., 0.6, 5., 250.]
+target = ParameterTarget(; idxs=1:5, lb=profile_lb, ub=profile_ub)
+plprob = PLProblem(optprob, p0, target; threshold = sigmasq*chi2_quantile(0.95, 5))
 
 
 @testset "Taxol model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin

@@ -50,8 +50,15 @@ profile_range = [
   (0., 2.),
   (0., 2.)
 ]
+profile_lb = [-3., -6., -3., -3., 0., 2., 0., 0., 0.]
+profile_ub = [3., 4., 3., 3., 6., 6., 2., 2., 2.]
+target = ParameterTarget(
+  idxs=1:9, 
+  lb=profile_lb, 
+  ub=profile_ub
+)
 
-plprob = PLProblem(optprob, optpars, profile_range; threshold = chi2_quantile(0.95, 1))
+plprob = PLProblem(optprob, optpars, target; threshold = chi2_quantile(0.95, 1))
 
 @testset "JAK2-STAT5 model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
   

@@ -1,18 +1,19 @@
 using LikelihoodProfiler, Test, Optimization
 
-# ParameterProfile tests
+# ParameterTarget tests
+@test_throws DimensionMismatch ParameterTarget(; idxs=1:2, lb=[-10], ub=[10,10])
+@test_throws ArgumentError ParameterTarget(; idxs=[1], lb=[7], ub=[4])
+
 optprob1 = OptimizationProblem((x,p)->x[1]^2+x[2]^2, [1., 2.0])
+t1 = ParameterTarget(; idxs=1:2, lb=[-5, -2], ub=[4, 1])
+t2 = ParameterTarget(; idxs=1:2, lb=[-Inf, -2], ub=[4, 1])
 
-@test_throws DimensionMismatch PLProblem(optprob1, [0.,0, 0.]) 
-@test_throws ArgumentError PLProblem(optprob1, [0.,0],  [(-5,4), (-2,1)]; threshold = -1)
-@test_throws DimensionMismatch PLProblem(optprob1, [0.,0], [(-5,4), (-2,1), (-3, 20)])
+@test_throws DimensionMismatch PLProblem(optprob1, [0.,0, 0.], t1) 
+@test_throws ArgumentError PLProblem(optprob1, [0.,0],  t1; threshold = -1)
+@test_throws ArgumentError PLProblem(optprob1, [0.,0],  t2)
 
-@test_throws ArgumentError solve(PLProblem(optprob1, [0.,0]), OptimizationProfiler(optimizer=Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.01))) 
-@test_throws ArgumentError solve(PLProblem(optprob1, [0.,0], [(-Inf,4), (-2,1)]), OptimizationProfiler(optimizer=Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.01)), idxs=[1])
 
-plprob = PLProblem(optprob1, [0.,0], (-5,4))
-plprob2 = remake(plprob, profile_range = [nothing, (-5,4)] )
-@test_throws ArgumentError solve(plprob2, OptimizationProfiler(optimizer=Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.01)), idxs=[1])
+#plprob = PLProblem(optprob1, [0.,0], t1)
 
 # FunctionProfile tests
 #=

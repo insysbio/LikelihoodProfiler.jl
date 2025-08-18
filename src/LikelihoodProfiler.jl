@@ -1,6 +1,6 @@
 module LikelihoodProfiler
 
-using CommonSolve: CommonSolve, init, solve!, solve
+using CommonSolve: CommonSolve, solve, init, solve!
 using SciMLBase, PreallocationTools
 using Reexport
 @reexport import SciMLBase: OptimizationFunction, OptimizationProblem, remake
@@ -15,7 +15,7 @@ using Distributed
 abstract type AbstractProfile end
 abstract type AbstractSolverCache end
 
-struct ParameterProfile <: AbstractProfile end
+
 #struct FunctionProfile <: AbstractProfile end
 #struct PredictionProfile <: AbstractProfile end
 
@@ -33,6 +33,7 @@ include("plotting.jl")
 include("deprecated.jl")
 
 export PLProblem, PLSolution
+export ParameterTarget
 export profile, solve
 export FixedStep, LineSearchStep, InterpolationLineSearch
 export chi2_quantile
