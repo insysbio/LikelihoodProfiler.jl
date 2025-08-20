@@ -1,12 +1,12 @@
 using LikelihoodProfiler, Test
 using Optimization, OptimizationNLopt, Plots, OrdinaryDiffEq, ForwardDiff, CICOBase
 
-######################################### PLProblem ##########################################
+######################################### ProfileLikelihoodProblem ##########################################
 
 optf = OptimizationFunction((x,p) -> 5.0 + (x[1]-3.0)^2 + (x[2]-4.0)^2, AutoForwardDiff())
 optprob = OptimizationProblem(optf, [0.,0.]; lb=[-3,-1], ub=[10,9])
 
-plprob = PLProblem(optprob, [3.,4.], [(-5,20), (-2,15)]; threshold=Inf)
+plprob = ProfileLikelihoodProblem(optprob, [3.,4.], [(-5,20), (-2,15)]; threshold=Inf)
 
 #################################### OptimizationProfiler ####################################
 
@@ -25,12 +25,12 @@ method3 = CICOProfiler(optimizer=:LN_NELDERMEAD, scan_tol=1e-3)
 sol3 = solve(plprob, method3; verbose=true)
 
 
-######################################### PLProblem w parameters ##########################################
+######################################### ProfileLikelihoodProblem w parameters ##########################################
 
 optf = OptimizationFunction((x,p) -> 5.0 + (p[1] - x[1])^2 + p[2]*(x[2] - x[1]^2)^2, AutoForwardDiff())
 optprob = OptimizationProblem(optf, [1.,1.], [1.0, 50.0]; lb=[-100., -100. ], ub=[100., 100.])
 
-plprob = PLProblem(optprob, [1.,1.], (-20,20); threshold=4.0)
+plprob = ProfileLikelihoodProblem(optprob, [1.,1.], (-20,20); threshold=4.0)
 
 #################################### OptimizationProfiler ####################################
 

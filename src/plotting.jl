@@ -1,5 +1,5 @@
 
-@recipe function f(sol::PLSolution)
+@recipe function f(sol::ProfileLikelihoodSolution)
   ls = length(sol)
 
   layout --> ls

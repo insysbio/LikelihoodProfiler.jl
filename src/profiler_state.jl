@@ -111,7 +111,7 @@ function reverse_profile_values!(pv::ProfileValues)
   return nothing
 end
 
-function profiler_init(plprob::PLProblem{T}, method::AbstractProfilerMethod, idx, dir;
+function profiler_init(plprob::ProfileLikelihoodProblem{T}, method::AbstractProfilerMethod, idx, dir;
   maxiters = Int(1e4), verbose = false) where T
   
   verbose && @info "Computing initial values."

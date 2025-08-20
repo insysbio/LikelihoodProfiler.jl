@@ -15,7 +15,7 @@ optprob = OptimizationProblem(petab_problem)
 
 # Profile likelihood problem
 optpars = petab_problem.xnominal_transformed
-plprob = PLProblem(optprob, optpars)
+plprob = ProfileLikelihoodProblem(optprob, optpars)
 
 # All parameters
 parnames = petab_problem.xnames
