@@ -32,7 +32,7 @@ include("profiler_step.jl")
 include("plotting.jl")
 include("deprecated.jl")
 
-export ProfileLikelihoodProblem, ProfileLikelihoodSolution
+export PLProblem, ProfileLikelihoodProblem, ProfileLikelihoodSolution
 export profile, solve
 export FixedStep, LineSearchStep, InterpolationLineSearch
 export chi2_quantile
