@@ -10,7 +10,7 @@ A profiler method that uses stepwise re-optimization to profile the likelihood f
 ### Fields
 
 - `stepper::S`: The algorithm used to compute the next profile point. Supported steppers include:
-    - `FixedStep`: Proposes a constant step size in the profiling direction.
+    - `FixedStep`: Proposes a constant step size in the profiling direction (Default). 
     - `LineSearchStep`: Uses a line search to adaptively determine the step size in the direction which is chosen by the `direction` keyword argument.
 - `optimizer::opType`: The optimizer used for the optimization process.
 - `optimizer_opts::optsType`: Options for the optimizer. Defaults to `NamedTuple()`.
@@ -32,7 +32,7 @@ profiler = OptimizationProfiler(; optimizer = Optimization.LBFGS(), optimizer_op
 ```
 """
 Base.@kwdef struct OptimizationProfiler{S, opType, optsType} <: AbstractProfilerMethod
-  stepper::S = LineSearchStep()
+  stepper::S = FixedStep()
   optimizer::opType
   optimizer_opts::optsType = NamedTuple()
 end
