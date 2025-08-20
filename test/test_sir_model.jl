@@ -20,7 +20,7 @@ optprob = OptimizationProblem(optf, p0)
 #sol = solve(optprob, NLopt.LN_NELDERMEAD())
 
 optpars = [0.3998583528283355, 0.24676816253516404, 1.2460180516141481e-5]
-plprob = PLProblem(optprob, optpars, (-20.,20.); threshold = chi2_quantile(0.95, 3)/2)
+plprob = ProfileLikelihoodProblem(optprob, optpars, (-20.,20.); threshold = chi2_quantile(0.95, 3)/2)
 
 
 @testset "SIR model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin

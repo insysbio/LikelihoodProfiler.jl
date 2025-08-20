@@ -133,7 +133,7 @@ end
 sigmasq = (LikelihoodProfiler.mean([(Cerr005/C005); (Cerr010/C010); (Cerr040/C040); (Cerr100/C100)]))^2
 ```
 
-Next, we construct the profile likelihood problem `PLProblem` and run the profiler for the five parameters:
+Next, we construct the profile likelihood problem `ProfileLikelihoodProblem` and run the profiler for the five parameters:
 
 ```julia
 optf = OptimizationFunction(taxol_obj, Optimization.AutoForwardDiff())
@@ -145,7 +145,7 @@ profile_range = [
   (0.05, 5.),
   (30., 250.)
 ]
-plprob = PLProblem(optprob, p0, profile_range; threshold = sigmasq*chi2_quantile(0.95, 5))
+plprob = ProfileLikelihoodProblem(optprob, p0, profile_range; threshold = sigmasq*chi2_quantile(0.95, 5))
 
 profile_step(p0, i) = p0[i] * 0.1
 method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
