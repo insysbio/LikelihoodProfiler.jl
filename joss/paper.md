@@ -12,13 +12,15 @@ authors:
     orcid: 0000-0002-2887-1903
     affiliation: 1
   - name: "Aleksander Demin"
-    affiliation: 1
+    affiliation: 2
   - name: "Evgeny Metelkin"
     orcid: 0000-0001-6612-5373
     affiliation: 1
 affiliations:
   - name: "InSysBio CY LTD"
     index: 1
+  - name: "National Research University Higher School of Economics, Moscow, Russia"
+    index: 2
 date: 12 August 2025
 bibliography: paper.bib
 ---
@@ -38,7 +40,7 @@ Despite the widespread use of profile likelihood methods in practical identifiab
 
 ## Features and Methodologies
 
-LikelihoodProfiler.jl supports the following methods for profiling likelihood functions and estimating confidence intervals:
+`LikelihoodProfiler.jl` supports the following methods for profiling likelihood functions and estimating confidence intervals:
 1. **OptimizationProfiler** follows the classical approach, employing stepwise re-optimization of the likelihood function under parameter constraints. It is intuitive but may be computationally intensive.
 2. **IntegrationProfiler** computes likelihood profiles by solving differential equations derived from optimization problems, yielding smooth profiles. This method is advantageous but demands accurate Hessian computations or approximations, posing challenges for large models.
 3. **CICOProfiler** estimates confidence interval endpoints directly via constrained optimization, avoiding full-profile reconstruction, thus providing efficient confidence interval estimation for practical scenarios [@Borisov2020].
@@ -47,7 +49,7 @@ All methods leverage a CommonSolve interface [@Rackauckas2017] (`CommonSolve.sol
 
 ## Demonstrative Example: JAK/STAT Signaling Pathway Model
 
-LikelihoodProfiler.jl’s functionality and interfaces are demonstrated using the JAK/STAT signaling pathway model [@Boehm2014], which consists of 8 states and 9 parameters. The model and experimental data were sourced from the Benchmark-Models-PEtab repository and imported through the PEtab.jl interface.
+LikelihoodProfiler.jl’s functionality and interfaces are demonstrated using the JAK/STAT signaling pathway model [@Boehm2014], which consists of 8 states and 9 parameters. The model and experimental data were sourced from the Benchmark-Models-PEtab repository [@petab_benchmark_collection] and imported through the PEtab.jl interface.
 
 ```julia
 using PEtab, Plots
@@ -55,7 +57,7 @@ petab_model = PEtabModel("Boehm_JProteomeRes2014.yaml")
 petab_problem = PEtabODEProblem(petab_model)
 ```
 
-To define the profile likelihood problem, we construct an OptimizationProblem instance and provide the optimal parameter values:
+To define a profile likelihood problem `ProfileLikelihoodProblem` one should provide the objective function (usually negative log likelihood) and the optimal values of the parameters that correspond to the minimum of the objective function. `LikelihoodProfiler` relies on the `Optimization.jl` interface [@vaibhav_kumar_dixit_2023_7738525], and `ProfileLikelihoodProblem` is built on top of the `OptimizationProblem` defined in `Optimization.jl`. :
 
 ```julia
 using Optimization, LikelihoodProfiler
@@ -154,7 +156,7 @@ Additional domain-specific toolboxes (e.g. MATLAB SimBiology) provide tools to e
 
 Collectively, different methods (stepwise re-optimization, integration-based approaches, direct interval estimation) are often confined to different packages and languages, with heterogeneous APIs and varying levels of compatibility with community formats.
 
-LikelihoodProfiler.jl is designed to complement this landscape by bringing multiple profiling strategies under a single, 
+`LikelihoodProfiler.jl` is designed to complement this landscape by bringing multiple profiling strategies under a single, 
 Julia-native interface. 
 It unifies optimization-based, integration-based, and direct confidence-interval estimation methods behind 
 a common solve API, integrates with the SciML stack for efficient solvers and automatic differentiation. 
