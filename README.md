@@ -6,6 +6,10 @@
 [![Build Status](https://github.com/insysbio/LikelihoodProfiler.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/insysbio/LikelihoodProfiler.jl/actions/workflows/CI.yml?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/insysbio/LikelihoodProfiler.jl/graph/badge.svg)](https://codecov.io/gh/insysbio/LikelihoodProfiler.jl)
 
+## Breaking changes and new features
+
+**Note (v1.1.0)**: `PLProblem` has been renamed to `ProfileLikelihoodProblem`, and `profile` to `solve`. The old names are deprecated and will be removed in a future release. Please update your code.
+
 ## Installation
 
 In Julia terminal run the following command:
@@ -16,7 +20,7 @@ import Pkg; Pkg.add("LikelihoodProfiler")
 
 ## Getting started with LikelihoodProfiler
 
-To define a profile likelihood problem `PLProblem` in LikelihoodProfiler, you should provide the objective function (usually negative log likelihood) and the optimal values of the parameters that correspond to the minimum of the objective function. LikelihoodProfiler relies on the `Optimization.jl` interface, and `PLProblem` is built on top of the `OptimizationProblem` defined in `Optimization.jl`. This can be best illustrated by an example.
+To define a profile likelihood problem `ProfileLikelihoodProblem` in LikelihoodProfiler, you should provide the objective function (usually negative log likelihood) and the optimal values of the parameters that correspond to the minimum of the objective function. LikelihoodProfiler relies on the `Optimization.jl` interface, and `ProfileLikelihoodProblem` is built on top of the `OptimizationProblem` defined in `Optimization.jl`. This can be best illustrated by an example.
 
 First we define the `OptimizationProblem` and solve it with the preferred optimizer to obtain the optimal values of the parameters. 
 
@@ -37,7 +41,7 @@ sol = solve(optprob, Optimization.LBFGS())
 
 ### Profile likelihood problem interface
 
-To define the `PLProblem`, we need the `OptimizationProblem` and the optimal values of the parameters. We can also set the profiling domain with the `profile_range` argument and the `threshold`, which is the confidence level required to estimate confidence intervals. Please consult `?PLProblem` on the details of the interface.
+To define the `ProfileLikelihoodProblem`, we need the `OptimizationProblem` and the optimal values of the parameters. We can also set the profiling domain with the `profile_range` argument and the `threshold`, which is the confidence level required to estimate confidence intervals. Please consult `?ProfileLikelihoodProblem` on the details of the interface.
 
 ```julia
 using LikelihoodProfiler, Plots
@@ -46,7 +50,7 @@ using LikelihoodProfiler, Plots
 optpars = sol.u
 
 # profile likelihood problem
-plprob = PLProblem(optprob, optpars, (-10.,10.); threshold = 4.0)
+plprob = ProfileLikelihoodProblem(optprob, optpars, (-10.,10.); threshold = 4.0)
 ```
 
 ### Profile likelihood methods
