@@ -1,24 +1,22 @@
 using PEtab, Optimization, LikelihoodProfiler, OrdinaryDiffEq, Plots
-using PrettyTables
 
 model_name = "Boehm_JProteomeRes2014"
-path_yaml = joinpath(@__DIR__, "../../models/", "$model_name/$model_name.yaml")
+path_yaml = joinpath(@__DIR__, "../models/", "$model_name/$model_name.yaml")
 petab_model = PEtabModel(path_yaml)
 petab_problem = PEtabODEProblem(petab_model)
 
 
-optprob = OptimizationProblem(petab_problem) # theta_bounds = (-5.0, 5.0)
-plprob = PLProblem(optprob, get_x(petab_problem), (-4.5, 4.5))
-plprob2 = PLProblem(optprob, get_x(petab_problem), (-5.0+1e-7, 5.0-1e-7))
+optprob = OptimizationProblem(petab_problem; lb, ub)
+plprob = PLProblem(optprob, get_x(petab_problem))
 
 alg1 = OptimizationProfiler(; optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.07))
 alg2 = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.07,), matrix_type = :hessian)
 alg3 = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-10)
 
 
-sol1 = solve(plprob, alg1)
+sol1 = profile(plprob, alg1)
 sol2 = solve(plprob, alg2)
-sol3 = solve(plprob2, alg3)
+sol3 = solve(plprob, alg3)
 
 w, h = 1000, 300
 
