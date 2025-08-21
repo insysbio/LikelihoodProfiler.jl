@@ -57,7 +57,7 @@ petab_model = PEtabModel("Boehm_JProteomeRes2014.yaml")
 petab_problem = PEtabODEProblem(petab_model)
 ```
 
-To define a profile likelihood problem `ProfileLikelihoodProblem` one should provide the objective function (usually negative log likelihood) and the optimal values of the parameters that correspond to the minimum of the objective function. `LikelihoodProfiler` relies on the `Optimization.jl` interface [@vaibhav_kumar_dixit_2023_7738525], and `ProfileLikelihoodProblem` is built on top of the `OptimizationProblem` defined in `Optimization.jl`. :
+To define a profile likelihood problem `ProfileLikelihoodProblem` one should provide the objective function (usually negative log likelihood) and the initial (optimal) values of the parameters that correspond to the minimum of the objective function. `LikelihoodProfiler` relies on the `Optimization.jl` interface [@vaibhav_kumar_dixit_2023_7738525], and `ProfileLikelihoodProblem` is built on top of the `OptimizationProblem` defined in `Optimization.jl`. :
 
 ```julia
 using Optimization, LikelihoodProfiler
