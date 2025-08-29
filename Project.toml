@@ -5,7 +5,7 @@ license = "MIT"
 desc = "Practical identifiability analysis and confidence intervals estimation"
 authors = ["ivborissov <iv.borissov@gmail.com>", "metelkin <evgeny.metelkin@gmail.com>"]
 repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
-version = "1.1.0"
+version = "1.1.1"
 
 [deps]
 CommonSolve = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
@@ -28,7 +28,7 @@ CICOBase = "33444335-3134-4342-4659-594331344435"
 CICOBaseExt = "CICOBase"
 
 [compat]
-CICOBase = "0.5.3"
+CICOBase = "0.6.0"
 CommonSolve = "0.2.4"
 DataFrames = "1.7.0"
 DataInterpolations = "6.5.2, 7"
