@@ -1,5 +1,5 @@
 using Optimization, LikelihoodProfiler, OrdinaryDiffEq, Plots, CICOBase
-using PEtab, ComponentArrays
+using PEtab
 
 model_name = "Boehm_JProteomeRes2014"
 path_yaml = joinpath(@__DIR__, "../models/", "$model_name/$model_name.yaml")
@@ -7,7 +7,7 @@ petab_model = PEtabModel(path_yaml)
 petab_problem = PEtabODEProblem(petab_model)
 
 optprob = OptimizationProblem(petab_problem)
-optsol = solve(optprob, Optimization.LBFGS())
+#optsol = solve(optprob, Optimization.LBFGS())
 #=
 # The initial parameters are taken from the yaml file.
 init_pars = ComponentVector(
@@ -88,3 +88,8 @@ df = DataFrame(
     IntegrationProfiler = [get_endpoints(sol2[i]) for i in 1:length(sol2)],
     CICOProfiler = [get_endpoints(sol3[i]) for i in 1:length(sol3)]
 )
+
+using PrettyTables
+open(joinpath(@__DIR__, "ci_table.md"), "w") do io
+  pretty_table(io, df, backend = Val(:markdown))
+end
