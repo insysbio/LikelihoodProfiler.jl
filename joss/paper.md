@@ -17,7 +17,7 @@ authors:
     orcid: 0000-0001-6612-5373
     affiliation: 1
 affiliations:
-  - name: "InSysBio CY LTD"
+  - name: "InSysBio CY LTD, Limassol, Cyprus"
     index: 1
   - name: "National Research University Higher School of Economics, Moscow, Russia"
     index: 2
