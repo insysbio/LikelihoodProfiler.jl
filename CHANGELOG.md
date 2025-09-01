@@ -1,5 +1,9 @@
 # Change log
 
+## 1.1.2
+
+- JOSS paper added
+
 ## 1.1.1
 
 - `CICOBase` version updated to `v0.6.0` to allow equal `scan_bounds` and `theta_bounds`
