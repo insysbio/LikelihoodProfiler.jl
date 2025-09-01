@@ -6,10 +6,6 @@
 [![Build Status](https://github.com/insysbio/LikelihoodProfiler.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/insysbio/LikelihoodProfiler.jl/actions/workflows/CI.yml?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/insysbio/LikelihoodProfiler.jl/graph/badge.svg)](https://codecov.io/gh/insysbio/LikelihoodProfiler.jl)
 
-## Breaking changes and new features
-
-**Note (v1.1.0)**: `PLProblem` has been renamed to `ProfileLikelihoodProblem`, and `profile` to `solve`. The old names are deprecated and will be removed in a future release. Please update your code.
-
 ## Installation
 
 In Julia terminal run the following command:
