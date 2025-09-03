@@ -7,45 +7,6 @@ petab_model = PEtabModel(path_yaml)
 petab_problem = PEtabODEProblem(petab_model)
 
 optprob = OptimizationProblem(petab_problem)
-#optsol = solve(optprob, Optimization.LBFGS())
-#=
-# The initial parameters are taken from the yaml file.
-init_pars = ComponentVector(
-  log10_Epo_degradation_BaF3 = -1.6, 
-  log10_k_exp_hetero = -4.0, 
-  log10_k_exp_homo = -2.2, 
-  log10_k_imp_hetero = -1.8, 
-  log10_k_imp_homo = 4.0, 
-  log10_k_phos = 4.25, 
-  log10_sd_pSTAT5A_rel = 0.6, 
-  log10_sd_pSTAT5B_rel = 0.8, 
-  log10_sd_rSTAT5A_rel = 0.4
-)
-
-init_pars = ComponentVector(
-  log10_Epo_degradation_BaF3 = -1.5689175883999988, 
-  log10_k_exp_hetero = -4.999704893599998, 
-  log10_k_exp_homo = -2.2096987817000167, 
-  log10_k_imp_hetero = -1.78600654750001, 
-  log10_k_imp_homo = 4.9901140088, 
-  log10_k_phos = 4.1977354885, 
-  log10_sd_pSTAT5A_rel = 0.5857552705999998, 
-  log10_sd_pSTAT5B_rel = 0.8189828191999999, 
-  log10_sd_rSTAT5A_rel = 0.49868440400000047
-)
-=#
-
-init_pars = log10.([
-    0.026982514033029,      # Epo_degradation_BaF3
-    0.0000100067973851508,  # k_exp_hetero
-    0.006170228086381,      # k_exp_homo
-    0.0163679184468,        # k_imp_hetero
-    97749.3794024716,       # k_imp_homo
-    15766.5070195731,       # k_phos
-    3.85261197844677,       # sd_pSTAT5A_rel
-    6.59147818673419,       # sd_pSTAT5B_rel
-    3.15271275648527        # sd_rSTAT5A_rel
-])
 
 init_pars = get_x(petab_problem)
 plprob = ProfileLikelihoodProblem(optprob, init_pars)
