@@ -1,5 +1,10 @@
 # Change log
 
+## 1.1.3
+
+- Zenodo release
+- joss script fixed
+
 ## 1.1.2
 
 - JOSS paper added
