@@ -63,7 +63,7 @@ end
                               abstol=1e-4,
                               min_step_size=1e-8,
                               max_step_size=1.0,
-                              min_obj_change=1e-4)
+                              min_obj_change=1e-3)
 
 Interpolation-based line search algorithm used in profile stepping.
 
@@ -75,7 +75,7 @@ Interpolation-based line search algorithm used in profile stepping.
 - `abstol::Float64 = 1e-4`: Absolute tolerance on target objective value.
 - `min_step_size::Float64 = 1e-8`: Lower bound on the step size.
 - `max_step_size::Float64 = 1.0`: Upper bound on the step size.
-- `min_obj_change::Float64 = 1e-4`: Minimum objective change used when computing the target.
+- `min_obj_change::Float64 = 1e-3`: Minimum objective change used when computing the target.
 """
 struct InterpolationLineSearch
   objective_factor::Float64
@@ -93,7 +93,7 @@ function InterpolationLineSearch(; objective_factor=1.25,
                                  abstol=1e-4,
                                  min_step_size=1e-6,
                                  max_step_size=1.0,
-                                 min_obj_change=1e-4)
+                                 min_obj_change=1e-3)
   @assert objective_factor > 1  "Objective scaling factor must be greater than 1."
   @assert step_size_factor > 0  "Step size factor must be positive."
   @assert maxiters > 0          "Maximum iterations must be positive."
@@ -241,11 +241,11 @@ function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationL
           step_low, obj_low = step_high, obj_high
           step_high = clamp(step_high * factor,
                               ls_alg.min_step_size, ls_alg.max_step_size)
-          factor = min(factor * 1.2, factor_max)
+          factor = min(factor * 1.25, factor_max)
       else
           step_high = clamp(step_high / factor,
                             ls_alg.min_step_size, ls_alg.max_step_size)
-          factor = max(factor / 1.2, factor_min)
+          factor = max(factor / 1.25, factor_min)
       end
 
       @. profiler_state.pars_cache = θ_cur + ls_dir * step_high
