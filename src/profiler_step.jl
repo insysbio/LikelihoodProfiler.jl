@@ -71,19 +71,26 @@ InterpolationLineSearch(; objective_factor=1.25, step_size_factor=2.0, maxiters=
 - `objective_factor::Float64 = 1.25`: Factor by which the change in the objective function from the last step is increased/decreased to set the target for the next step.
 - `step_size_factor::Float64 = 2.0`: Multiplicative factor for increasing or decreasing the step size during the search.
 - `maxiters::Int = 10`: Maximum number of line search iterations allowed.
+- `abstol::Float64 = 1e-6`: Absolute tolerance on target objective value.
 """
 struct InterpolationLineSearch
-  objective_factor::Float64
-  step_size_factor::Float64
-  maxiters::Int
+    objective_factor::Float64
+    step_size_factor::Float64
+    maxiters::Int
+    abstol::Float64
 end
 
-function InterpolationLineSearch(; objective_factor=1.25, step_size_factor=2.0, maxiters=10) 
-  @assert objective_factor > 1 "Objective scaling factor must be greater than 1."
-  @assert step_size_factor > 0 "Step size factor must be positive."
-  @assert maxiters > 0 "Maximum iterations must be positive."
-  
-  return InterpolationLineSearch(objective_factor, step_size_factor, maxiters)
+function InterpolationLineSearch(; objective_factor=1.25,
+                                 step_size_factor=2.0,
+                                 maxiters=10,
+                                 abstol=1e-6)
+    @assert objective_factor > 1  "Objective scaling factor must be greater than 1."
+    @assert step_size_factor > 0  "Step size factor must be positive."
+    @assert maxiters > 0          "Maximum iterations must be positive."
+    @assert abstol > 0         "abstol must be positive."
+
+    return InterpolationLineSearch(objective_factor, step_size_factor,
+                                   maxiters, abstol)
 end
 
 #=
@@ -184,61 +191,51 @@ function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationL
   obj_prev = get_prevobj(profiler_state)
   Δ_obj_prev = abs(obj_cur - obj_prev)
 
-  # try previous step_size (extrapolate_profile)
-  step_next = abs(x_cur - x_prev)
-  @. profiler_state.pars_cache = θ_cur + ls_dir*step_next
-  θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-  obj_next = evaluate_optf(opt_prob, profiler_state.pars_cache)
+  step_high = abs(x_cur - x_prev)
+  @. profiler_state.pars_cache = θ_cur + ls_dir * step_high
+  θ_high = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
+  obj_high = evaluate_optf(opt_prob, θ_high)
 
-  increasing_profile = obj_next > obj_cur
-  obj_target = increasing_profile ? obj_cur + ls_alg.objective_factor*Δ_obj_prev : obj_cur - ls_alg.objective_factor*Δ_obj_prev
-  #obj_target = increasing_profile ? obj_cur + ls_alg.objective_factor*obj_cur : obj_cur - ls_alg.objective_factor*obj_cur
+  increasing_profile = obj_high > obj_cur
+  obj_target = increasing_profile ?
+      obj_cur + ls_alg.objective_factor * Δ_obj_prev :
+      obj_cur - ls_alg.objective_factor * Δ_obj_prev
 
-  # TODO add tolerance arg to the alg
-  (abs(obj_next - obj_target) < 1e-6) && return step_next, :Success
+  tol = ls_alg.abstol
+  abs(obj_high - obj_target) < tol && return step_high, :Success
   
-  undershoot = increasing_profile ? 
-    (obj_val -> obj_val < obj_target) : 
-    (obj_val -> obj_val > obj_target)
+  undershoot = increasing_profile ?
+      (obj -> obj < obj_target) :
+      (obj -> obj > obj_target)
 
-  bracketing_cond = increasing_profile ?
-    ((obj_low, obj_high) -> obj_low < obj_target < obj_high) :
-    ((obj_low, obj_high) -> obj_low > obj_target > obj_high)
+  bracketed = increasing_profile ?
+      ((low, high) -> low < obj_target < high) :
+      ((low, high) -> low > obj_target > high)
 
-  #increase_step = undershoot(obj_next)
-  #factor = increase_step ? ls_alg.step_size_factor : 1/ls_alg.step_size_factor
-  factor = ls_alg.step_size_factor
-  iter = 0
   # tmp fixing step_low, obj_low to current point
   step_low, obj_low = 0.0, obj_cur
-  step_high, obj_high = step_next, obj_next
-  while !bracketing_cond(obj_low, obj_high)
-    iter += 1
-    if iter > ls_alg.maxiters
-      #@show step_low, step_high, obj_low, obj_high, obj_target
-      return step_low, :MaxIters
-    end
-    
-    step_next *= factor
-    @. profiler_state.pars_cache = θ_cur + ls_dir * step_next
-    θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-    obj_next = evaluate_optf(opt_prob, θ_next)
-    #@show step_next, obj_next, obj_target
-    
-    # TODO add tolerance arg to the alg
-    (abs(obj_next - obj_target) < 1e-6) && return step_next, :Success
+  factor = ls_alg.step_size_factor
+  iter = 0
 
-    # tmp removing undershoot condition
-    step_high, obj_high = step_next, obj_next
-    #=
-    if undershoot(obj_next)
-      step_low, obj_low = step_next, obj_next
-    else
-      step_high, obj_high = step_next, obj_next
-    end
-    =#
+  while !bracketed(obj_low, obj_high)
+      iter += 1
+      iter > ls_alg.maxiters && return step_low, :MaxIters
+      if undershoot(obj_high)
+          step_low, obj_low = step_high, obj_high
+          step_high *= factor
+      else
+          step_high /= factor
+      end
+
+      @. profiler_state.pars_cache = θ_cur + ls_dir * step_high
+      θ_high = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
+      obj_high = evaluate_optf(opt_prob, θ_high)
+
+      abs(obj_high - obj_target) < tol && return step_high, :Success
   end
-  return interpolate_step_size(step_low, step_high, obj_low, obj_high, obj_target), :Success
+
+  return interpolate_step_size(step_low, step_high,
+                                 obj_low, obj_high, obj_target), :Success
 end
 
 #=
