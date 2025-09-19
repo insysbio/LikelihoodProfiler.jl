@@ -33,6 +33,7 @@ include("plotting.jl")
 include("deprecated.jl")
 
 export PLProblem, ProfileLikelihoodProblem, ProfileLikelihoodSolution
+export ParameterTarget, FunctionTarget
 export profile, solve
 export FixedStep, LineSearchStep, InterpolationLineSearch
 export chi2_quantile
