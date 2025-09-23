@@ -104,7 +104,7 @@ function profiler_save_values!(profiler_state::ProfilerState)
   return nothing
 end
 
-function reverse_profile_values!(pv::ProfileValues)
+function reverse_profile_values!(pv::ProfileCurve)
   reverse!(pv.pars)
   reverse!(pv.x)
   reverse!(pv.obj)
@@ -119,7 +119,7 @@ function profiler_init(plprob::ProfileLikelihoodProblem{T}, method::AbstractProf
   optpars = get_optpars(plprob)
   threshold = get_threshold(plprob)
   
-  obj0 = evaluate_optf(optprob, optpars)
+  obj0 = evaluate_obj(optprob, optpars)
   obj_level = obj0 + threshold
   x0 = optpars[idx]
 
@@ -129,7 +129,7 @@ function profiler_init(plprob::ProfileLikelihoodProblem{T}, method::AbstractProf
 
   sciml_prob = build_scimlprob(plprob, method, idx, profile_bound)
   solver_state = solver_init(sciml_prob, plprob, method, idx, dir, profile_bound)
-  profile_values = ProfileValues(Val(false), plprob, typeof(optpars),typeof(x0),typeof(obj0), obj_level)
+  profile_values = ProfileCurve(Val(false), plprob, typeof(optpars),typeof(x0),typeof(obj0), obj_level)
 
   stats = get_solver_stats(solver_state)
   return ProfilerState{T,typeof(profile_values),typeof(method),typeof(solver_state),ReturnCode.T,typeof(idx),typeof(optpars),typeof(x0),typeof(stats)}(
@@ -149,10 +149,10 @@ function merge_profiles(left_profile::ProfilerState, right_profile::ProfilerStat
   endpoints = (left_profile.endpoint, right_profile.endpoint)
   stats = (left_profile.stats, right_profile.stats)
 
-  return ProfileValues(Val(false), plprob, pars, x, obj, obj_level, retcodes, endpoints, stats)
+  return ProfileCurve(Val(false), plprob, pars, x, obj, obj_level, retcodes, endpoints, stats)
 end
 
-function merge_profiles(left_profile::ProfileValues, right_profile::ProfileValues)
+function merge_profiles(left_profile::ProfileCurve, right_profile::ProfileCurve)
   plprob = get_plprob(left_profile)
   obj_level = get_obj_level(left_profile)
 
@@ -163,7 +163,7 @@ function merge_profiles(left_profile::ProfileValues, right_profile::ProfileValue
   endpoints = (left_profile.endpoints[1], right_profile.endpoints[2])
   stats = (left_profile.stats[1], right_profile.stats[2])
 
-  return ProfileValues(Val(false), plprob, pars, x, obj, obj_level, retcodes, endpoints, stats)
+  return ProfileCurve(Val(false), plprob, pars, x, obj, obj_level, retcodes, endpoints, stats)
 end
 
 function profiler_step!(profiler::ProfilerState, method::OptimizationProfiler)
@@ -222,7 +222,7 @@ function profiler_step!(profiler::ProfilerState, method::IntegrationProfiler)
 
     profiler.curpars .= view(integrator.u, 1:length(integrator.u)-1)
     profiler.curx = integrator.u[idx]
-    profiler.curobj = evaluate_optf(get_optprob(profiler), get_curpars(profiler))
+    profiler.curobj = evaluate_obj(get_optprob(profiler), get_curpars(profiler))
     profiler.solver_retcode = integrator.sol.retcode
     profiler.numiter += 1
   else

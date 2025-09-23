@@ -14,7 +14,7 @@
   return nothing
 end
 
-@recipe function f(pv::ProfileValues; steps=true, threshold=hasthreshold(pv.plprob), endpoints=false)
+@recipe function f(pv::ProfileCurve; steps=true, threshold=hasthreshold(pv.plprob), endpoints=false)
 
   @series begin
     color --> :blue

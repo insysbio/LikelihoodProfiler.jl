@@ -96,6 +96,12 @@ function Base.show(io::IO, mime::MIME"text/plain", target::FunctionTarget)
 end
 ############################### SELECTORS ###############################
 
+_profile_idxs(t::ParameterTarget) = t.idxs
+_profile_idxs(t::FunctionTarget) = 1:length(t.fs)
+Base.length(t::AbstractProfileTarget) = length(_profile_idxs(t))
+_lower_bound(t::AbstractProfileTarget, idx) = t.profile_lower[idx]
+_upper_bound(t::AbstractProfileTarget, idx) = t.profile_upper[idx]
+
 get_profile_idxs(pt::ParameterTarget) = pt.idxs
 get_profile_fs(ft::FunctionTarget) = ft.fs
 Base.length(pt::ParameterTarget) = length(get_profile_idxs(pt))
@@ -297,23 +303,21 @@ end
 
 ################################ REMAKE ################################
 
-#=
 function SciMLBase.remake(plprob::ProfileLikelihoodProblem;
   optprob = missing, optpars = missing, target = missing, threshold = missing)
   
   if optprob === missing
-    optprob = get_optprob(plprob)
+    optprob = plprob.optprob
   end
   if optpars === missing
-    optpars = get_optpars(plprob)
+    optpars = plprob.optpars
   end
   if target === missing
-    target = get_profile_target(plprob)
+    target = plprob.target
   end
   if threshold === missing
-    threshold = get_threshold(plprob)
+    threshold = plprob.threshold
   end
 
   return ProfileLikelihoodProblem(optprob, optpars, target; threshold)
 end
-=#

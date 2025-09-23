@@ -13,7 +13,7 @@ function LikelihoodProfiler.__solve_dir(plprob::ProfileLikelihoodProblem, method
   threshold = LikelihoodProfiler.get_threshold(plprob)
   
   x0 = optpars[idx]
-  obj0 = LikelihoodProfiler.evaluate_optf(optprob, optpars)
+  obj0 = LikelihoodProfiler.evaluate_obj(optprob, optpars)
   obj_level = obj0 + threshold
   
   profile_range = LikelihoodProfiler.get_profile_range(plprob)
@@ -61,7 +61,7 @@ function cico_to_profile_values(plprob::ProfileLikelihoodProblem, ep::CICOBase.E
     stats = (nothing, nf=ep.counter)
   end
 
-  return LikelihoodProfiler.ProfileValues(Val(false), plprob, pars, x, obj, obj_level, retcodes, endpoints, stats)
+  return LikelihoodProfiler.ProfileCurve(Val(false), plprob, pars, x, obj, obj_level, retcodes, endpoints, stats)
 end
 
 function cico_deduce_retcode(retcode::Symbol)

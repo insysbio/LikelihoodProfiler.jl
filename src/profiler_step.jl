@@ -188,7 +188,7 @@ function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationL
   step_next = abs(x_cur - x_prev)
   @. profiler_state.pars_cache = θ_cur + ls_dir*step_next
   θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-  obj_next = evaluate_optf(opt_prob, profiler_state.pars_cache)
+  obj_next = evaluate_obj(opt_prob, profiler_state.pars_cache)
 
   increasing_profile = obj_next > obj_cur
   obj_target = increasing_profile ? obj_cur + ls_alg.objective_factor*Δ_obj_prev : obj_cur - ls_alg.objective_factor*Δ_obj_prev
@@ -222,7 +222,7 @@ function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationL
     step_next *= factor
     @. profiler_state.pars_cache = θ_cur + ls_dir * step_next
     θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-    obj_next = evaluate_optf(opt_prob, θ_next)
+    obj_next = evaluate_obj(opt_prob, θ_next)
     #@show step_next, obj_next, obj_target
     
     # TODO add tolerance arg to the alg
@@ -256,7 +256,7 @@ function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationL
   step_next = abs(x_cur - x_prev)
   @. profiler_state.pars_cache = θ_cur + ls_dir*step_next
   θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-  obj_next = evaluate_optf(opt_prob, profiler_state.pars_cache)
+  obj_next = evaluate_obj(opt_prob, profiler_state.pars_cache)
 
   increasing_profile = obj_next > obj_cur
   obj_target = increasing_profile ? obj_cur + ls_alg.objective_factor*Δ_obj_prev : obj_cur - ls_alg.objective_factor*Δ_obj_prev
@@ -289,7 +289,7 @@ function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationL
     step_next *= factor
     @. profiler_state.pars_cache = θ_cur + ls_dir * step_next
     θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-    obj_next = evaluate_optf(opt_prob, θ_next)
+    obj_next = evaluate_obj(opt_prob, θ_next)
     @show step_next, obj_next, obj_target
     # TODO add tolerance arg to the alg
     (abs(obj_next - obj_target) < 1e-6) && return step_next, :Success

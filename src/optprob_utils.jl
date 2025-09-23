@@ -1,4 +1,10 @@
 
+mutable struct OptimizationSolverCache <: AbstractSolverCache
+  opt_cache::C
+  stats::S
+  retcode::R
+end
+
 # Accept both OptimizationProfiler and IntegrationProfiler with reoptimize=true
 function solver_init(sciml_prob::SciMLBase.OptimizationProblem, 
   plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod, idx, dir, profile_bound)

@@ -41,7 +41,7 @@ Base.length(A::ProfileLikelihoodSolution) = length(A.profiles)
 ################################################ PROFILE VALUES ##########################################
 
 # mimics the way saving callback works in SciML DiffEqCallbacks.jl
-struct ProfileValues{probType,parsType,xType,objType,retType,epType,statsType}
+struct ProfileCurve{probType,parsType,xType,objType,retType,epType,statsType}
   dense::Bool
   plprob::probType
   pars::Vector{parsType}
@@ -53,27 +53,27 @@ struct ProfileValues{probType,parsType,xType,objType,retType,epType,statsType}
   stats::statsType
 end
 
-get_plprob(pv::ProfileValues) = pv.plprob
-get_optprob(pv::ProfileValues) = get_optprob(get_plprob(pv))
-get_obj_level(pv::ProfileValues) = pv.obj_level
-get_retcodes(pv::ProfileValues) = pv.retcodes
-get_endpoints(pv::ProfileValues) = pv.endpoints
-get_stats(pv::ProfileValues) = pv.stats
-get_prevpars(pv::ProfileValues) = pv.pars[end-1]
-get_prevx(pv::ProfileValues) = pv.x[end-1]
-get_prevobj(pv::ProfileValues) = pv.obj[end-1]
+get_plprob(pv::ProfileCurve) = pv.plprob
+get_optprob(pv::ProfileCurve) = get_optprob(get_plprob(pv))
+get_obj_level(pv::ProfileCurve) = pv.obj_level
+get_retcodes(pv::ProfileCurve) = pv.retcodes
+get_endpoints(pv::ProfileCurve) = pv.endpoints
+get_stats(pv::ProfileCurve) = pv.stats
+get_prevpars(pv::ProfileCurve) = pv.pars[end-1]
+get_prevx(pv::ProfileCurve) = pv.x[end-1]
+get_prevobj(pv::ProfileCurve) = pv.obj[end-1]
 
-function ProfileValues(::Val{false}, plprob::ProfileLikelihoodProblem, ::Type{parsType}, ::Type{xType}, ::Type{objType}, obj_level) where {parsType, xType, objType}
-  ProfileValues{typeof(plprob), parsType, xType, objType, Nothing, Nothing, Nothing}(false, plprob, Vector{parsType}(), Vector{xType}(), Vector{objType}(), obj_level, nothing, nothing, nothing)
+function ProfileCurve(::Val{false}, plprob::ProfileLikelihoodProblem, ::Type{parsType}, ::Type{xType}, ::Type{objType}, obj_level) where {parsType, xType, objType}
+  ProfileCurve{typeof(plprob), parsType, xType, objType, Nothing, Nothing, Nothing}(false, plprob, Vector{parsType}(), Vector{xType}(), Vector{objType}(), obj_level, nothing, nothing, nothing)
 end
 
-function ProfileValues(::Val{false}, plprob::ProfileLikelihoodProblem, pars::Vector{parsType}, x::Vector{xType}, obj::Vector{objType}, obj_level, retcode, endpoints, stats) where {parsType, xType, objType}
-  ProfileValues{typeof(plprob), parsType, xType, objType, typeof(retcode), typeof(endpoints), typeof(stats)}(false, plprob, pars, x, obj, obj_level, retcode, endpoints, stats)
+function ProfileCurve(::Val{false}, plprob::ProfileLikelihoodProblem, pars::Vector{parsType}, x::Vector{xType}, obj::Vector{objType}, obj_level, retcode, endpoints, stats) where {parsType, xType, objType}
+  ProfileCurve{typeof(plprob), parsType, xType, objType, typeof(retcode), typeof(endpoints), typeof(stats)}(false, plprob, pars, x, obj, obj_level, retcode, endpoints, stats)
 end
 
-isdense(pv::ProfileValues) = pv.dense
+isdense(pv::ProfileCurve) = pv.dense
 
-function Base.show(io::IO, mime::MIME"text/plain", pv::ProfileValues) 
+function Base.show(io::IO, mime::MIME"text/plain", pv::ProfileCurve) 
   #type_color, no_color = SciMLBase.get_colorizers(io)
   println(io, "Profile values. Use `plot` to visualize the profile or `DataFrame` to get tabular representation.") 
   println(io, "Estimated confidence interval (CI): $(get_endpoints(pv))")
@@ -81,7 +81,7 @@ function Base.show(io::IO, mime::MIME"text/plain", pv::ProfileValues)
 end
 
 
-function DataFrames.DataFrame(pv::ProfileValues)
+function DataFrames.DataFrame(pv::ProfileCurve)
   npars = length(pv.pars[1])
   df = DataFrame([getindex.(pv.pars, i) for i in 1:npars], :auto, copycols=false)
   df[!,:objective] = pv.obj
