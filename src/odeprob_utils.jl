@@ -1,66 +1,30 @@
-function solver_init(sciml_prob::SciMLBase.AbstractODEProblem, 
-  plprob::ProfileLikelihoodProblem, method::IntegrationProfiler, idx, dir, profile_bound)
 
-  optpars = get_optpars(plprob)
-  x0 = optpars[idx]
-
-  # update u0 values
-  for i in eachindex(optpars)
-    sciml_prob.u0[i] = optpars[i]
-  end
-  sciml_prob.u0[end] = 0.0
-
-  # update p values
-  set_gamma!(sciml_prob.p, dir*get_gamma(sciml_prob.p))
-  set_idx!(sciml_prob.p, idx)
-  set_x_fixed!(sciml_prob.p, 1.0)
-
-  # If reoptimize is requested, then create an optimization problem, create an
-  # optimizer state, and register a callback.
-  callback = nothing
-  if method.reoptimize
-    sciml_prob_opt = build_optprob_reduced(plprob.optprob, plprob.optpars)
-    solver_state_opt = solver_init(sciml_prob_opt, plprob, method, idx, dir, profile_bound)
-    condition(u, t, integrator) = true
-    function affect!(integrator)
-      set_x_fixed!(solver_state_opt.reinit_cache.p, integrator.u[idx])
-      solver_state_opt.reinit_cache.u0 = integrator.u[1:end-1][1:end .!= idx]
-      sol = solve_optcache(solver_state_opt)
-      for i in 1:length(integrator.u)-1
-        i == idx && continue
-        integrator.u[i] = sol[i - (i>idx)]
-      end
-    end
-    callback = DiscreteCallback(condition, affect!)
-  end
-  
-  return SciMLBase.init(
-    sciml_prob, get_integrator(method);
-    get_integrator_opts(method)...,
-    callback=callback
-  )
-end
-
-
-function build_scimlprob(plprob::ProfileLikelihoodProblem, method::IntegrationProfiler, idx, profile_bound)
-  optprob = get_optprob(plprob)
-  optpars = get_optpars(plprob)
+function build_odeprob_reduced(plprob::ProfileLikelihoodProblem, method::IntegrationProfiler, idx, dir, profile_range)
+  optprob = plprob.optprob
+  optpars = plprob.optpars
   lp = length(optpars)
 
-  optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=true, h=true)
-
-  odef = build_odefunc(optf, optpars, Val(get_matrix_type(method)))
+  odef = build_odefunc_reduced(optprob, optpars, Val(get_matrix_type(method)))
 
   gamma = get_gamma(method)
-  xspan = (optpars[idx], profile_bound)
-  p = FixedParamCache(optprob.p, 1, 1.0, gamma)
+  xf = (dir == -1) ? profile_range[1] : profile_range[2]
+  xspan = (optpars[idx], xf)
+  p = FixedParamCache(optprob.p, idx, 1.0, dir*gamma)
 
-  return ODEProblem(odef, zeros(lp+1), xspan, p)
+  u0 = zeros(eltype(optpars), lp+1)
+  for i in eachindex(optpars)
+    u0[i] = optpars[i]
+  end
+  u0[end] = 0.0
+
+  return ODEProblem(odef, u0, xspan, p)
 end
 
-function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:identity})
+function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:identity})
   lp = length(optpars)
   rhs_vec = similar(optpars)
+
+  optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=true, h=false)
 
   function ode_func(dz, z, p, x)
     idx = get_idx(p)
@@ -75,11 +39,14 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:identity})
   end
 end
 
-function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:fisher})
+function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:fisher})
   lp = length(optpars)
   T = eltype(optpars)
   lhs_mat = zeros(T, lp, lp)
   rhs_vec = similar(optpars)
+
+  optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=true, h=false)
+
 
   function ode_func(dz, z, p, x)
     #=
@@ -124,11 +91,13 @@ function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:fisher})
   end
 end
 
-function build_odefunc(optf::OptimizationFunction, optpars, ::Val{:hessian})
+function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:hessian})
   lp = length(optpars)
   T = eltype(optpars)
   lhs_mat = zeros(T, lp, lp)
   rhs_vec = similar(optpars)
+
+  optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=false, h=true)
 
  function ode_func(dz, z, p, x)
     #=

@@ -13,7 +13,7 @@ Profiles the likelihood function for the given problem `plprob` using the specif
 
 ### Arguments
 
-- `plprob::ProfileLikelihoodProblem{ParameterProfile}`: The profiling problem instance containing the parameters and likelihood function to be profiled.
+- `plprob::ProfileLikelihoodProblem`: The profiling problem instance containing the parameters and likelihood function to be profiled.
 - `method::AbstractProfilerMethod`: The method to be used for profiling.
 - `reoptimize_init::Bool=false`: If `true`, re-optimizes the model at the provided initial parameter values `optpars` before profiling. Defaults to `false`.
 - `parallel_type::Symbol`: Specifies the type of parallelism to be used. Supported values: `:none, :threads, :distributed`. Defaults to `:none`.
@@ -53,12 +53,12 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
   end
 
   verbose && @info "Computing initial values."
-  obj0 = evaluate_obj(_plprob.optprob, _plprob.optpars)
+  obj0 = evaluate_obj(_plprob, _plprob.optpars)
 
   !(parallel_type in (:none, :threads, :distributed)) && 
     throw(ArgumentError("Invalid `parallel_type`: $parallel_type. 
                          Supported values are :none, :threads, :distributed."))
-  II = [(idx, dir) for idx in _profile_idxs(plprob) for dir in (-1, 1)]
+  II = [(idx, dir) for idx in get_profile_idxs(plprob.target) for dir in (-1, 1)]
 
   return __solve_parallel(_plprob, method, Val(parallel_type), II; obj0, kwargs...)
 end
@@ -74,91 +74,32 @@ function __solve_parallel(plprob::ProfileLikelihoodProblem, method::AbstractProf
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
 
-#=
-function __solve_parallel(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod, ::Val{:threads}, II; kwargs...)
+
+function __solve_parallel(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod, ::Val{:threads}, II, args...; kwargs...)
 
   elapsed_time = @elapsed begin 
+    profile_data = Vector{Any}(undef, length(II))
     Base.Threads.@threads for i in 1:length(II)
-      idx, dir = II[i]
-      profile_result = __solve_dir(plprob, method, idx, dir; kwargs...)
-      output_data[i] = profile_result
-    end
-
-    profile_data = Vector{Any}(undef, length(idxs))
-    for i in 1:length(idxs)
-      left_profile  = output_data[2*(i-1)+1]
-      right_profile = output_data[2*(i-1)+2]
-      profile_data[i] = merge_profiles(left_profile, right_profile)
+      profile_data[i] = solve(plprob, method, II[i]..., args...; kwargs...)
     end
   end
   
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
 
-function __solve_parallel(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod, ::Val{:distributed}, II; kwargs...)
+function __solve_parallel(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod, ::Val{:distributed}, II, args...; kwargs...)
 
   wp = CachingPool(workers())
 
-  elapsed_time = @elapsed begin
-    output_data = Distributed.pmap(wp, II) do (idx, dir)
-      solve(plprob, method, idx, dir; kwargs...)
-    end
-
-    profile_data = Vector{Any}(undef, length(idxs))
-    for i in 1:length(idxs)
-      left_profile  = output_data[2*(i-1)+1]
-      right_profile = output_data[2*(i-1)+2]
-      profile_data[i] = merge_profiles(left_profile, right_profile)
-    end
+  elapsed_time = @elapsed profile_data = Distributed.pmap(wp, II) do I
+    solve(plprob, method, I..., args...; kwargs...)
   end
   
   return build_profile_solution(plprob, profile_data, elapsed_time)
 end
-=#
+
 
 ###################################### PROFILE STATE/CACHE ##################################
-
-# mimics OptimizationState
-# https://github.com/SciML/Optimization.jl/blob/master/src/state.jl
-#=
-"""
-$(TYPEDEF)
-
-Stores the profiler state at the current iteration 
-and is passed to the callback function as the first argument.
-
-## Fields
-- `iter`: current iteration
-- `x`: current solution
-- `obj`: current objective value
-- `grad`: current gradient
-- `hess`: current hessian
-"""
-struct ProfilerState{X, O, G, H}
-    iter::Int
-    x::X
-    obj::O
-    grad::G
-    hess::H
-end
-
-function ProfilerState(; iter = 0, x = nothing, obj = nothing,
-        grad = nothing, hess = nothing)
-    ProfilerState(iter, x, obj, grad, hess)
-end
-=#
-
-mutable struct ProfileCurveCache
-  profile_curve::C
-  solver_cache::S
-  idx::I
-  dir::Int
-  profile_bound::Float64
-  iter::Int
-  maxiters::Int
-  verbose::Bool
-  retcode::Symbol
-end
 
 # currently we use the same cache for all targets (parameters and functions), 
 # but it may change to ParameterProfilerCache and FunctionProfilerCache in the future.
@@ -168,66 +109,54 @@ SciMLBase.init(plprob::ProfileLikelihoodProblem, method, idx, dir; kwargs...) =
 function SciMLBase.init(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, method::AbstractProfilerMethod, idx, dir::Int; 
   obj0 = nothing, solver_cache = nothing, maxiters = Int(1e4), verbose = false)
 
-  x0 = evaluate_target_f(target, idx, optpars)
-  if isnothing(obj0)
-    verbose && @info "Computing initial values."
-    _obj0 = evaluate_obj(plprob.optprob, plprob.optpars)
-  else
-    _obj0 = obj0
-  end
-  threshold = plprob.threshold
-  obj_level = _obj0 + threshold
+  (dir == -1 || dir == +1) ||
+        throw(ArgumentError("Profile direction `dir` must be -1 or +1"))
 
-  profile_bound = dir == -1 ? _lower_bound(target, idx) : _upper_bound(target, idx)
+  n = length(plprob.optpars)
+    (1 <= idx <= n) ||
+        throw(ArgumentError("`idx` must be within 1:$n"))
 
-  profile_values = ProfileCurve(Val(false), plprob, typeof(plprob.optpars),typeof(x0),typeof(_obj0), obj_level)
+  θ0 = plprob.optpars
+  x0 = evaluate_target_f(target, idx, θ0)
+  _obj0 = isnothing(obj0) ? evaluate_obj(plprob.optprob, θ0) : obj0
+
+  τ  = plprob.threshold
+  obj_level = _obj0 + τ
+
+  lb = get_profile_lb(target, idx); ub = get_profile_ub(target, idx)
+
+  T = float(promote_type(eltype(θ0), typeof(x0), typeof(_obj0), typeof(τ), typeof(lb), typeof(ub)))
+  θ0_typed = T.(θ0)
+  profile_range = (T(lb), T(ub))
+  sol = solution_init(plprob, idx, dir, θ0_typed, T(x0), T(_obj0), T(obj_level))
 
   if isnothing(solver_cache)
-    _solver_cache = solver_init(build_scimlprob(plprob, method, idx, profile_bound), plprob, method, idx, dir, profile_bound)
+    _solver_cache = solver_cache_init(plprob, method, idx, dir, profile_range)
   else
     # reinit_cache
     throw(ArgumentError("Providing `solver_cache` is not supported yet."))
   end
 
-  return ProfileCurveCache{T,typeof(profile_values),typeof(method),typeof(solver_state),ReturnCode.T,typeof(idx),typeof(optpars),typeof(x0),typeof(stats)}(
-    profile_values, method, solver_state, ReturnCode.Default, idx, dir, profile_bound, similar(optpars), copy(optpars), x0, obj0, 1, obj_level, maxiters, nothing, :Default, stats, verbose)
-
-
-  return profile_branch_cache # ? return profiler_cache or profile_values
+  return profiler_init(sol, _solver_cache, θ0_typed, T(x0), T(_obj0), profile_range, Int(maxiters), verbose)
 end
 
 
-function SciMLBase.solve!(profiler_cache::AbstractProfilerCache)
-  
-  verbose = get_verbose(profiler_cache)
-  verbose && init_msg(profiler_cache)
+function SciMLBase.solve!(profiler_cache::ProfilerCache)
 
-  profiler_save_values!(profiler_cache)
-  
-  while !profiler_stop(profiler_cache) 
+  verbose = profiler_cache.verbose
+  while !profiler_terminated(profiler_cache) 
 
     verbose && progress_msg(profiler_cache)
-    profiler_step!(profiler_cache, get_method(profiler_cache))
+    profiler_step!(profiler_cache)
 
-    SciMLBase.successful_retcode(get_solver_retcode(profiler_cache)) && profiler_save_values!(profiler_cache)
-    profiler_update_retcode!(profiler_cache)
+    profiler_update_cache!(profiler_cache)
   end
   
-  profiler_finalize!(profiler_cache)
+  profiler_finalize_solution!(profiler_cache)
   
-  return profiler_cache
+  return profiler_cache.sol
 end
 
-###################################### PROFILER VERBOSE ##################################
-
-function init_msg(profiler_cache::ProfilerState)
-  dir = isleft(profiler_cache) ? :left : :right
-  @info "Computing $dir-side profile"
-end
-
-function progress_msg(profiler_cache::ProfilerState{<:ParameterProfile}) 
-  @info "Current parameter-$(get_idx(profiler_cache)) value: $(get_curx(profiler_cache))"
-end
-
-###################################### HELPERS ##################################
-
+solver_cache_init(plprob, method, idx, dir, profile_range) = solver_cache_init(plprob, plprob.target, method, idx, dir, profile_range)
+profiler_step!(profiler_cache::ProfilerCache) = profiler_step!(profiler_cache, profiler_cache.solver_cache)
+profiler_finalize_solution!(profiler_cache::ProfilerCache) = profiler_finalize_solution!(profiler_cache::ProfilerCache, profiler_cache.sol)

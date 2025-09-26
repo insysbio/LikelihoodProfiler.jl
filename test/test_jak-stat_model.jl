@@ -28,8 +28,8 @@ const jakstat_ci = (
 )
 
 function test_jakstat(sol, i; kwargs...)
-  ret = get_retcodes(sol[i])
-  ci = get_endpoints(sol[i])
+  ret = retcodes(sol[i])
+  ci = endpoints(sol[i])
   @test jakstat_retcodes[i][1] == ret[1] 
   @test jakstat_retcodes[i][2] == ret[2] 
   jakstat_retcodes[i][1] == :Identifiable && (@test isapprox(ci[1], jakstat_ci[i][1]; kwargs...))
@@ -51,7 +51,7 @@ profile_range = [
   (0., 2.)
 ]
 
-plprob = ProfileLikelihoodProblem(optprob, optpars, profile_range; threshold = chi2_quantile(0.95, 1))
+plprob = ProfileLikelihoodProblem(optprob, optpars; profile_lower = first.(profile_range), profile_upper = last.(profile_range), threshold = chi2_quantile(0.95, 1))
 
 @testset "JAK2-STAT5 model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
   

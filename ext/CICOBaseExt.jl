@@ -2,25 +2,25 @@ module CICOBaseExt
 
 using LikelihoodProfiler, CICOBase
 
-function LikelihoodProfiler.__solve_dir(plprob::ProfileLikelihoodProblem, method::CICOProfiler, idx::Int, dir::Int; verbose=false, kwargs...)
+function LikelihoodProfiler.solve(plprob::ProfileLikelihoodProblem, method::CICOProfiler, idx::Int, dir::Int; verbose=false, kwargs...)
   
   # TODO add check_prob_method()
   !LikelihoodProfiler.hasthreshold(plprob) && throw(ArgumentError("`CICOProfiler` doesn't support profiling with infinite `threshold`. Use other profile methods."))
   
   verbose && @info "Computing initial values."
-  optprob = LikelihoodProfiler.get_optprob(plprob)
-  optpars = LikelihoodProfiler.get_optpars(plprob)
-  threshold = LikelihoodProfiler.get_threshold(plprob)
-  
+  optprob = plprob.optprob
+  optpars = plprob.optpars
+  threshold = plprob.threshold
+
   x0 = optpars[idx]
-  obj0 = LikelihoodProfiler.evaluate_obj(optprob, optpars)
+  obj0 = LikelihoodProfiler.evaluate_obj(plprob, optpars)
   obj_level = obj0 + threshold
-  
-  profile_range = LikelihoodProfiler.get_profile_range(plprob)
-  profile_lb, profile_ub = profile_range isa Tuple ? profile_range : profile_range[idx]
-  
-  optprob_lb = isnothing(optprob.lb) ? -Inf : optprob.lb
-  optprob_ub = isnothing(optprob.ub) ? Inf : optprob.ub
+
+  profile_lb = LikelihoodProfiler.get_profile_lb(plprob.target, idx)
+  profile_ub = LikelihoodProfiler.get_profile_ub(plprob.target, idx)
+
+  optprob_lb = isnothing(optprob.lb) ? -Inf : float(optprob.lb)
+  optprob_ub = isnothing(optprob.ub) ? Inf : float(optprob.ub)
   optprob_range = tuple.(optprob_lb, optprob_ub)
   optprob_bounds = optprob_range isa Tuple ? fill(optprob_range, length(optpars)) : optprob_range
 
@@ -37,10 +37,10 @@ function LikelihoodProfiler.__solve_dir(plprob::ProfileLikelihoodProblem, method
   ep = CICOBase.get_endpoint(Vector(optpars), idx, x->optprob.f.f(x,optprob.p), :CICO_ONE_PASS, direction;
     loss_crit = obj_level, theta_bounds=Vector(optprob_bounds), scan_bound=profile_bound, local_alg=LikelihoodProfiler.get_optimizer(method), scan_tol=LikelihoodProfiler.get_scan_tol(method), silent=!verbose)
 
-  return cico_to_profile_values(plprob, ep, optpars, x0, obj0, obj_level)
+  return cico_to_profile_values(plprob, ep, optpars, idx, dir, x0, obj0, obj_level)
 end
 
-function cico_to_profile_values(plprob::ProfileLikelihoodProblem, ep::CICOBase.EndPoint, optpars, x0, obj0, obj_level)
+function cico_to_profile_values(plprob::ProfileLikelihoodProblem, ep::CICOBase.EndPoint, optpars, idx, dir, x0, obj0, obj_level)
 
   ep_retcode = cico_deduce_retcode(ep.status)
   ep_val = ep.value
@@ -49,19 +49,19 @@ function cico_to_profile_values(plprob::ProfileLikelihoodProblem, ep::CICOBase.E
     pars = ep_retcode == :Identifiable ? [ep.profilePoints[1].params, optpars] : [optpars]
     x = ep_retcode == :Identifiable ? [ep_val, x0] : [x0]
     obj = ep_retcode == :Identifiable ? [ep.profilePoints[1].loss, obj0] : [obj0]
-    retcodes = (ep_retcode, :NonIdentifiable)
-    endpoints = (ep_val, nothing)
-    stats = ((nf=ep.counter,), nothing)
+    retcodes = (left = ep_retcode, right = :NotStarted)
+    endpoints = (left = ep_val, right = nothing)
+    stats = (left = LikelihoodProfiler.SciMLBase.OptimizationStats(;fevals=ep.counter), right = nothing)
   else
     pars = ep_retcode == :Identifiable ? [optpars, ep.profilePoints[1].params] : [optpars]
     x = ep_retcode == :Identifiable ? [x0, ep_val] : [x0]
     obj = ep_retcode == :Identifiable ? [obj0, ep.profilePoints[1].loss] : [obj0]
-    retcodes = (:NonIdentifiable, ep_retcode)
-    endpoints = (nothing, ep_val) 
-    stats = (nothing, nf=ep.counter)
+    retcodes = (left = :NotStarted, right = ep_retcode)
+    endpoints = (left = nothing, right = ep_val)
+    stats = (left = nothing, right = LikelihoodProfiler.SciMLBase.OptimizationStats(;fevals=ep.counter))
   end
 
-  return LikelihoodProfiler.ProfileCurve(Val(false), plprob, pars, x, obj, obj_level, retcodes, endpoints, stats)
+  return LikelihoodProfiler.ProfileCurve{typeof(plprob), typeof(idx), eltype(pars), eltype(x), LikelihoodProfiler.SciMLBase.OptimizationStats}(false, plprob, idx, dir, pars, x, obj, obj_level, retcodes, endpoints, stats)
 end
 
 function cico_deduce_retcode(retcode::Symbol)

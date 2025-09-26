@@ -1,18 +1,3 @@
-"""
-   AbstractProfileLikelihoodProblem
-
-Abstract type for all profile likelihood problems. Concrete subtypes carry the
-information required to define a specific profile likelihood problem.
-"""
-abstract type AbstractProfileLikelihoodProblem end
-
-"""
-    AbstractProfileTarget
-
-Abstract type for all profile targets. Concrete subtypes carry the
-information required to define what is being profiled. 
-"""
-abstract type AbstractProfileTarget end
 
 """
     ParameterTarget{I,B}
@@ -96,19 +81,15 @@ function Base.show(io::IO, mime::MIME"text/plain", target::FunctionTarget)
 end
 ############################### SELECTORS ###############################
 
-_profile_idxs(t::ParameterTarget) = t.idxs
-_profile_idxs(t::FunctionTarget) = 1:length(t.fs)
-Base.length(t::AbstractProfileTarget) = length(_profile_idxs(t))
-_lower_bound(t::AbstractProfileTarget, idx) = t.profile_lower[idx]
-_upper_bound(t::AbstractProfileTarget, idx) = t.profile_upper[idx]
+get_profile_idxs(t::ParameterTarget) = t.idxs
+get_profile_idxs(t::FunctionTarget) = 1:length(t.fs)
+Base.length(t::AbstractProfileTarget) = length(get_profile_idxs(t))
+get_profile_lb(t::AbstractProfileTarget) = t.profile_lower
+get_profile_ub(t::AbstractProfileTarget) = t.profile_upper
+get_profile_lb(t::AbstractProfileTarget, idx) = t.profile_lower[idx]
+get_profile_ub(t::AbstractProfileTarget, idx) = t.profile_upper[idx]
 
-get_profile_idxs(pt::ParameterTarget) = pt.idxs
 get_profile_fs(ft::FunctionTarget) = ft.fs
-Base.length(pt::ParameterTarget) = length(get_profile_idxs(pt))
-Base.length(ft::FunctionTarget) = length(get_profile_fs(ft))
-get_profile_lower(pt::AbstractProfileTarget) = pt.profile_lower
-get_profile_upper(pt::AbstractProfileTarget) = pt.profile_upper
-get_profile_range(pt::AbstractProfileTarget) = tuple.(pt.profile_lower, pt.profile_upper)
 
 ############################### CONSTRUCTORS ###############################
 
@@ -183,19 +164,11 @@ struct ProfileLikelihoodProblem{T,probType,P} <: AbstractProfileLikelihoodProble
 end
 
 function Base.show(io::IO, mime::MIME"text/plain", plprob::ProfileLikelihoodProblem) 
-  println(io, "Profile Likelihood Problem. Profile threshold: $(get_threshold(plprob))")
-  show(io, mime, get_profile_target(plprob))
+  println(io, "Profile Likelihood Problem. Profile threshold: $(plprob.threshold)")
+  show(io, mime, plprob.target)
   println(io, "Parameters' optimal values: ")
-  show(io, mime, get_optpars(plprob))
+  show(io, mime, plprob.optpars)
 end
-
-############################### SELECTORS ###############################
-
-get_profile_target(prob::ProfileLikelihoodProblem) = prob.target
-get_optprob(prob::ProfileLikelihoodProblem) = prob.optprob
-get_optpars(prob::ProfileLikelihoodProblem) = prob.optpars
-get_profile_range(prob::ProfileLikelihoodProblem) = get_profile_range(get_profile_target(prob))
-get_threshold(prob::ProfileLikelihoodProblem) = prob.threshold
 
 ############################### CONSTRUCTORS ###############################
 
@@ -262,7 +235,7 @@ function _check_prob_target(optprob::OptimizationProblem, optpars::AbstractVecto
   idxs = get_profile_idxs(target)
   checkbounds(Bool, optpars, idxs) || throw(ArgumentError("`idxs` must be within 1:$(length(optpars))"))
 
-  lb = get_profile_lower(target); ub = get_profile_upper(target)
+  lb = get_profile_lb(target); ub = get_profile_ub(target)
   for (i, idx) in enumerate(idxs) 
     (lb[i] <= optpars[idx] <= ub[i]) || throw(ArgumentError("Initial value optpars[$idx] = $(optpars[idx]) must satisfy profile_lower[$i] ≤ x ≤ profile_upper[$i]"))
   end

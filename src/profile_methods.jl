@@ -1,11 +1,11 @@
-abstract type AbstractProfilerMethod end
+
 
 ################################ SELECTORS ################################
 
-_optimizer(method::AbstractProfilerMethod) = nothing
-_integrator(method::AbstractProfilerMethod) = nothing
-has_optimizer(method::AbstractProfilerMethod) = !isnothing(_optimizer(method))
-has_integrator(method::AbstractProfilerMethod) = !isnothing(_integrator(method))
+get_optimizer(method::AbstractProfilerMethod) = nothing
+get_integrator(method::AbstractProfilerMethod) = nothing
+hasoptimizer(method::AbstractProfilerMethod) = !isnothing(get_optimizer(method))
+hasintegrator(method::AbstractProfilerMethod) = !isnothing(get_integrator(method))
 
 ############################## OptimizationProfiler ##############################
 
@@ -44,8 +44,8 @@ Base.@kwdef struct OptimizationProfiler{S, opType, optsType} <: AbstractProfiler
   optimizer_opts::optsType = NamedTuple()
 end
 
-_optimizer(op::OptimizationProfiler) = op.optimizer
-_optimizer_opts(op::OptimizationProfiler) = op.optimizer_opts
+get_optimizer(op::OptimizationProfiler) = op.optimizer
+get_optimizer_opts(op::OptimizationProfiler) = op.optimizer_opts
 get_stepper(op::OptimizationProfiler) = op.stepper
 
 ############################## IntegrationProfiler ##############################
@@ -81,10 +81,10 @@ Base.@kwdef struct IntegrationProfiler{opType, optsType, DEAlg, DEOpts} <: Abstr
   gamma::Float64 = 1.0
 end
 
-_optimizer(ip::IntegrationProfiler) = ip.optimizer
-_optimizer_opts(ip::IntegrationProfiler) = ip.optimizer_opts
-_integrator(ip::IntegrationProfiler) = ip.integrator
-_integrator_opts(ip::IntegrationProfiler) = ip.integrator_opts
+get_optimizer(ip::IntegrationProfiler) = ip.optimizer
+get_optimizer_opts(ip::IntegrationProfiler) = ip.optimizer_opts
+get_integrator(ip::IntegrationProfiler) = ip.integrator
+get_integrator_opts(ip::IntegrationProfiler) = ip.integrator_opts
 get_matrix_type(ip::IntegrationProfiler) = ip.matrix_type
 get_gamma(ip::IntegrationProfiler) = ip.gamma
 ############################## CICOProfiler ##############################

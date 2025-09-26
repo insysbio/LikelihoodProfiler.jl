@@ -20,8 +20,8 @@ const taxol_ci = (
 )
 
 function test_taxol(sol, i; kwargs...)
-  ret = get_retcodes(sol[i])
-  ci = get_endpoints(sol[i])
+  ret = retcodes(sol[i])
+  ci = endpoints(sol[i])
   @test taxol_retcodes[i][1] == ret[1] 
   @test taxol_retcodes[i][2] == ret[2] 
   taxol_retcodes[i][1] == :Identifiable && (@test isapprox(ci[1], taxol_ci[i][1]; kwargs...))
@@ -37,7 +37,7 @@ profile_range = [
   (0.05, 5.),
   (30., 250.)
 ]
-plprob = ProfileLikelihoodProblem(optprob, p0, profile_range; threshold = sigmasq*chi2_quantile(0.95, 5))
+plprob = ProfileLikelihoodProblem(optprob, p0; profile_lower = first.(profile_range), profile_upper = last.(profile_range), threshold = sigmasq*chi2_quantile(0.95, 5))
 
 
 @testset "Taxol model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
@@ -46,10 +46,13 @@ plprob = ProfileLikelihoodProblem(optprob, p0, profile_range; threshold = sigmas
   profile_step(p0, i) = p0[i] * 0.1
   atol = [profile_step(p0, i)/2 for i in idxs]
   atol[3] = 0.041 # tmp fix as r0 upper bound fails to be within step/2 tolerance
-  #method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
+  
+  #=
   method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), 
   stepper = LineSearchStep(; initial_step = profile_step, 
   linesearch = InterpolationLineSearch(; objective_factor=1.25, step_size_factor=1.5)))
+  =#
   sol = solve(plprob, method)
   for i in idxs
     test_taxol(sol, i; atol = atol[i])
