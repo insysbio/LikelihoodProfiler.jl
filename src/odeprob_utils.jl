@@ -20,6 +20,28 @@ function build_odeprob_reduced(plprob::ProfileLikelihoodProblem, method::Integra
   return ODEProblem(odef, u0, xspan, p)
 end
 
+function build_odeprob_full(plprob::ProfileLikelihoodProblem, method::IntegrationProfiler, idx, dir, profile_range)
+  optprob = plprob.optprob
+  optpars = plprob.optpars
+  lp = length(optpars)
+
+  odef = build_odefunc_full(plprob, idx, Val(get_matrix_type(method)))
+
+  gamma = get_gamma(method)
+  x0 = evaluate_target_f(plprob.target, idx, optpars)
+  xf = (dir == -1) ? profile_range[1] : profile_range[2]
+  xspan = (x0, xf)
+  p = FixedParamCache(optprob.p, idx, 1.0, dir*gamma)
+
+  u0 = zeros(eltype(optpars), lp+1)
+  for i in eachindex(optpars)
+    u0[i] = optpars[i]
+  end
+  u0[end] = 0.0
+
+  return ODEProblem(odef, u0, xspan, p)
+end
+
 function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:identity})
   lp = length(optpars)
   rhs_vec = similar(optpars)
@@ -134,6 +156,100 @@ function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:hes
     lhs_mat[idx, end] = one(T)
 
     fill_x_full!(dz, pinv(lhs_mat)*rhs_vec, idx, 1.0)
+  end
+end
+
+function build_odefunc_full(plprob::ProfileLikelihoodProblem, idx, ::Val{:hessian})
+  optprob = plprob.optprob
+  optpars = plprob.optpars
+  lp = length(optpars)
+  T = eltype(optpars)
+  
+  lhs_mat = zeros(T, lp+1, lp+1)
+  rhs_vec = zeros(T, lp+1)
+  rhs_vec[end] = 1.0
+
+  L_hess_mat = zeros(T, lp, lp)
+  g_hess_mat = zeros(T, lp, lp)
+  g_grad_vec = zeros(T, lp)
+
+  profile_f = plprob.target.fs[idx]
+  L_optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=false, h=true)
+  g_optf = OptimizationBase.instantiate_function(profile_f, optpars, profile_f.adtype, optprob.p; g=true, h=true)
+
+  L_hess! = L_optf.hess
+  g_grad! = g_optf.grad
+  g_hess! = g_optf.hess
+
+  function ode_func(dz, z, p, x)
+
+    L_hess!(L_hess_mat, z[1:lp], p.p)
+    #@show L_hess_mat
+    g_hess!(g_hess_mat, z[1:lp], p.p)
+    g_grad!(g_grad_vec, z[1:lp], p.p)
+
+    # Top-left block: L_hess_mat .+ z[end] * g_hess_mat
+    lhs_mat[1:lp, 1:lp] .= L_hess_mat .+ z[end] * g_hess_mat
+
+    # Top-right block: g_grad_vec (as a column)
+    lhs_mat[1:lp, lp+1] .= g_grad_vec
+ 
+    # Bottom-left block: g_grad_vec' (as a row)
+    for i in 1:lp
+      lhs_mat[lp+1, i] = g_grad_vec[i]
+    end
+
+    # Bottom-right element: 0
+    lhs_mat[lp+1, lp+1] = 0
+
+    dz .= pinv(lhs_mat) * rhs_vec
+  end
+end
+
+function build_odefunc_full(plprob::ProfileLikelihoodProblem, idx, ::Val{:identity})
+  optprob = plprob.optprob
+  optpars = plprob.optpars
+  lp = length(optpars)
+  T = eltype(optpars)
+
+  L_grad_vec = zeros(T, lp)
+  g_grad_vec = zeros(T, lp)
+  
+  lhs_mat = zeros(T, lp+1, lp+1)
+  rhs_vec = zeros(T, lp+1)
+  rhs_vec[end] = 1.0
+
+
+  profile_f = plprob.target.fs[idx]
+  L_optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=true, h=false)
+  g_optf = OptimizationBase.instantiate_function(profile_f, optpars, profile_f.adtype, optprob.p; g=true, h=false)
+
+  L_grad! = L_optf.grad
+  g_grad! = g_optf.grad
+
+  for i in 1:lp
+    lhs_mat[i,i] = -1.0
+  end
+
+  function ode_func(dz, z, p, x)
+
+    L_grad!(L_grad_vec, z[1:lp], p.p)
+    g_grad!(g_grad_vec, z[1:lp], p.p)
+
+    gamma = get_gamma(p)
+    # Top-right block: g_grad_vec (as a column)
+    lhs_mat[1:lp, lp+1] .= g_grad_vec
+ 
+    # Bottom-left block: g_grad_vec' (as a row)
+    for i in 1:lp
+      lhs_mat[lp+1, i] = g_grad_vec[i]
+    end
+
+    # Bottom-right element: 0
+    lhs_mat[lp+1, lp+1] = 0
+
+    rhs_vec[1:lp] .= -gamma * L_grad_vec
+    dz .= pinv(lhs_mat) * rhs_vec
   end
 end
 

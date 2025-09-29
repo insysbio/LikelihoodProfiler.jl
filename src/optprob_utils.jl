@@ -98,6 +98,23 @@ function build_optf_reduced(optprob::OptimizationProblem, optpars)
 end
 
 
-function build_optprob_constrained(optprob::OptimizationProblem, optpars, idx)
+function build_optprob_constrained(plprob::ProfileLikelihoodProblem, idx)
+  optprob = plprob.optprob
+  optpars = plprob.optpars
 
+  x0 = evaluate_target_f(plprob.target, idx, optpars)
+  optf_constrained = build_optf_constrained(plprob, idx)
+  return OptimizationProblem(optf_constrained, copy(optpars);
+     lb=optprob.lb, ub=optprob.ub, lcons=[x0], ucons=[x0])
+end
+
+function build_optf_constrained(plprob::ProfileLikelihoodProblem, idx)
+  optprob = plprob.optprob
+  cons_optf = get_profile_fs(plprob.target)[idx]
+
+  function cons_f(res, x, p)
+    res[1] = cons_optf.f(x, p)
+    return nothing
+  end
+  return OptimizationFunction(optprob.f.f, cons_optf.adtype; grad=optprob.f.grad, hess=optprob.f.hess, cons = cons_f)
 end

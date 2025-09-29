@@ -12,7 +12,6 @@ function LikelihoodProfiler.solve(plprob::ProfileLikelihoodProblem, method::CICO
   optpars = plprob.optpars
   threshold = plprob.threshold
 
-  x0 = optpars[idx]
   obj0 = LikelihoodProfiler.evaluate_obj(plprob, optpars)
   obj_level = obj0 + threshold
 
@@ -34,7 +33,18 @@ function LikelihoodProfiler.solve(plprob::ProfileLikelihoodProblem, method::CICO
 
   verbose && @info "Computing $direction-side profile"
 
-  ep = CICOBase.get_endpoint(Vector(optpars), idx, x->optprob.f.f(x,optprob.p), :CICO_ONE_PASS, direction;
+  target = plprob.target
+  if target isa FunctionTarget
+    f = (x) -> target.fs[idx](x, optprob.p)
+  elseif target isa ParameterTarget
+    f = (x) -> x[idx]
+  else
+    throw(ArgumentError("Unsupported target type: $(typeof(target))"))
+  end
+
+  x0 = LikelihoodProfiler.evaluate_target_f(target, idx, optpars)
+
+  ep = CICOBase.get_endpoint(Vector(optpars), f, x->optprob.f.f(x,optprob.p), :CICO_ONE_PASS, direction;
     loss_crit = obj_level, theta_bounds=Vector(optprob_bounds), scan_bound=profile_bound, local_alg=LikelihoodProfiler.get_optimizer(method), scan_tol=LikelihoodProfiler.get_scan_tol(method), silent=!verbose)
 
   return cico_to_profile_values(plprob, ep, optpars, idx, dir, x0, obj0, obj_level)

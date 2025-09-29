@@ -8,7 +8,7 @@ chi2_quantile(α, df=1) = quantile(Chisq(df), α)
 evaluate_obj(plprob::ProfileLikelihoodProblem, u, p=plprob.optprob.p) = evaluate_f(plprob.optprob.f, u, p)
 evaluate_target_f(plprob::ProfileLikelihoodProblem, idx, u, p=SciMLBase.NullParameters()) = evaluate_target_f(plprob.target, idx, u, p)
 evaluate_target_f(target::ParameterTarget, idx, u, p=SciMLBase.NullParameters()) = u[idx]
-evaluate_targfet_f(target::FunctionTarget, idx, u, p=SciMLBase.NullParameters()) = evaluate_f(target.fs[idx], u, p)
+evaluate_target_f(target::FunctionTarget, idx, u, p=SciMLBase.NullParameters()) = evaluate_f(target.fs[idx], u, p)
 evaluate_f(f::OptimizationFunction, u, p=SciMLBase.NullParameters()) = f(u, p)
 
 evaluate_f(prob::OptimizationProblem, idx, u, p=prob.p) = u[idx]

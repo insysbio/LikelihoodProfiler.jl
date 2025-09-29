@@ -60,7 +60,7 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
                          Supported values are :none, :threads, :distributed."))
   II = [(idx, dir) for idx in get_profile_idxs(plprob.target) for dir in (-1, 1)]
 
-  return __solve_parallel(_plprob, method, Val(parallel_type), II; obj0, kwargs...)
+  return __solve_parallel(_plprob, method, Val(parallel_type), II; obj0, verbose, kwargs...)
 end
 
 ###################################### PARALLEL SOLVE ##################################
@@ -111,11 +111,11 @@ function SciMLBase.init(plprob::ProfileLikelihoodProblem, target::AbstractProfil
 
   (dir == -1 || dir == +1) ||
         throw(ArgumentError("Profile direction `dir` must be -1 or +1"))
-
+  #=
   n = length(plprob.optpars)
     (1 <= idx <= n) ||
         throw(ArgumentError("`idx` must be within 1:$n"))
-
+  =#
   θ0 = plprob.optpars
   x0 = evaluate_target_f(target, idx, θ0)
   _obj0 = isnothing(obj0) ? evaluate_obj(plprob.optprob, θ0) : obj0
@@ -158,5 +158,5 @@ function SciMLBase.solve!(profiler_cache::ProfilerCache)
 end
 
 solver_cache_init(plprob, method, idx, dir, profile_range) = solver_cache_init(plprob, plprob.target, method, idx, dir, profile_range)
-profiler_step!(profiler_cache::ProfilerCache) = profiler_step!(profiler_cache, profiler_cache.solver_cache)
+profiler_step!(profiler_cache::ProfilerCache) = profiler_step!(profiler_cache, get_profile_target(profiler_cache), profiler_cache.solver_cache)
 profiler_finalize_solution!(profiler_cache::ProfilerCache) = profiler_finalize_solution!(profiler_cache::ProfilerCache, profiler_cache.sol)

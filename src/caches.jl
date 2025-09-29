@@ -17,12 +17,10 @@ end
 
 function solver_cache_init(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::OptimizationProfiler, idx, args...)
 
-  optprob = plprob.optprob
-  optpars = plprob.optpars
   #params_cache = FixedParamCache(idx, optpars[idx])
-  optprob_constrained = build_optprob_constrained(optprob, optpars, idx)
+  optprob_constrained = build_optprob_constrained(plprob, idx)
   opt_cache = SciMLBase.init(optprob_constrained, get_optimizer(method); get_optimizer_opts(method)...)
-  return OptimizationSolverCache(opt_cache, SciMLBase.OptimizationStats(), SciMLBase.ReturnCode.Default)
+  return OptimizationSolverCache(opt_cache, get_stepper(method), SciMLBase.OptimizationStats(), SciMLBase.ReturnCode.Default)
 end
 
 #get_solver_stats(solver_cache::OptimizationSolverCache) = solver_cache.opt_stats
@@ -65,6 +63,37 @@ function solver_cache_init(plprob::ProfileLikelihoodProblem, target::ParameterTa
 
   return IntegrationSolverCache(ode_solver_cache, opt_solver_cache, SciMLBase.OptimizationStats(), SciMLBase.ReturnCode.Default)
 end
+
+function solver_cache_init(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::IntegrationProfiler, idx, dir, profile_range)
+  
+  ode_prob = build_odeprob_full(plprob, method, idx, dir, profile_range)
+
+  # If reoptimize is requested, then create an optimization problem, create an
+  # optimizer state, and register a callback.
+  if method.reoptimize
+    opt_method = OptimizationProfiler(; optimizer=get_optimizer(method), optimizer_opts=get_optimizer_opts(method))
+    opt_solver_cache = solver_cache_init(plprob, target, opt_method, idx)
+    condition(u, t, integrator) = true
+    function affect!(integrator)
+      opt_solver_cache.opt_cache.lcons[1] = integrator.t
+      opt_solver_cache.opt_cache.ucons[1] = integrator.t
+      opt_solver_cache.opt_cache.reinit_cache.u0 .= integrator.u[1:end-1]
+      sol = solve_opt_cache(opt_solver_cache.opt_cache)
+      for i in 1:length(integrator.u)-1
+        integrator.u[i] = sol[i]
+      end
+    end
+    callback = DiscreteCallback(condition, affect!)
+  else
+    callback = nothing
+    opt_solver_cache = nothing
+  end
+
+  ode_solver_cache = SciMLBase.init(ode_prob, get_integrator(method); get_integrator_opts(method)..., callback=callback)
+
+  return IntegrationSolverCache(ode_solver_cache, opt_solver_cache, SciMLBase.OptimizationStats(), SciMLBase.ReturnCode.Default)
+end
+
 
 mutable struct HybridSolverCache <: AbstractSolverCache
 

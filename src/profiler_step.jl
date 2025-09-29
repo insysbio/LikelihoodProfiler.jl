@@ -1,7 +1,7 @@
 
 ################################################## OPTIMIZATION PROFILER STEP ##################################################
 
-function profiler_step!(profiler_cache::ProfilerCache, solver_cache::OptimizationSolverCache)
+function profiler_step!(profiler_cache::ProfilerCache, target::ParameterTarget, solver_cache::OptimizationSolverCache)
   @unpack opt_cache, stepper = solver_cache
   idx = get_profile_idx(profiler_cache)
 
@@ -45,17 +45,15 @@ end
 
 ################################################## INTEGRATION PROFILER STEP ##################################################
 
-function profiler_step!(profiler_cache::ProfilerCache, solver_cache::IntegrationSolverCache)
+function profiler_step!(profiler_cache::ProfilerCache, target::AbstractProfileTarget, solver_cache::IntegrationSolverCache)
   @unpack ode_cache, opt_cache = solver_cache
 
   integrator = ode_cache
   SciMLBase.step!(integrator)
 
   if SciMLBase.successful_retcode(integrator.sol.retcode)
-    idx = get_profile_idx(profiler_cache)
-
     profiler_cache.pars_cur .= view(integrator.u, 1:length(integrator.u)-1)
-    profiler_cache.x_cur = integrator.u[idx]
+    profiler_cache.x_cur = integrator.t
     profiler_cache.obj_cur = evaluate_obj(get_plprob(profiler_cache), profiler_cache.pars_cur)
     profiler_cache.iter += 1
   else
