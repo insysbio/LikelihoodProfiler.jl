@@ -38,7 +38,7 @@ function pSTAT5A_rel_obs(x, p, t)
   return pSTAT5A_rel
 end
 
-pSTAT5A_rel_optf(t) = OptimizationFunction((x, p) -> pSTAT5A_rel_obs(x, p, t), AutoFiniteDiff())
+pSTAT5A_rel_optf(t) = OptimizationFunction((x, p) -> pSTAT5A_rel_obs(x, p, t), AutoForwardDiff())
 
 #=
 function pSTAT5B_rel_obs(x, p, t)
@@ -72,7 +72,7 @@ end
 rSTAT5A_rel_optf(t) = OptimizationFunction((x, p) -> rSTAT5A_rel_obs(x, p, t), AutoFiniteDiff())
 =#
 
-func_profile_prob = ProfileLikelihoodProblem(optprob, init_pars, [pSTAT5B_rel_optf(t) for t in [2.5, 60, 200]]; profile_lower=0.0, profile_upper=120.0)
+func_profile_prob = ProfileLikelihoodProblem(optprob, init_pars, [pSTAT5A_rel_optf(t) for t in [2.5, 60, 200]]; profile_lower=0.0, profile_upper=120.0)
 
 sol_func = solve(func_profile_prob, alg, verbose=true)
 

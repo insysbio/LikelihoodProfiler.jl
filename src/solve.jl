@@ -35,6 +35,8 @@ sol = solve(plprob, method)
 function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod; 
   reoptimize_init::Bool=false, parallel_type::Symbol=:none, verbose::Bool=false, kwargs...)
 
+  check_prob_alg(plprob, method)
+
   if reoptimize_init
     !has_optimizer(method) && 
       throw(ArgumentError("`method` must have a valid `optimizer` provided when `reoptimize_init=true`."))
@@ -144,6 +146,7 @@ end
 function SciMLBase.solve!(profiler_cache::ProfilerCache)
 
   verbose = profiler_cache.verbose
+  verbose && init_msg(profiler_cache)
   while !profiler_terminated(profiler_cache) 
 
     verbose && progress_msg(profiler_cache)
@@ -160,3 +163,93 @@ end
 solver_cache_init(plprob, method, idx, dir, profile_range) = solver_cache_init(plprob, plprob.target, method, idx, dir, profile_range)
 profiler_step!(profiler_cache::ProfilerCache) = profiler_step!(profiler_cache, get_profile_target(profiler_cache), profiler_cache.solver_cache)
 profiler_finalize_solution!(profiler_cache::ProfilerCache) = profiler_finalize_solution!(profiler_cache::ProfilerCache, profiler_cache.sol)
+
+
+################################### CHECK PROB ALG ##################################
+
+const OPTF_GRAD_ERROR = "The algorithm you are using requires gradient, 
+  but the provided `OptimizationFunction` has neither a user-supplied gradient nor an AD tag.
+  Provide a gradient (OptimizationFunction(...; grad=...)) or set an AD tag, e.g. `adtype=AutoForwardDiff()`."
+
+const OPTF_HESS_ERROR = "The algorithm you are using requires Hessian,
+  but the provided `OptimizationFunction` has neither a user-supplied Hessian nor a Hessian-capable AD tag.
+  Provide a Hessian `(OptimizationFunction(...; hess=...))` or choose an AD that can compute Hessians, e.g. `AutoForwardDiff()` or `AutoFiniteDiff()`."
+
+check_prob_alg(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod) = 
+  check_prob_alg(plprob, plprob.target, method)
+
+check_prob_alg(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, method::AbstractProfilerMethod) = nothing
+
+check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::OptimizationProfiler) = 
+  throw(ArgumentError("`OptimizationProfiler` currently doesn't support function profiling. Please consider using other profiling algorithms."))
+
+function check_prob_alg(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, method::OptimizationProfiler)
+  optf = plprob.optprob.f
+  opt_alg = method.optimizer
+
+  SciMLBase.requiresgradient(opt_alg) && !hasgrad(optf) &&
+    throw(ArgumentError(OPTF_GRAD_ERROR))
+
+  SciMLBase.requireshessian(opt_alg) && !hashess(optf) &&
+    throw(ArgumentError(OPTF_HESS_ERROR))
+  return nothing
+end
+
+function check_prob_alg(plprob::ProfileLikelihoodProblem, target::ParameterTarget, method::IntegrationProfiler)
+  optf = plprob.optprob.f
+
+  if method.matrix_type == :hessian
+    !hashess(optf) && throw(ArgumentError(OPTF_HESS_ERROR))
+  else
+    !hasgrad(optf) && throw(ArgumentError(OPTF_GRAD_ERROR))
+  end
+
+  if method.reoptimize
+    opt_alg = method.optimizer
+    SciMLBase.requiresgradient(opt_alg) && !hasgrad(optf) &&
+      throw(ArgumentError(OPTF_GRAD_ERROR))
+
+    SciMLBase.requireshessian(opt_alg) && !hashess(optf) &&
+      throw(ArgumentError(OPTF_HESS_ERROR))
+  end
+  return nothing
+end
+
+function check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::IntegrationProfiler)
+  optf = plprob.optprob.f
+  profile_fs = get_profile_fs(target)
+
+  if method.matrix_type == :hessian
+    !hashess(optf) && throw(ArgumentError(OPTF_HESS_ERROR))
+    for f in profile_fs
+      !hashess(f) && throw(ArgumentError(OPTF_HESS_ERROR))
+      !hasgrad(f) && throw(ArgumentError(OPTF_GRAD_ERROR))
+    end
+  else
+    !hasgrad(optf) && throw(ArgumentError(OPTF_GRAD_ERROR))
+    for f in profile_fs
+      !hasgrad(f) && throw(ArgumentError(OPTF_GRAD_ERROR))
+    end
+  end
+
+  if method.reoptimize
+    opt_alg = method.optimizer
+    !SciMLBase.allowsconstraints(opt_alg) && 
+      throw(ArgumentError("`IntegrationProfiler` with `reoptimize=true` requires an optimization algorithm that supports constraints."))
+    SciMLBase.requiresgradient(opt_alg) && !hasgrad(optf) &&
+      throw(ArgumentError(OPTF_GRAD_ERROR))
+
+    SciMLBase.requireshessian(opt_alg) && !hashess(optf) &&
+      throw(ArgumentError(OPTF_HESS_ERROR))
+  end
+  return nothing
+end
+
+hasgrad(f::OptimizationFunction) = 
+  (hasfield(typeof(f), :grad)  && f.grad  !== nothing) ||
+  (hasfield(typeof(f), :adtype) && !(f.adtype isa SciMLBase.NoAD))
+
+hashess(f::OptimizationFunction) = 
+  (hasfield(typeof(f), :hess)  && f.hess  !== nothing) ||
+  (hasfield(typeof(f), :adtype) && !(f.adtype isa SciMLBase.NoAD))
+
