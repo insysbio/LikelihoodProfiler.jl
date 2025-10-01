@@ -168,7 +168,8 @@ end
 
 function init_msg(profiler_cache::ProfilerCache)
   dir = isleft(profiler_cache) ? :left : :right
-  @info "Computing $dir-side profile"
+  idx = get_profile_idx(profiler_cache)
+  @info "Computing $dir-branch of idx=$idx profile likelihood."
 end
 
 progress_msg(profiler_cache::ProfilerCache) = progress_msg(profiler_cache, get_profile_target(profiler_cache))

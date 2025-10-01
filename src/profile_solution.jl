@@ -46,11 +46,18 @@ solution_init(plprob::ProfileLikelihoodProblem, idx, dir::Int, θ0, x0, obj0, ob
     [θ0], [x0], [obj0], obj_level, (left=:NotStarted, right=:NotStarted), (left=nothing, right=nothing), (left=nothing, right=nothing))
 
 function profiler_init(sol::ProfileCurve, solver_cache::AbstractSolverCache, 
-  θ0, x0, obj0, profile_bound, maxiters::Int, verbose::Bool)
+  θ0, x0, obj0, profile_range, maxiters::Int, verbose::Bool)
   
+  dir = sol.dir
+  # Check if starting at boundary
+  if (dir == -1 && x0 == profile_range[1]) || (dir == 1 && x0 == profile_range[2])
+    retcode = :NonIdentifiable
+  else
+    retcode = :Default
+  end
   stats = solver_cache.stats
   return ProfilerCache{typeof(sol), typeof(θ0), typeof(solver_cache), typeof(x0), typeof(stats)}(
-    sol, solver_cache, similar(θ0), copy(θ0), x0, obj0, profile_bound, 1, maxiters, verbose, stats, :Default)
+    sol, solver_cache, similar(θ0), copy(θ0), x0, obj0, profile_range, 1, maxiters, verbose, stats, retcode)
 end
 
 isdense(pc::ProfileCurve) = pc.dense
@@ -195,6 +202,9 @@ end
 Base.getindex(A::ProfileLikelihoodSolution, i::Int) = A.profiles[i]
 Base.size(A::ProfileLikelihoodSolution) = size(A.profiles)
 Base.length(A::ProfileLikelihoodSolution) = length(A.profiles)
+
+endpoints(sol::ProfileLikelihoodSolution) = endpoints.(sol.profiles)
+retcodes(sol::ProfileLikelihoodSolution) = retcodes.(sol.profiles)
 
 function build_profile_solution(plprob::ProfileLikelihoodProblem,
                                 branches::AbstractVector,
