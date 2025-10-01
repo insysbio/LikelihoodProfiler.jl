@@ -99,7 +99,7 @@ function IntegrationProfiler(; reoptimize::Bool=false,
 
   # gamma sanity
   gamma_val = float(gamma)
-  gamma_val > 0 || throw(ArgumentError("Correction factor `gamma` must be strictly positive (got $gamma_val)."))
+  gamma_val >= 0 || throw(ArgumentError("Correction factor `gamma` must be non-negative (got $gamma_val)."))
 
   return IntegrationProfiler{typeof(optimizer), typeof(optimizer_opts),
                              typeof(integrator), typeof(integrator_opts)}(
