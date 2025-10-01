@@ -4,7 +4,7 @@ As an example of practical identifiability analysis, we use the **Cancer Taxol T
 
 ```julia
 using LikelihoodProfiler, Test
-using Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
+using Optimization, ForwardDiff, OrdinaryDiffEq
 
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_de.m
 function ode_func(du, u, p, t, drug)
@@ -138,17 +138,14 @@ Next, we construct the profile likelihood problem `ProfileLikelihoodProblem` and
 ```julia
 optf = OptimizationFunction(taxol_obj, Optimization.AutoForwardDiff())
 optprob = OptimizationProblem(optf, p0)
-profile_range = [
-  (2., 30.),
-  (2.0, 30.),
-  (0.01, 0.6),
-  (0.05, 5.),
-  (30., 250.)
-]
-plprob = ProfileLikelihoodProblem(optprob, p0, profile_range; threshold = sigmasq*chi2_quantile(0.95, 5))
+
+profile_lower = [2.0, 2.0, 0.01, 0.05, 30.]
+profile_upper = [30.0, 30.0, 0.6, 5.0, 250.0]
+
+plprob = ProfileLikelihoodProblem(optprob, p0; profile_lower, profile_upper, threshold = sigmasq*chi2_quantile(0.95, 5))
 
 profile_step(p0, i) = p0[i] * 0.1
-method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
+method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=profile_step))
 sol = solve(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```

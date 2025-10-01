@@ -29,19 +29,16 @@ function test_taxol(sol, i; kwargs...)
 end
 
 optf = OptimizationFunction(taxol_obj, Optimization.AutoForwardDiff())
-optprob = OptimizationProblem(optf, p0; lb =[2.,2.,0.01,0.05,30.], ub=[30.,30.,0.6,5.,250.])
-profile_range = [
-  (2., 30.),
-  (2.0, 30.),
-  (0.01, 0.6),
-  (0.05, 5.),
-  (30., 250.)
-]
-plprob = ProfileLikelihoodProblem(optprob, p0; profile_lower = first.(profile_range), profile_upper = last.(profile_range), threshold = sigmasq*chi2_quantile(0.95, 5))
+optprob = OptimizationProblem(optf, p0)
+
+profile_lower = [2.0, 2.0, 0.01, 0.05, 30.]
+profile_upper = [30.0, 30.0, 0.6, 5.0, 250.0]
+
+plprob = ProfileLikelihoodProblem(optprob, p0; profile_lower, profile_upper, threshold = sigmasq*chi2_quantile(0.95, 5))
 
 
-@testset "Taxol model. Fixed-step OptimizationProfiler with gradient-basedoptimizer" begin
-  
+@testset "Taxol model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
+
   idxs = 1:5
   profile_step(p0, i) = p0[i] * 0.05
   atol = [profile_step(p0, i)/2 for i in idxs]

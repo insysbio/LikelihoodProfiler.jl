@@ -14,6 +14,48 @@ In Julia terminal run the following command:
 import Pkg; Pkg.add("LikelihoodProfiler")
 ```
 
+## Breaking changes and new features
+
+**NOTE:** version 1.2.0 introduces profiling **functions of parameters** while keeping a single `ProfileLikelihoodProblem` interface. To make this possible (and more consistent with `Optimization.jl`), we made a few **breaking adjustments**.
+
+  • `idxs` moved from `solve(…; idxs=…)` to the problem constructor. You now select which parameters to profile when building the `ProfileLikelihoodProblem`.
+
+  • `profile_range` (positional) was argument replaced by `profile_lower / profile_upper` (keywords). This mirrors `Optimization.jl`’s style and avoids confusion with `optprob.lb/optprob.ub`.
+
+### Migrating your code
+
+1) Parameter profiling
+
+Before (≤ 1.1.x):
+```julia
+plprob = ProfileLikelihoodProblem(optprob, optpars, profile_range)  # e.g. [(-5,5), (-2,2), …]
+sol = solve(plprob, method; idxs=[1,3])
+```
+
+After (≥ 1.2.0):
+```julia
+# Pass indices and profile bounds at construction.
+plprob = ProfileLikelihoodProblem(optprob, optpars;
+                                  idxs=[1,3],
+                                  profile_lower=[-5.0, -1.0],
+                                  profile_upper=[ 2.0,  4.0])
+
+sol = solve(plprob, method)  # no `idxs` here anymore
+```
+  • If you omit `profile_lower/profile_upper`, and your `OptimizationProblem` has `lb/ub`, they will be used (sliced by `idxs`).
+
+1) Function profiling (new)
+```julia
+g1 = OptimizationFunction((θ,p)->θ[1] + θ[2])
+g2 = OptimizationFunction((θ,p)->θ[2] - θ[3])
+
+plprob = ProfileLikelihoodProblem(optprob, optpars, [g1,g2];
+                                  profile_lower=-2.0,    # scalars expand per target
+                                  profile_upper= 2.0)
+
+sol = solve(plprob, method)
+```
+
 ## Getting started with LikelihoodProfiler
 
 To define a profile likelihood problem `ProfileLikelihoodProblem` in LikelihoodProfiler, you should provide the objective function (usually negative log likelihood) and the optimal values of the parameters that correspond to the minimum of the objective function. LikelihoodProfiler relies on the `Optimization.jl` interface, and `ProfileLikelihoodProblem` is built on top of the `OptimizationProblem` defined in `Optimization.jl`. This can be best illustrated by an example.
@@ -37,7 +79,7 @@ sol = solve(optprob, Optimization.LBFGS())
 
 ### Profile likelihood problem interface
 
-To define the `ProfileLikelihoodProblem`, we need the `OptimizationProblem` and the optimal values of the parameters. We can also set the profiling domain with the `profile_range` argument and the `threshold`, which is the confidence level required to estimate confidence intervals. Please consult `?ProfileLikelihoodProblem` on the details of the interface.
+To define the `ProfileLikelihoodProblem`, we need the `OptimizationProblem` and the optimal values of the parameters. We can also set the profiling domain with the `profile_lower`, `profile_upper` arguments, indicies of parameters to profile with `idxs` and the `threshold`, which is the confidence level required to estimate confidence intervals. Please consult `?ProfileLikelihoodProblem` on the details of the interface.
 
 ```julia
 using LikelihoodProfiler, Plots
@@ -46,7 +88,7 @@ using LikelihoodProfiler, Plots
 optpars = sol.u
 
 # profile likelihood problem
-plprob = ProfileLikelihoodProblem(optprob, optpars, (-10.,10.); threshold = 4.0)
+plprob = ProfileLikelihoodProblem(optprob, optpars; profile_lower = -10., profile_upper=10., threshold = 4.0)
 ```
 
 ### Profile likelihood methods
@@ -55,7 +97,7 @@ LikelihoodProfiler provides a range of methods to profile likelihood functions a
 
 ```julia
 method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.15))
-sol = profile(plprob, method)
+sol = solve(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```
 ![Rosenbrock optimization-based profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/docs/assets/rosenbrock_optimization.png)
@@ -66,7 +108,7 @@ The same `solve` interface can be used with other profiling methods. For example
 using OrdinaryDiffEq
 
 method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.3,), matrix_type = :hessian)
-sol = profile(plprob, method)
+sol = solve(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```
 ![Rosenbrock integration-based profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/docs/assets/rosenbrock_integration.png)
@@ -77,7 +119,7 @@ Likelihood profiling is mostly performed to assess if the profile has intersecti
 using CICOBase
 
 method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
-sol = profile(plprob, method)
+sol = solve(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```
 ![Rosenbrock CICO profile](https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/docs/assets/rosenbrock_cico.png)

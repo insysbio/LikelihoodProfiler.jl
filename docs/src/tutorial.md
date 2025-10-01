@@ -21,7 +21,7 @@ sol = solve(optprob, Optimization.LBFGS())
 
 ### Profile likelihood problem interface
 
-To define the `ProfileLikelihoodProblem`, we need the `OptimizationProblem` and the optimal values of the parameters. We can also set the profiling domain with the `profile_range` argument and the `threshold`, which is the confidence level required to estimate confidence intervals. Please consult `?ProfileLikelihoodProblem` on the details of the interface.
+To define the `ProfileLikelihoodProblem`, we need the `OptimizationProblem` and the optimal values of the parameters. We can also set the profiling domain with the `profile_lower`, `profile_upper` arguments, indicies of parameters to profile with `idxs` and the `threshold`, which is the confidence level required to estimate confidence intervals. Please consult `?ProfileLikelihoodProblem` on the details of the interface.
 
 ```@example example-1
 using LikelihoodProfiler, Plots
@@ -30,7 +30,7 @@ using LikelihoodProfiler, Plots
 optpars = sol.u
 
 # profile likelihood problem
-plprob = ProfileLikelihoodProblem(optprob, optpars, (-10.,10.); threshold = 4.0)
+plprob = ProfileLikelihoodProblem(optprob, optpars; profile_lower = -10., profile_upper=10., threshold = 4.0)
 ```
 
 ### Profile likelihood methods
