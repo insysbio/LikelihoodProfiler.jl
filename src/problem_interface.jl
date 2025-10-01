@@ -120,9 +120,9 @@ Defines a profile likelihood problem.
 ## Mathematical Specification of a Profile Likelihood Problem:
 
 A problem is specified by:
-  • `optprob::OptimizationProblem` — wraps your objective (e.g. negative log-likelihood)
-  • `optpars::AbstractVector{<:Real}` — parameter values to start profiling from (typically the optimum)
-  • `target::AbstractProfileTarget` — what to profile (parameters or functions)
+  - `optprob::OptimizationProblem` — wraps your objective (e.g. negative log-likelihood)
+  - `optpars::AbstractVector{<:Real}` — parameter values to start profiling from (typically the optimum)
+  - `target::AbstractProfileTarget` — what to profile (parameters or functions)
 
 ### Constructors
 
@@ -141,20 +141,20 @@ ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<
 ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real};
   idxs = nothing, profile_lower = nothing, profile_upper = nothing, kwargs...)
 ```
-  • `idxs`: Indices of parameters to profile; Integer or vector of integers; if nothing, profile all parameters.
-  • `profile_lower`, `profile_upper`: Bounds for profiling. Accept scalars or vectors of finite numbers; if `nothing`, taken from `optprob`. 
+  - `idxs`: Indices of parameters to profile; Integer or vector of integers; if nothing, profile all parameters.
+  - `profile_lower`, `profile_upper`: Bounds for profiling. Accept scalars or vectors of finite numbers; if `nothing`, taken from `optprob`.
     If scalar bounds are provided, they will be expanded to match the number of parameters being profiled.
-  • `kwargs...`: passed to the explicit target constructor.
+  - `kwargs...`: passed to the explicit target constructor.
 
 3. Function profiling sugar
 ```julia
 ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real};
   fs = nothing, profile_lower = nothing, profile_upper = nothing, kwargs...)
 ```
-  • `fs`: `OptimizationFunction` or vector of `OptimizationFunction` - functions of parameters to be profiled.
-  • `profile_lower`, `profile_upper`: Bounds for profiling. Accept scalars or vectors of finite numbers. 
+`fs`: `OptimizationFunction` or vector of `OptimizationFunction` - functions of parameters to be profiled.
+  - `profile_lower`, `profile_upper`: Bounds for profiling. Accept scalars or vectors of finite numbers.
     If scalar bounds are provided, they will be expanded to match the number of functions being profiled.
-  • `kwargs...`: passed to the explicit target constructor.
+  - `kwargs...`: passed to the explicit target constructor.
 """
 struct ProfileLikelihoodProblem{T,probType,P} <: AbstractProfileLikelihoodProblem
   optprob::probType
