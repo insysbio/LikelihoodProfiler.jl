@@ -13,7 +13,7 @@ OptimizationProfiler
 
 ### Integration-based profiles
 
-The method computes profiles for each parameter by integrating the differential equations system. 
+The method computes profiles for each parameter (or function of parameters) by integrating the differential equations system. 
 
 ```@docs; canonical=false
 IntegrationProfiler

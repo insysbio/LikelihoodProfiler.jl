@@ -14,23 +14,23 @@
   return nothing
 end
 
-@recipe function f(pv::ProfileValues; steps=true, threshold=hasthreshold(pv.plprob), endpoints=false)
+@recipe function f(c::ProfileCurve; steps=true, threshold=hasthreshold(c.plprob), endpoints=false)
 
   @series begin
     color --> :blue
     linewidth --> 3
     endpoints ? (label --> "CI interval") : (label --> "profile")
-    (pv.x, pv.obj)
+    (c.x, c.obj)
   end
   if steps 
     @series begin
       seriestype --> :scatter
       endpoints ? (label --> "CI endpoints") : (label --> "profiler steps")
-      (pv.x, pv.obj)
+      (c.x, c.obj)
     end
   end 
   if threshold
-    obj_level = get_obj_level(pv)
+    obj_level = c.obj_level
     @series begin
       seriestype --> :hline
       label --> "threshold"

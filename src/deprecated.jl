@@ -1,5 +1,5 @@
-function profile(plprob::ProfileLikelihoodProblem{ParameterProfile}, method::AbstractProfilerMethod; 
-  idxs::AbstractVector{<:Int} = eachindex(get_optpars(plprob)),
+function profile(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod; 
+  idxs::AbstractVector{<:Int} = eachindex(plprob.optpars),
   parallel_type::Symbol=:none, kwargs...) 
   Base.depwarn("`profile` is deprecated. Please use `solve` instead.", :profile, force = true)
 

@@ -1,42 +1,43 @@
 module LikelihoodProfiler
 
-using CommonSolve: CommonSolve, init, solve!, solve
 using SciMLBase, PreallocationTools
+using SimpleUnPack: @unpack
 using Reexport
-@reexport import SciMLBase: OptimizationFunction, OptimizationProblem, remake
+@reexport import SciMLBase: OptimizationFunction, OptimizationProblem, remake, solve, solve!, init
 @reexport using DataFrames
-using LineSearch
 using LinearAlgebra, DataInterpolations
-using Distributions
+using Distributions: quantile, Chisq
 using OptimizationBase
 using RecipesBase
 using Distributed
 
-abstract type AbstractProfile end
+abstract type AbstractProfileLikelihoodProblem end
+abstract type AbstractProfileTarget end
 abstract type AbstractSolverCache end
+abstract type AbstractProfilerMethod end
+abstract type AbstractProfilerStep{S} end
 
-struct ParameterProfile <: AbstractProfile end
 #struct FunctionProfile <: AbstractProfile end
 #struct PredictionProfile <: AbstractProfile end
 
 include("problem_interface.jl")
-include("profile_solution.jl")
 include("profile_methods.jl")
-include("profiler_state.jl")
-include("profile.jl")
+include("caches.jl")
+include("solve.jl")
+include("profile_solution.jl")
 include("utils.jl")
 include("optprob_utils.jl")
 include("odeprob_utils.jl")
-include("endpoints.jl")
 include("profiler_step.jl")
 include("plotting.jl")
 include("deprecated.jl")
 
 export PLProblem, ProfileLikelihoodProblem, ProfileLikelihoodSolution
-export profile, solve
-export FixedStep, LineSearchStep, InterpolationLineSearch
+export ParameterTarget, FunctionTarget
+export profile #deprecated
+export FixedStep # LineSearchStep, InterpolationLineSearch
 export chi2_quantile
 export OptimizationProfiler, IntegrationProfiler, CICOProfiler
-export get_endpoints, get_stats, get_retcodes, get_obj_level
+export endpoints, stats, retcodes, obj_level
 
 end #module LikelihoodProfiler

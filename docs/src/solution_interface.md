@@ -8,12 +8,16 @@ LikelihoodProfiler.ProfileLikelihoodSolution
 
 ### Retcodes
 
-`sol::ProfileLikelihoodSolution` outputs the following retcodes, which are accessible with `get_retcodes(sol[i])` function:
+`sol::ProfileLikelihoodSolution` outputs the following retcodes, which are accessible with `retcodes(sol[i])` function:
 
 - `:Identifiable` - the profile has intersection with the predefined `threshold`.
 - `:NonIdentifiable` - the profile doesn't intersect the predefined `threshold`.
 - `:MaxIters` - maximum number of iterations reached while computing the profile. See `maxiters` argument to the [`solve`](@ref).
 - `:Failure` - the solver (optimizer or integrator) reported failure status, profiling was interrupted. 
+
+### Endpoints (confidence-interval estimates)
+
+`endpoints(sol[i])` returns the estimated crossing points of the profile with the chosen likelihood `threshold` for the i-th profile. 
 
 ### Visualization and tabular representation
 

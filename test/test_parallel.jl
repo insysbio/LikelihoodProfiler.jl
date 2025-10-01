@@ -13,7 +13,7 @@ x0 = [1., 1.]
 optf = OptimizationFunction(rosenbrock, AutoForwardDiff())
 optprob = OptimizationProblem(optf, x0)
 
-plprob = ProfileLikelihoodProblem(optprob, x0, (-5.,5.); threshold = 1.0)
+plprob = ProfileLikelihoodProblem(optprob, x0; profile_lower = -5., profile_upper = 5., threshold = 1.0)
 
 for method in [
   IntegrationProfiler(integrator = Tsit5()),
@@ -21,14 +21,14 @@ for method in [
   CICOProfiler(scan_tol = 1e-4)
 ]
   
-  idxs = vcat([1 for _ in 1:500], [2 for _ in 1:500])
-  @time sol_serial = solve(plprob, method, idxs=idxs)
-  @time sol_threads = solve(plprob, method, idxs=idxs, parallel_type=:threads)
-  @time sol_distributed = solve(plprob, method, idxs=idxs, parallel_type=:distributed)
 
-  
-  @test [sol_serial.profiles[i].endpoints for i in 1:length(sol_serial)] == [sol_threads.profiles[i].endpoints for i in 1:length(sol_threads)]
+  @time sol_serial = solve(plprob, method)
+  @time sol_threads = solve(plprob, method, parallel_type=:threads)
+  @time sol_distributed = solve(plprob, method, parallel_type=:distributed)
+
+  @test [endpoints(sol_serial[i]) for i in 1:length(sol_serial)] == [endpoints(sol_threads[i]) for i in 1:length(sol_threads)]
   @test [sol_serial.profiles[i].x for i in 1:length(sol_serial)] == [sol_threads.profiles[i].x for i in 1:length(sol_threads)]
-  @test [sol_serial.profiles[i].endpoints for i in 1:length(sol_serial)] == [sol_distributed.profiles[i].endpoints for i in 1:length(sol_distributed)]
   @test [sol_serial.profiles[i].x for i in 1:length(sol_serial)] == [sol_distributed.profiles[i].x for i in 1:length(sol_distributed)]
+  @test [endpoints(sol_serial[i]) for i in 1:length(sol_serial)] == [endpoints(sol_distributed[i]) for i in 1:length(sol_distributed)]
+
 end

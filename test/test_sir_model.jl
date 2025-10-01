@@ -7,8 +7,8 @@ const sir_retcodes = ((:Identifiable,:Identifiable), (:Identifiable,:Identifiabl
 const sir_ci = ((0.376, 0.428), (0.222, 0.277), (1.045e-5, 1.458e-5))
 
 function test_sir(sol, i; kwargs...)
-  ret = get_retcodes(sol[i])
-  ci = get_endpoints(sol[i])
+  ret = retcodes(sol[i])
+  ci = endpoints(sol[i])
   @test sir_retcodes[i][1] == ret[1] 
   @test sir_retcodes[i][2] == ret[2] 
   sir_retcodes[i][1] == :Identifiable && (@test isapprox(ci[1], sir_ci[i][1]; kwargs...))
@@ -20,7 +20,7 @@ optprob = OptimizationProblem(optf, p0)
 #sol = solve(optprob, NLopt.LN_NELDERMEAD())
 
 optpars = [0.3998583528283355, 0.24676816253516404, 1.2460180516141481e-5]
-plprob = ProfileLikelihoodProblem(optprob, optpars, (-20.,20.); threshold = chi2_quantile(0.95, 3)/2)
+plprob = ProfileLikelihoodProblem(optprob, optpars; profile_lower = -20, profile_upper = 20., threshold = chi2_quantile(0.95, 3)/2)
 
 
 @testset "SIR model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin

@@ -1,4 +1,11 @@
-abstract type AbstractProfilerMethod end
+
+
+################################ SELECTORS ################################
+
+get_optimizer(method::AbstractProfilerMethod) = nothing
+get_integrator(method::AbstractProfilerMethod) = nothing
+hasoptimizer(method::AbstractProfilerMethod) = !isnothing(get_optimizer(method))
+hasintegrator(method::AbstractProfilerMethod) = !isnothing(get_integrator(method))
 
 ############################## OptimizationProfiler ##############################
 
@@ -37,9 +44,9 @@ Base.@kwdef struct OptimizationProfiler{S, opType, optsType} <: AbstractProfiler
   optimizer_opts::optsType = NamedTuple()
 end
 
-get_stepper(op::OptimizationProfiler) = op.stepper
 get_optimizer(op::OptimizationProfiler) = op.optimizer
 get_optimizer_opts(op::OptimizationProfiler) = op.optimizer_opts
+get_stepper(op::OptimizationProfiler) = op.stepper
 
 ############################## IntegrationProfiler ##############################
 """
@@ -64,23 +71,48 @@ using OrdinaryDiffEq
 profiler = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.3,), matrix_type = :hessian)
 ```
 """
-Base.@kwdef struct IntegrationProfiler{opType, optsType, DEAlg, DEOpts} <: AbstractProfilerMethod
-  reoptimize::Bool = false
-  optimizer::opType = nothing
-  optimizer_opts::optsType = NamedTuple()
+struct IntegrationProfiler{opType, optsType, DEAlg, DEOpts} <: AbstractProfilerMethod
+  reoptimize::Bool
+  optimizer::opType
+  optimizer_opts::optsType
   integrator::DEAlg
-  integrator_opts::DEOpts = NamedTuple()
-  matrix_type::Symbol = :hessian
-  gamma::Float64 = 1.0
+  integrator_opts::DEOpts
+  matrix_type::Symbol
+  gamma::Float64
 end
 
+function IntegrationProfiler(; reoptimize::Bool=false,
+                               optimizer=nothing,
+                               optimizer_opts=NamedTuple(),
+                               integrator,                     # required
+                               integrator_opts=NamedTuple(),
+                               matrix_type::Symbol=:hessian,
+                               gamma::Real=1.0)
+
+  # matrix_type
+  (matrix_type === :identity || matrix_type === :fisher || matrix_type === :hessian) ||
+      throw(ArgumentError("`matrix_type` must be one of :identity, :fisher, :hessian (got $matrix_type)."))
+
+  # reoptimize requires an optimizer
+  reoptimize && optimizer === nothing &&
+      throw(ArgumentError("`reoptimize=true` requires an `optimizer` to be provided."))
+
+  # gamma sanity
+  gamma_val = float(gamma)
+  gamma_val >= 0 || throw(ArgumentError("Correction factor `gamma` must be non-negative (got $gamma_val)."))
+
+  return IntegrationProfiler{typeof(optimizer), typeof(optimizer_opts),
+                             typeof(integrator), typeof(integrator_opts)}(
+           reoptimize, optimizer, optimizer_opts, integrator, integrator_opts,
+           matrix_type, gamma_val)
+end
+
+get_optimizer(ip::IntegrationProfiler) = ip.optimizer
+get_optimizer_opts(ip::IntegrationProfiler) = ip.optimizer_opts
 get_integrator(ip::IntegrationProfiler) = ip.integrator
 get_integrator_opts(ip::IntegrationProfiler) = ip.integrator_opts
 get_matrix_type(ip::IntegrationProfiler) = ip.matrix_type
 get_gamma(ip::IntegrationProfiler) = ip.gamma
-get_optimizer(ip::IntegrationProfiler) = ip.optimizer
-get_optimizer_opts(ip::IntegrationProfiler) = ip.optimizer_opts
-
 ############################## CICOProfiler ##############################
 
 """
