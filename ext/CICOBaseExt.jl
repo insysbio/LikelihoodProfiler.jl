@@ -31,7 +31,7 @@ function LikelihoodProfiler.solve(plprob::ProfileLikelihoodProblem, method::CICO
     profile_bound = profile_lb
   end
 
-  verbose && @info "Computing $direction-side profile"
+  verbose && @info "Computing $direction-branch of idx=$idx profile likelihood."
 
   target = plprob.target
   if target isa FunctionTarget
