@@ -1,5 +1,14 @@
 # Change log
 
+# 1.2.0
+
+### Breaking changes
+- `idxs` moved to problem level
+- `profile_range` replaced with `profile_lower/profile_upper`
+### Other changes
+- target constructors added
+- functions profiling added
+
 ## 1.1.3
 
 - Zenodo release
