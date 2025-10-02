@@ -125,7 +125,7 @@ function SciMLBase.init(plprob::ProfileLikelihoodProblem, target::AbstractProfil
   τ  = plprob.threshold
   obj_level = _obj0 + τ
 
-  lb = get_profile_lb(target, idx); ub = get_profile_ub(target, idx)
+  lb = get_idx_profile_lb(target, idx); ub = get_idx_profile_ub(target, idx)
 
   T = float(promote_type(eltype(θ0), typeof(x0), typeof(_obj0), typeof(τ), typeof(lb), typeof(ub)))
   θ0_typed = T.(θ0)

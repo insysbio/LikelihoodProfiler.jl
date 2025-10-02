@@ -173,8 +173,9 @@ get_step(s::AbstractProfilerStep{S}, pars, i) where S <: Function = s.initial_st
 
 function propose_next_pars!(profiler_cache::ProfilerCache, s::FixedStep)
   @unpack pars_cur, x_cur, profile_range = profiler_cache
+  optpars = get_optpars(profiler_cache)
   idx = get_profile_idx(profiler_cache)
-  step_size = get_step(s, pars_cur, idx)
+  step_size = get_step(s, optpars, idx)
   dir = get_profile_dir(profiler_cache)
 
   profiler_cache.pars_cache .= pars_cur

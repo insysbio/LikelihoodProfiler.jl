@@ -1,5 +1,9 @@
 # Change log
 
+# 1.2.1
+
+- Fixing bug in profiling bounds idxs
+
 # 1.2.0
 
 ### Breaking changes

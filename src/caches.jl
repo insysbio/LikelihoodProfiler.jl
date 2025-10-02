@@ -117,6 +117,7 @@ mutable struct ProfilerCache{S, Θ, SC<:AbstractSolverCache, T, ST}
 end
 
 get_plprob(pc::ProfilerCache) = pc.sol.plprob
+get_optpars(pc::ProfilerCache) = pc.sol.plprob.optpars
 get_optprob(pc::ProfilerCache) = pc.sol.plprob.optprob
 get_profile_target(pc::ProfilerCache) = pc.sol.plprob.target
 get_profile_idx(pc::ProfilerCache) = pc.sol.idx
