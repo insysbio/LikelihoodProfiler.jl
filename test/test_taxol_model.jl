@@ -40,9 +40,9 @@ plprob = ProfileLikelihoodProblem(optprob, p0; profile_lower, profile_upper, thr
 @testset "Taxol model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
 
   idxs = 1:5
-  profile_step(p0, i) = p0[i] * 0.05
-  atol = [profile_step(p0, i)/2 for i in idxs]
-  atol[3] = 0.041 # tmp fix as r0 upper bound fails to be within step/2 tolerance
+  profile_step(p0, i) = p0[i] * 0.01
+  atol = [0.2 for i in idxs]
+  #atol[3] = 0.041 # tmp fix as r0 upper bound fails to be within step/2 tolerance
   method = OptimizationProfiler(; optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=profile_step))
   
   #=

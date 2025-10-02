@@ -144,7 +144,7 @@ profile_upper = [30.0, 30.0, 0.6, 5.0, 250.0]
 
 plprob = ProfileLikelihoodProblem(optprob, p0; profile_lower, profile_upper, threshold = sigmasq*chi2_quantile(0.95, 5))
 
-profile_step(p0, i) = p0[i] * 0.1
+profile_step(p0, i) = p0[i] * 0.01
 method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=profile_step))
 sol = solve(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
