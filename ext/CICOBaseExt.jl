@@ -15,8 +15,8 @@ function LikelihoodProfiler.solve(plprob::ProfileLikelihoodProblem, method::CICO
   obj0 = LikelihoodProfiler.evaluate_obj(plprob, optpars)
   obj_level = obj0 + threshold
 
-  profile_lb = LikelihoodProfiler.get_profile_lb(plprob.target, idx)
-  profile_ub = LikelihoodProfiler.get_profile_ub(plprob.target, idx)
+  profile_lb = LikelihoodProfiler.get_idx_profile_lb(plprob.target, idx)
+  profile_ub = LikelihoodProfiler.get_idx_profile_ub(plprob.target, idx)
 
   optprob_lb = isnothing(optprob.lb) ? -Inf : float(optprob.lb)
   optprob_ub = isnothing(optprob.ub) ? Inf : float(optprob.ub)

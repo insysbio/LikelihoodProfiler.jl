@@ -83,11 +83,22 @@ end
 
 get_profile_idxs(t::ParameterTarget) = t.idxs
 get_profile_idxs(t::FunctionTarget) = 1:length(t.fs)
+
 Base.length(t::AbstractProfileTarget) = length(get_profile_idxs(t))
 get_profile_lb(t::AbstractProfileTarget) = t.profile_lower
 get_profile_ub(t::AbstractProfileTarget) = t.profile_upper
-get_profile_lb(t::AbstractProfileTarget, idx) = t.profile_lower[idx]
-get_profile_ub(t::AbstractProfileTarget, idx) = t.profile_upper[idx]
+function get_idx_profile_lb(t::AbstractProfileTarget, idx) 
+  idxs = get_profile_idxs(t)
+  j = findfirst(==(idx), idxs)
+  j === nothing && throw(BoundsError("index $idx is not in the profiled set $idxs"))
+  @inbounds get_profile_lb(t)[j]
+end
+function get_idx_profile_ub(t::AbstractProfileTarget, idx) 
+  idxs = get_profile_idxs(t)
+  j = findfirst(==(idx), idxs)
+  j === nothing && throw(BoundsError("index $idx is not in the profiled set $idxs"))
+  @inbounds get_profile_ub(t)[j]
+end
 
 get_profile_fs(ft::FunctionTarget) = ft.fs
 
