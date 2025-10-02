@@ -72,7 +72,7 @@ datamean = [C005, C010, C040, C100]
 
 # solver algorithm and tolerances
 solver_opts = Dict(
-    :alg => AutoTsit5(Rosenbrock23()),
+    :alg => AutoTsit5(Rosenbrock23(autodiff=AutoFiniteDiff())),
     :reltol => 1e-6,
     :abstol => 1e-8
 )
@@ -102,6 +102,7 @@ function taxol_obj(
   times=times,
   solver_opts=solver_opts
 )
+
   loss = 0.
   for (i,d) in enumerate(dose)
      prob = ODEProblem((du,u,p,t)->ode_func(du,u,p,t,d), u0, tspan, x)
