@@ -30,11 +30,9 @@ include("optprob_utils.jl")
 include("odeprob_utils.jl")
 include("profiler_step.jl")
 include("plotting.jl")
-include("deprecated.jl")
 
-export PLProblem, ProfileLikelihoodProblem, ProfileLikelihoodSolution
+export ProfileLikelihoodProblem, ProfileLikelihoodSolution
 export ParameterTarget, FunctionTarget
-export profile #deprecated
 export FixedStep # LineSearchStep, InterpolationLineSearch
 export chi2_quantile
 export OptimizationProfiler, IntegrationProfiler, CICOProfiler
