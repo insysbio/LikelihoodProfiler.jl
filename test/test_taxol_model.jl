@@ -37,13 +37,13 @@ profile_upper = [30.0, 30.0, 0.6, 5.0, 250.0]
 plprob = ProfileLikelihoodProblem(optprob, p0; profile_lower, profile_upper, threshold = sigmasq*chi2_quantile(0.95, 5))
 
 
-@testset "Taxol model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
+@testset "Taxol model. Fixed-step OptimizationProfiler with gradient-free optimizer" begin
 
   idxs = 1:5
   profile_step(p0, i) = p0[i] * 0.05
   atol = [profile_step(p0, i)/2 for i in idxs]
   atol[3] = 0.041 # tmp fix as r0 upper bound fails to be within step/2 tolerance
-  method = OptimizationProfiler(optimizer = NLopt.LD_LBFGS(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
   
   #=
   method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), 
