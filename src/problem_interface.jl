@@ -131,10 +131,10 @@ A problem is specified by:
 ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, target::AbstractProfileTarget; 
   conf_level::Float64 = 0.95, df::Int = 1, threshold::Union{Nothing,Real} = nothing)
 ```
-  • `target`: `ParameterTarget` (see [`ParameterTarget`](@ref)) or `FunctionTarget` (see [`FunctionTarget`](@ref)) defining what to profile and the profile bounds.
-  • `conf_level`: Confidence level for the profile likelihood. Defaults to `0.95`.
-  • `df`: Degrees of freedom for the profile likelihood. Defaults to `1`.
-  • `threshold`: Profile likelihood threshold. If not provided, computed from `conf_level` and `df`. Can be set to `Inf` if confidence interval endpoint estimation is not required.
+  - `target`: `ParameterTarget` (see [`ParameterTarget`](@ref)) or `FunctionTarget` (see [`FunctionTarget`](@ref)) defining what to profile and the profile bounds.
+  - `conf_level`: Confidence level for the profile likelihood. Defaults to `0.95`.
+  - `df`: Degrees of freedom for the profile likelihood. Defaults to `1`.
+  - `threshold`: Profile likelihood threshold. If not provided, computed from `conf_level` and `df`. Can be set to `Inf` if confidence interval endpoint estimation is not required.
 
 2. Parameter profiling sugar
 ```julia
