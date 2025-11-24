@@ -111,7 +111,7 @@ Prediction confidence interval endpoints can be estimated at a larger set of tim
 All profiling methods benefit from the unified interface provided by `LikelihoodProfiler.jl`:
 - Integration with `SciML` packages gives users access to a wide range of optimizers, differential equation solvers, and AD backends, enabling efficient profiling configurations.
 - Compatibility with `Heta`, `PEtab` and `SBML` formats broadens the accessibility of the package across different modeling frameworks.
-- `solve()` interface provided by `CommonSolve.jl` provides unified access various profiling methods which can be used both for parameters and for functions identifiability analysis
+- `solve()` interface provided by `CommonSolve.jl` provides unified access various profiling methods which can be used both for parameters and for functions identifiability analysis.
 - A common parallelization setup, controlled via the `parallel_type` argument in the `solve()` function, is supported across all methods and can significantly accelerate computations.
 - The interface facilitates integration of new profiling methods and stepping algorithms.
 
