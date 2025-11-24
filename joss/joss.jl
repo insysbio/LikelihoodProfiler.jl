@@ -1,28 +1,24 @@
-using Optimization, LikelihoodProfiler, OrdinaryDiffEq, Plots, CICOBase
-using PEtab
+using Optimization, LikelihoodProfiler, OrdinaryDiffEq, Plots, PEtab
 
 model_name = "Boehm_JProteomeRes2014"
 path_yaml = joinpath(@__DIR__, "../models/", "$model_name/$model_name.yaml")
+
 petab_model = PEtabModel(path_yaml)
 petab_problem = PEtabODEProblem(petab_model)
 
 optprob = OptimizationProblem(petab_problem)
+param_profile_prob = ProfileLikelihoodProblem(optprob, get_x(petab_problem); idxs=1:3)
 
-init_pars = get_x(petab_problem)
-plprob = ProfileLikelihoodProblem(optprob, init_pars)
+alg = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.5, reltol=1e-3, abstol=1e-4),
+  matrix_type = :identity, gamma=0., reoptimize=true, 
+  optimizer = Optimization.LBFGS(),optimizer_opts=(maxiters=10000,))
 
-alg1 = OptimizationProfiler(; optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.07))
-alg2 = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.07,), matrix_type = :hessian)
-alg3 = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-10)
-
-sol1 = solve(plprob, alg1)
-sol2 = solve(plprob, alg2)
-sol3 = solve(plprob, alg3)
+sol_param = solve(param_profile_prob, alg, verbose=true)
 
 w, h = 1000, 300
 
 p11 = plot(sol1[1] , dpi=400, xguide="log10_Epo_degradation_BaF3", yguide="likelihood", legend=false)
-p12 = plot(sol1[2] , dpi=400, xguide="log10_k_exp_hetero", yguide="likelihood", legend=false, title="OptimizationProfiler")
+p12 = plot(sol1[2] , dpi=400, xguide="log10_k_exp_hetero", yguide="likelihood", legend=false, title="Parameter Profiles")
 p13 = plot(sol1[3] , dpi=400, xguide="log10_k_exp_homo", yguide="likelihood", legend=:outerright)
 
 p1 = plot(p11, p12, p13, layout=(1,3), size=(w,h), dpi=400)
