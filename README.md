@@ -14,48 +14,6 @@ In Julia terminal run the following command:
 import Pkg; Pkg.add("LikelihoodProfiler")
 ```
 
-## Breaking changes and new features
-
-**NOTE:** version 1.2.0 introduces profiling **functions of parameters** while keeping a single `ProfileLikelihoodProblem` interface. To make this possible (and more consistent with `Optimization.jl`), we made a few **breaking adjustments**.
-
-  • `idxs` moved from `solve(…; idxs=…)` to the problem constructor. You now select which parameters to profile when building the `ProfileLikelihoodProblem`.
-
-  • `profile_range` (positional) was argument replaced by `profile_lower / profile_upper` (keywords). This mirrors `Optimization.jl`’s style and avoids confusion with `optprob.lb/optprob.ub`.
-
-### Migrating your code
-
-1) Parameter profiling
-
-Before (≤ 1.1.x):
-```julia
-plprob = ProfileLikelihoodProblem(optprob, optpars, profile_range)  # e.g. [(-5,5), (-2,2), …]
-sol = solve(plprob, method; idxs=[1,3])
-```
-
-After (≥ 1.2.0):
-```julia
-# Pass indices and profile bounds at construction.
-plprob = ProfileLikelihoodProblem(optprob, optpars;
-                                  idxs=[1,3],
-                                  profile_lower=[-5.0, -1.0],
-                                  profile_upper=[ 2.0,  4.0])
-
-sol = solve(plprob, method)  # no `idxs` here anymore
-```
-  • If you omit `profile_lower/profile_upper`, and your `OptimizationProblem` has `lb/ub`, they will be used (sliced by `idxs`).
-
-1) Function profiling (new)
-```julia
-g1 = OptimizationFunction((θ,p)->θ[1] + θ[2])
-g2 = OptimizationFunction((θ,p)->θ[2] - θ[3])
-
-plprob = ProfileLikelihoodProblem(optprob, optpars, [g1,g2];
-                                  profile_lower=-2.0,    # scalars expand per target
-                                  profile_upper= 2.0)
-
-sol = solve(plprob, method)
-```
-
 ## Getting started with LikelihoodProfiler
 
 To define a profile likelihood problem `ProfileLikelihoodProblem` in LikelihoodProfiler, you should provide the objective function (usually negative log likelihood) and the optimal values of the parameters that correspond to the minimum of the objective function. LikelihoodProfiler relies on the `Optimization.jl` interface, and `ProfileLikelihoodProblem` is built on top of the `OptimizationProblem` defined in `Optimization.jl`. This can be best illustrated by an example.

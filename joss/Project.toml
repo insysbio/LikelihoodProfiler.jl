@@ -11,4 +11,4 @@ Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 
 [compat]
 Optimization = "4.1.1"
-LikelihoodProfiler = "1.1.1"
+LikelihoodProfiler = "1.2.1"
