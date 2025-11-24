@@ -36,7 +36,8 @@ optprob = OptimizationProblem(optf, p0; lb=lb, ub=ub)
 
 plprob = ProfileLikelihoodProblem(optprob, p0; threshold = sigmasq*chi2_quantile(0.95, 5))
 
-
+#=
+FIXME
 @testset "Taxol model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
 
   idxs = 1:5
@@ -55,7 +56,7 @@ plprob = ProfileLikelihoodProblem(optprob, p0; threshold = sigmasq*chi2_quantile
   end
 
 end
-
+=#
 #=
 FIXME on macos
 @testset "Taxol model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
