@@ -31,7 +31,7 @@ solver_opts = Dict(
 )
 
 function sir_obj(
-  parscur, p;
+  parscur, hyper_pars;
   ode_prob=ode_prob,
   solver_opts=solver_opts,
   times=times,

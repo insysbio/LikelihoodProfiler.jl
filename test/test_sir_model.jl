@@ -1,5 +1,5 @@
 using LikelihoodProfiler, Test
-using Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
+using OptimizationNLopt, OptimizationLBFGSB, ForwardDiff, OrdinaryDiffEq, CICOBase
 
 include(joinpath(@__DIR__, "../models/SIR/sir_model.jl"))
 
@@ -15,12 +15,12 @@ function test_sir(sol, i; kwargs...)
   sir_retcodes[i][2] == :Identifiable && (@test isapprox(ci[2], sir_ci[i][2]; kwargs...))
 end
 
-optf = OptimizationFunction(sir_obj, Optimization.AutoForwardDiff())
-optprob = OptimizationProblem(optf, p0)
+optf = OptimizationFunction(sir_obj, AutoForwardDiff())
+optprob = OptimizationProblem(optf, p0; lb=[1e-5, 1e-5, 1e-7], ub=[1e5, 1e5, 1e5])
 #sol = solve(optprob, NLopt.LN_NELDERMEAD())
 
 optpars = [0.3998583528283355, 0.24676816253516404, 1.2460180516141481e-5]
-plprob = ProfileLikelihoodProblem(optprob, optpars; profile_lower = -20, profile_upper = 20., threshold = chi2_quantile(0.95, 3)/2)
+plprob = ProfileLikelihoodProblem(optprob, optpars; threshold = chi2_quantile(0.95, 3)/2)
 
 
 @testset "SIR model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
@@ -36,29 +36,27 @@ plprob = ProfileLikelihoodProblem(optprob, optpars; profile_lower = -20, profile
 
 end
 
+#=TODO Fix
 
-# TODO fix ODE Solver and AutoDiff
-# Warning: At t=1.1711631575978938e-15, dt was forced below floating point epsilon 1.9721522630525295e-31, and step error estimate = 34.92360393939161. Aborting. 
-#=
 @testset "SIR model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
 
   idxs = 1:3
   profile_step(p0, i) = p0[i] * 0.05
   atol = [profile_step(optpars, i)/2 for i in idxs]
-  method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=profile_step))
   sol = solve(plprob, method)
   for i in idxs
     test_sir(sol, i; atol = atol[i])
   end
 
 end
-=#
+=# 
 
 @testset "SIR model. IntegrationProfiler with full hessian" begin
   
   idxs = 1:3
   rtol = 3e-3 # how to set it?
-  method = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), matrix_type = :hessian)
+  method = IntegrationProfiler(integrator = Rodas5P(autodiff = AutoFiniteDiff()), matrix_type = :hessian)
   sol = solve(plprob, method)
   for i in idxs
     test_sir(sol, i; rtol = rtol)
@@ -70,11 +68,11 @@ end
 @testset "SIR model. CICOProfiler" begin
   
   idxs = 1:3
-  atol=1e-3
-  method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
+  atol = 1e-3
+  method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-8)
   sol = solve(plprob, method)
   for i in idxs
-    test_sir(sol, i; atol)
+    test_sir(sol, i; atol = atol)
   end
   
 end

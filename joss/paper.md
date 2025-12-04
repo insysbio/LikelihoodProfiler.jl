@@ -56,10 +56,10 @@ petab_problem = PEtabODEProblem(petab_model)
 ```
 
 To study the identifiability of the JAK/STAT model parameters, we first construct a `ProfileLikelihoodProblem` and select an appropriate profiling method.
-A `ProfileLikelihoodProblem` is defined by providing (i) the objective function (typically the negative log-likelihood) and (ii) the initial parameter values corresponding to the optimum of this objective. `LikelihoodProfiler.jl` builds on the `Optimization.jl` interface [@vaibhav_kumar_dixit_2023_7738525], and  `ProfileLikelihoodProblem` wraps an `OptimizationProblem` defined in `Optimization.jl`. In addition, `ProfileLikelihoodProblem` allows users to specify optional arguments common across profiling methods, such as the indices of parameters to profile, upper and lower bounds, and other options.
+A `ProfileLikelihoodProblem` is defined by providing (i) the objective function (typically the negative log-likelihood) and (ii) the initial parameter values corresponding to the optimum of this objective. `LikelihoodProfiler.jl` builds on the `Optimization.jl` interface [@vaibhav_kumar_dixit_2023_7738525], and  `ProfileLikelihoodProblem` wraps an `OptimizationProblem`. In addition, `ProfileLikelihoodProblem` allows users to specify optional arguments common across profiling methods, such as the indices of parameters to profile, upper and lower bounds, and other options.
 
 ```julia
-using Optimization, OrdinaryDiffEq
+using OptimizationLBFGSB, OrdinaryDiffEq
 optprob = OptimizationProblem(petab_problem)
 param_profile_prob = ProfileLikelihoodProblem(optprob, get_x(petab_problem); idxs=1:3)
 ```
@@ -67,7 +67,7 @@ param_profile_prob = ProfileLikelihoodProblem(optprob, get_x(petab_problem); idx
 ```julia
 alg = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.5, reltol=1e-3, abstol=1e-4),
   matrix_type = :identity, gamma=0., reoptimize=true, 
-  optimizer = Optimization.LBFGS(),optimizer_opts=(maxiters=10000,))
+  optimizer = LBFGSB(),optimizer_opts=(maxiters=10000,))
 
 sol_param = solve(param_profile_prob, alg, verbose=true)
 ```

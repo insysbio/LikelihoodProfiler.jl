@@ -28,7 +28,7 @@ Profiles the likelihood function for the given problem `plprob` using the specif
 
 ```julia
 plprob = ProfileLikelihoodProblem(optprob, optpars; idxs=1, profile_lower=-10., profile_upper=10.)
-method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep())
+method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep())
 sol = solve(plprob, method)
 ```
 """

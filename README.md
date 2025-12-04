@@ -16,12 +16,12 @@ import Pkg; Pkg.add("LikelihoodProfiler")
 
 ## Getting started with LikelihoodProfiler
 
-To define a profile likelihood problem `ProfileLikelihoodProblem` in LikelihoodProfiler, you should provide the objective function (usually negative log likelihood) and the optimal values of the parameters that correspond to the minimum of the objective function. LikelihoodProfiler relies on the `Optimization.jl` interface, and `ProfileLikelihoodProblem` is built on top of the `OptimizationProblem` defined in `Optimization.jl`. This can be best illustrated by an example.
+To define a profile likelihood problem `ProfileLikelihoodProblem` in LikelihoodProfiler, you should provide the objective function (usually negative log likelihood) and the optimal values of the parameters that correspond to the minimum of the objective function. LikelihoodProfiler relies on the `Optimization.jl` interface, and `ProfileLikelihoodProblem` is built on top of the `OptimizationProblem`. This can be best illustrated by an example.
 
 First we define the `OptimizationProblem` and solve it with the preferred optimizer to obtain the optimal values of the parameters. 
 
 ```julia
-using Optimization, ForwardDiff
+using OptimizationLBFGSB, ForwardDiff
 
 # objective function
 rosenbrock(x,p) = (1.0 - x[1])^2 + 100.0*(x[2] - x[1]^2)^2
@@ -32,7 +32,7 @@ x0 = zeros(2)
 # solving optimization problem
 optf = OptimizationFunction(rosenbrock, AutoForwardDiff())
 optprob = OptimizationProblem(optf, x0)
-sol = solve(optprob, Optimization.LBFGS())
+sol = solve(optprob, LBFGSB())
 ```
 
 ### Profile likelihood problem interface
@@ -54,7 +54,7 @@ plprob = ProfileLikelihoodProblem(optprob, optpars; profile_lower = -10., profil
 LikelihoodProfiler provides a range of methods to profile likelihood functions and explore practical identifiability. The most common and simple "profiler" is the `OptimizationProfiler` method. It is based on stepwise re-optimization of the likelihood function with the constraint on the parameter (or function) of interest. We define the method and run the `solve` procedure. Please consult `?solve` on the details of the interface.
 
 ```julia
-method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.15))
+method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=0.15))
 sol = solve(plprob, method)
 plot(sol, size=(800,300), margins=5Plots.mm)
 ```

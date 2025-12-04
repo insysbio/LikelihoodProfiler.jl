@@ -1,6 +1,5 @@
 using Test
 using LikelihoodProfiler
-using Optimization
 
 # ----------------------------
 # ParameterTarget constructors

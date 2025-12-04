@@ -1,5 +1,5 @@
 using LikelihoodProfiler, Test
-using Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq
+using OptimizationLBFGSB, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq
 
 include(joinpath(@__DIR__, "../models/JakStat/jak-stat_model.jl"))
 
@@ -37,7 +37,7 @@ function test_jakstat(sol, i; kwargs...)
 end
 
 optpars = log10.(p_best)
-optf = OptimizationFunction(jakstat_obj, Optimization.AutoForwardDiff())
+optf = OptimizationFunction(jakstat_obj, AutoForwardDiff())
 optprob = OptimizationProblem(optf, optpars)
 profile_range = [
   (-3.,3.),
@@ -74,7 +74,7 @@ end
   idxs = 1:9
   profile_step(p0, i) = abs(p0[i]) * 0.05
   atol = [profile_step(optpars, i)/2 for i in idxs]
-  method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=profile_step))
   sol = solve(plprob, method)
   for i in idxs
     test_jakstat(sol, i; atol = atol[i])
@@ -104,7 +104,7 @@ end
     matrix_type = :identity,
     gamma=1000.0)
     # reoptimize=true,
-    # optimizer = Optimization.LBFGS())
+    # optimizer = LBFGSB())
   sol = solve(plprob, method)
   for i in idxs
     test_jakstat(sol, i; rtol = rtol)

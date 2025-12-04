@@ -1,4 +1,4 @@
-using Optimization, LikelihoodProfiler, OrdinaryDiffEq, Plots, PEtab, CICOBase
+using OptimizationLBFGSB, LikelihoodProfiler, OrdinaryDiffEqTsit5, Plots, PEtab, CICOBase
 
 model_name = "Boehm_JProteomeRes2014"
 path_yaml = joinpath(@__DIR__, "../models/", "$model_name/$model_name.yaml")
@@ -11,7 +11,7 @@ param_profile_prob = ProfileLikelihoodProblem(optprob, get_x(petab_problem); idx
 
 alg = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.5, reltol=1e-3, abstol=1e-4),
   matrix_type = :identity, gamma=0., reoptimize=true, 
-  optimizer = Optimization.LBFGS(),optimizer_opts=(maxiters=10000,))
+  optimizer = LBFGSB(),optimizer_opts=(maxiters=10000,))
 
 sol_param = solve(param_profile_prob, alg, verbose=true)
 

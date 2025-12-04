@@ -1,5 +1,5 @@
 using LikelihoodProfiler, Test
-using Optimization, OptimizationNLopt, Plots, OrdinaryDiffEq, ForwardDiff, CICOBase
+using OptimizationLBFGSB, OptimizationNLopt, Plots, OrdinaryDiffEq, ForwardDiff, CICOBase
 
 ######################################### ProfileLikelihoodProblem ##########################################
 
@@ -34,7 +34,7 @@ plprob = ProfileLikelihoodProblem(optprob, [1.,1.], (-20,20); threshold=4.0)
 
 #################################### OptimizationProfiler ####################################
 
-method1 = OptimizationProfiler(optimizer=Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.01))
+method1 = OptimizationProfiler(optimizer=LBFGSB(), stepper = FixedStep(; initial_step=0.01))
 sol1 = solve(plprob, method1; verbose=true)
 
 #################################### IntegrationProfiler ####################################

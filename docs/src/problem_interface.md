@@ -22,7 +22,7 @@ ParameterTarget
 ##### Explicit construction example
 
 ```@example ex-1
-using LikelihoodProfiler, Optimization
+using LikelihoodProfiler
 
 f = OptimizationFunction((θ,p)->sum(abs2, θ))
 optprob = OptimizationProblem(f, [1.0, 2.0, 3.0])
@@ -47,7 +47,7 @@ FunctionTarget
 ##### Explicit construction example
 
 ```@example ex-2
-using LikelihoodProfiler, Optimization
+using LikelihoodProfiler
 
 f = OptimizationFunction((θ,p)->sum(abs2, θ))
 optprob = OptimizationProblem(f, [1.0, 2.0, 3.0])

@@ -1,6 +1,6 @@
 # The model is described in the paper "Division of labor by dual feedback regulators controls JAK2/STAT5 signaling over broad ligand range." 10.1038/msb.2011.50
 
-using PEtab, LikelihoodProfiler, ForwardDiff, Optimization, OptimizationNLopt, OrdinaryDiffEq, Sundials
+using PEtab, LikelihoodProfiler, ForwardDiff, OptimizationNLopt, OrdinaryDiffEq, Sundials
 
 # Load the model
 model_name = "Bachmann_MSB2011"
