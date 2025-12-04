@@ -56,20 +56,22 @@ petab_problem = PEtabODEProblem(petab_model)
 ```
 
 To study the identifiability of the JAK/STAT model parameters, we first construct a `ProfileLikelihoodProblem` and select an appropriate profiling method.
-A `ProfileLikelihoodProblem` is defined by providing (i) the objective function (typically the negative log-likelihood) and (ii) the initial parameter values corresponding to the optimum of this objective. `LikelihoodProfiler.jl` builds on the `Optimization.jl` interface [@vaibhav_kumar_dixit_2023_7738525], and  `ProfileLikelihoodProblem` wraps an `OptimizationProblem`. In addition, `ProfileLikelihoodProblem` allows users to specify optional arguments common across profiling methods, such as the indices of parameters to profile, upper and lower bounds, and other options.
+A `ProfileLikelihoodProblem` is defined by providing (i) the objective function (typically the negative log-likelihood) and (ii) the initial parameter values corresponding to the optimum of this objective. `LikelihoodProfiler.jl` builds on the `Optimization.jl` interface [@Dixit2023], and  `ProfileLikelihoodProblem` wraps an `OptimizationProblem`. In addition, `ProfileLikelihoodProblem` allows users to specify optional arguments common across profiling methods, such as the indices of parameters to profile, upper and lower bounds, and other options.
 
 ```julia
 using OptimizationLBFGSB, OrdinaryDiffEq
 optprob = OptimizationProblem(petab_problem)
-param_profile_prob = ProfileLikelihoodProblem(optprob, get_x(petab_problem); idxs=1:3)
+optpars = Vector(get_x(petab_problem))
+param_profile_prob = ProfileLikelihoodProblem(optprob, optpars; idxs=1:3)
 ```
 `LikelihoodProfiler.jl` offers a suite of methods for solving the `ProfileLikelihoodProblem`. In this example, we use the Hessian-free variant of the `IntegrationProfiler` [@Chen2002], which approximates the likelihood profile and performs re-optimization after each ODE solver step to prevent divergence from the true profile trajectory. Each profiling method offers several configurable options.
 ```julia
-alg = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.5, reltol=1e-3, abstol=1e-4),
+alg_integ = IntegrationProfiler(integrator = Tsit5(), 
+  integrator_opts = (dtmax=0.5, reltol=1e-3, abstol=1e-4),
   matrix_type = :identity, gamma=0., reoptimize=true, 
   optimizer = LBFGSB(),optimizer_opts=(maxiters=10000,))
 
-sol_param = solve(param_profile_prob, alg, verbose=true)
+sol_param = solve(param_profile_prob, alg_integ, verbose=true)
 ```
 
 
@@ -90,15 +92,19 @@ The same algorithms can also be applied to arbitrary functions of parameters. Th
 function pSTAT5A_rel_obs(x, p, t)
   sol = get_odesol(x, petab_problem)(t)
   specC17 = 0.107
-  return (100 * sol[7] + 200 * sol[6] * specC17) / (sol[7] + sol[1] * specC17 + 2 * sol[6] * specC17)
+  pSTAT5A_rel = (100 * sol[7] + 200 * sol[6] * specC17) / 
+    (sol[7] + sol[1] * specC17 + 2 * sol[6] * specC17)
+  return pSTAT5A_rel
 end
-pSTAT5A_rel_optf(t) = OptimizationFunction((x, p) -> pSTAT5A_rel_obs(x, p, t), AutoFiniteDiff())
+pSTAT5A_rel_optf(t) = OptimizationFunction(
+  (x,p) -> pSTAT5A_rel_obs(x,p,t), AutoFiniteDiff())
 
 times = [2.5, 60.0, 200.0]
-func_profile_prob = ProfileLikelihoodProblem(optprob, get_x(petab_problem), [pSTAT5A_rel_optf(t) for t in times];
-  profile_lower=0.0, profile_upper=120.0)
+func_profile_prob = ProfileLikelihoodProblem(optprob, optpars,
+ [pSTAT5A_rel_optf(t) for t in times];
+ profile_lower=0.0, profile_upper=120.0)
 
-sol_func = solve(func_profile_prob, alg)
+sol_func = solve(func_profile_prob, alg_integ)
 ```
 ![Function profiles](func_profiles.png)
 

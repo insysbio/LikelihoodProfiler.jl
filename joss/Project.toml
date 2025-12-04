@@ -1,11 +1,9 @@
 [deps]
 CICOBase = "33444335-3134-4342-4659-594331344435"
-ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LikelihoodProfiler = "93acb638-a083-5915-8dce-d129bc6a3f59"
 OptimizationLBFGSB = "22f7324a-a79d-40f2-bebe-3af60c77bd15"
 OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 PEtab = "48d54b35-e43e-4a66-a5a1-dde6b987cf69"
-PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 
 [compat]
-LikelihoodProfiler = "1.2.1"
+LikelihoodProfiler = "1.2.2"
