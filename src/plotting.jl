@@ -7,7 +7,7 @@
     @series begin
       subplot := i
       xguide --> "x[$(i)]"
-      yguide --> "likelihood L(x)"
+      yguide --> "loss function"
       sol[i]
     end
   end
