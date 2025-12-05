@@ -7,7 +7,7 @@
     @series begin
       subplot := i
       xguide --> "x[$(i)]"
-      yguide --> "loss function"
+      yguide --> "objective function"
       sol[i]
     end
   end
