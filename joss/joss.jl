@@ -47,7 +47,20 @@ function pSTAT5A_rel_obs(x, p, t)
   specC17 = 0.107
   return (100 * sol[7] + 200 * sol[6] * specC17) / (sol[7] + sol[1] * specC17 + 2 * sol[6] * specC17)
 end
-pSTAT5A_rel_optf(t) = OptimizationFunction((x, p) -> pSTAT5A_rel_obs(x, p, t), AutoFiniteDiff())
+
+odeprob = get_odeproblem(optpars,petab_problem)[1]
+function pSTAT5A_rel_obs2(x, p, t)
+  ps = get_ps(x, petab_problem; retmap=false)
+  u0 = get_u0(x, petab_problem; retmap=false)
+  sol = solve(remake(odeprob; p=ps, u0=u0), PEtab.Rodas5P(), reltol=1e-8, abstol=1e-8)(t)
+  specC17 = 0.107
+  return (100 * sol[7] + 200 * sol[6] * specC17) / (sol[7] + sol[1] * specC17 + 2 * sol[6] * specC17)
+end
+
+pSTAT5A_rel_obs2(optpars, [], 60.0)
+pSTAT5A_rel_obs(optpars, [], 60.0)
+
+pSTAT5A_rel_optf(t) = OptimizationFunction((x, p) -> pSTAT5A_rel_obs2(x, p, t), AutoForwardDiff())
 
 times1 = [2.5, 60.0, 200.0]
 func_profile_prob = ProfileLikelihoodProblem(optprob, optpars, [pSTAT5A_rel_optf(t) for t in times1];
@@ -87,3 +100,5 @@ p4 = plot(x, y, ribbon = (y .- ep_lower, ep_upper .- y), xguide="time", lw=2.5, 
 scatter!(p4, [0; times2], pSTAT5A_rel_data, label="experimental data")
 
 savefig(p4, joinpath(@__DIR__, "pred_profile.png"))
+
+

@@ -1,4 +1,4 @@
-## Overview
+# LikelihoodProfiler.jl: Unified Interface to Profile Likelihood Methods
 
 `LikelihoodProfiler.jl` is a [Julia](https://julialang.org/downloads/) package for practical identifiability analysis and confidence intervals estimation using the profile likelihood approach. The package provides a unified interface for various profile likelihood methods, including optimization-based **OptimizationProfiler** and integration-based profiles **IntegrationProfiler**, CI endpoints search **CICOProfiler**, and more.
 
@@ -30,6 +30,14 @@ In Julia terminal run the following command:
 ```julia
 import Pkg; Pkg.add("LikelihoodProfiler")
 ```
+
+## Related packages
+
+Other implementations of the profile likelihood approach in Julia include:
+- [ProfileLikelihood.jl](https://github.com/DanielVandH/ProfileLikelihood.jl) implements fixed-step optimization-based profiles and supports bivariate profile likelihoods.
+- [InformationalGeometry.jl](https://github.com/RafaelArutjunjan/InformationGeometry.jl) implements various methods to study likelihood functions (including profile likelihood) using the tools of differential geometry.
+
+There are also well-known profile likelihood implementations in other languages, namely: [Data2Dynamics](https://github.com/Data2Dynamics/d2d), [dMod](https://github.com/dkaschek/dMod/), [pyPESTO](https://github.com/ICB-DCM/pyPESTO), [sbioparametersci](https://www.mathworks.com/help/simbio/ref/sbioparameterci.html)
 
 ## Citation
 

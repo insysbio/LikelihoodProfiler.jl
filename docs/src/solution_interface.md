@@ -1,4 +1,4 @@
-## Solution interface
+## [Solution Interface](@id solution_interface)
 
 `ProfileLikelihoodSolution` type is designed to contain the results of a profile likelihood analysis.
 

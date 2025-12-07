@@ -5,9 +5,9 @@ makedocs(
     modules = [LikelihoodProfiler],
     sitename = "LikelihoodProfiler.jl",
     pages = [
-        "Home" => "index.md",
-        "Tutorial" => "tutorial.md",
-        "Extended Tutorials" => [
+        "LikelihoodProfiler.jl: Unified Interface to Profile Likelihood Methods" => "index.md",
+        "Getting Started" => "rosenbrock.md",
+        "Tutorials" => [
             "Taxol model" => "case_studies/taxol.md"
         ],
         "Basics" => [
