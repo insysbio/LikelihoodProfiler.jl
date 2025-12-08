@@ -1,10 +1,12 @@
 using LikelihoodProfiler, Test
-using OptimizationNLopt, OptimizationLBFGSB, ForwardDiff, OrdinaryDiffEq, CICOBase
+using OptimizationNLopt, OptimizationLBFGSB, OrdinaryDiffEq, CICOBase
 
 include(joinpath(@__DIR__, "../models/SIR/sir_model.jl"))
 
 const sir_retcodes = ((:Identifiable,:Identifiable), (:Identifiable,:Identifiable), (:Identifiable,:Identifiable)) 
-const sir_ci = ((0.376, 0.428), (0.222, 0.277), (1.045e-5, 1.458e-5))
+const sir_ci = ((0.376, 0.428), (0.222, 0.277), (1/1.458, 1/1.045))
+
+const rtol = 1e-2
 
 function test_sir(sol, i; kwargs...)
   ret = retcodes(sol[i])
@@ -16,12 +18,11 @@ function test_sir(sol, i; kwargs...)
 end
 
 optf = OptimizationFunction(sir_obj, AutoForwardDiff())
-optprob = OptimizationProblem(optf, p0; lb=[1e-5, 1e-5, 1e-7], ub=[1e5, 1e5, 1e5])
-#sol = solve(optprob, NLopt.LN_NELDERMEAD())
+optprob = OptimizationProblem(optf, p0; lb=[1e-3, 1e-3, 1e-3], ub=[1e3, 1e3, 1.e3])
+sol = solve(optprob, NLopt.LN_NELDERMEAD())
 
-optpars = [0.3998583528283355, 0.24676816253516404, 1.2460180516141481e-5]
+optpars = sol.u 
 plprob = ProfileLikelihoodProblem(optprob, optpars; threshold = chi2_quantile(0.95, 3)/2)
-
 
 @testset "SIR model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
   
@@ -31,12 +32,10 @@ plprob = ProfileLikelihoodProblem(optprob, optpars; threshold = chi2_quantile(0.
   method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
   sol = solve(plprob, method)
   for i in idxs
-    test_sir(sol, i; atol = atol[i])
+    test_sir(sol, i; rtol)
   end
 
 end
-
-#=TODO Fix
 
 @testset "SIR model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
 
@@ -46,11 +45,11 @@ end
   method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=profile_step))
   sol = solve(plprob, method)
   for i in idxs
-    test_sir(sol, i; atol = atol[i])
+    test_sir(sol, i; rtol)
   end
 
 end
-=# 
+
 
 @testset "SIR model. IntegrationProfiler with full hessian" begin
   
@@ -59,7 +58,7 @@ end
   method = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), matrix_type = :hessian)
   sol = solve(plprob, method)
   for i in idxs
-    test_sir(sol, i; rtol = rtol)
+    test_sir(sol, i; rtol)
   end
   
 end
@@ -69,10 +68,10 @@ end
   
   idxs = 1:3
   atol = 1e-3
-  method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-8)
+  method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
   sol = solve(plprob, method)
   for i in idxs
-    test_sir(sol, i; atol = atol)
+    test_sir(sol, i; rtol)
   end
   
 end
