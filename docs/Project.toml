@@ -1,6 +1,7 @@
 [deps]
 CICOBase = "33444335-3134-4342-4659-594331344435"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 OptimizationLBFGSB = "22f7324a-a79d-40f2-bebe-3af60c77bd15"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
