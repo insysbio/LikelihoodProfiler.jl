@@ -3,7 +3,7 @@
 As an example of practical identifiability analysis, we use the **Cancer Taxol Treatment Model**. It is an ODE model with 3 state variables and 5 parameters. The identifiability of this model was studied in [Marisa C.Eisenberg, Harsh V.Jain. A confidence building exercise in data and identifiability](https://www.sciencedirect.com/science/article/pii/S0022519317303454). We have translated [author's MATLAB code](https://github.com/marisae/cancer-chemo-identifiability) into Julia. The model is defined by the following system of differential equations:
 
 ```@example taxol-1
-using LikelihoodProfiler, OptimizationLBFGSB, OrdinaryDiffEq, Distributions
+using LikelihoodProfiler, OptimizationLBFGSB, OrdinaryDiffEq, Distributions, Plots
 
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_de.m
 function ode_func(du, u, p, t, drug)
