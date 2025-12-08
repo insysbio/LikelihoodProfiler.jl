@@ -141,7 +141,7 @@ optprob = OptimizationProblem(optf, p0; lb=lb, ub=ub)
 plprob = ProfileLikelihoodProblem(optprob, p0; threshold)
 ```
 
-Here we select one of the profiling methods: `OptimizationProfiler` with the `FixedStep` stepping algorithm (see [Profile Likelihood Methods](@ref profile-likelihood-methods) for details). For each profiled parameter, this algorithm takes fixed-size steps to the left and right of the optimal parameter value and reoptimizes all remaining parameters using the chosen `optimizer` to obtain the next point on the profile curve.`FixedStep` uses the same step size (`initial_step`) for all steps of a given parameter, but allows different parameters to have different step sizes. In this example, we set the initial step to 10% of the parameter’s optimal value, providing a reasonable scale for exploring the likelihood curve.
+Here we select one of the profiling methods: `OptimizationProfiler` with the `FixedStep` stepping algorithm (see [Profile Likelihood Methods](@ref profile_likelihood_methods) for details). For each profiled parameter, this algorithm takes fixed-size steps to the left and right of the optimal parameter value and reoptimizes all remaining parameters using the chosen `optimizer` to obtain the next point on the profile curve.`FixedStep` uses the same step size (`initial_step`) for all steps of a given parameter, but allows different parameters to have different step sizes. In this example, we set the initial step to 10% of the parameter’s optimal value, providing a reasonable scale for exploring the likelihood curve.
 ```@example taxol-1
 profile_step(p0, i) = p0[i] * 0.1
 method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=profile_step))
