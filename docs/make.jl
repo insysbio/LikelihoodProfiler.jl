@@ -8,7 +8,8 @@ makedocs(
         "LikelihoodProfiler.jl: Unified Interface to Profile Likelihood Methods" => "index.md",
         "Getting Started" => "rosenbrock.md",
         "Tutorials" => [
-            "Taxol model" => "case_studies/taxol.md"
+            "Taxol model" => "case_studies/taxol.md",
+            "Mean of a Gaussian Distribution" => "case_studies/gaussian.md",
         ],
         "Basics" => [
             "Problem interface" => "problem_interface.md",
