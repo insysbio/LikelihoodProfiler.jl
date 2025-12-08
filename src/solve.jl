@@ -38,7 +38,7 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
   check_prob_alg(plprob, method)
 
   if reoptimize_init
-    !has_optimizer(method) && 
+    !hasoptimizer(method) && 
       throw(ArgumentError("`method` must have a valid `optimizer` provided when `reoptimize_init=true`."))
 
     # start from user 'optpars'
