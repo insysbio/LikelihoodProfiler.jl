@@ -72,7 +72,7 @@ plot(sol2, size=(800,300), margins=5Plots.mm)
 #### CICOProfiler
 
 Often, the primary goal of likelihood profiling is to determine whether the profile intersects the confidence threshold—i.e., whether the parameter has a finite confidence interval.
-[`CICOProfiler`]((@ref cico_profiles)) focuses on this directly: it estimates the confidence interval endpoints without reconstructing the full profile curve.
+[`CICOProfiler`](@ref cico_profiles) focuses on this directly: it estimates the confidence interval endpoints without reconstructing the full profile curve.
 
 ```@example rosenbrock-1
 meth_cico = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
@@ -81,7 +81,7 @@ plot(sol3, size=(800,300), margins=5Plots.mm)
 ```
 
 ### Profile Likelihood Solution
-A `ProfileLikelihoodSolution` stores more than just the profile curves (see [Solution Interface](@id solution_interface)). It also contains the estimated confidence-interval endpoints and identification retcodes, which indicate whether each parameter (or function of parameters) is practically identifiable.
+A `ProfileLikelihoodSolution` stores more than just the profile curves (see [Solution Interface](@ref solution_interface)). It also contains the estimated confidence-interval endpoints and identification retcodes, which indicate whether each parameter (or function of parameters) is practically identifiable.
 These values can be accessed directly:
 
 ```@example rosenbrock-1
