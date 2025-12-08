@@ -43,7 +43,7 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
 
     # start from user 'optpars'
     optprob0 = remake(plprob.optprob; u0 = plprob.optpars)
-    s = solve(optprob0, _optimizer(method); _optimizer_opts(method)...)
+    s = solve(optprob0, get_optimizer(method); get_optimizer_opts(method)...)
     if !SciMLBase.successful_retcode(s)
       @warn "Re-optimization at initial parameter values returned $(s.retcode). Proceeding with the provided initial parameters."
       _plprob = plprob
