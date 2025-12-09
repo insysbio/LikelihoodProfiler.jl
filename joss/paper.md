@@ -27,46 +27,41 @@ bibliography: paper.bib
 
 ## Summary
 
-Practical identifiability addresses how well a mechanistic model is determined by available experimental data. Profile likelihood-based methods are widely used to explore practical identifiability and often serve as a proxy for structural identifiability analysis [@Heinrich2025]. Moreover, these methods can also be generalized to states and predictions analysis. This versatility makes profile likelihood an essential component in model development.
+Mathematical models — mechanistic, statistical, or otherwise — contain unknown parameters that must be estimated from data to enable reliable predictions. Profile likelihood is a widely used approach for studying the *practical identifiability* of such models, that is, assessing how well parameters are determined by available observations [@Heinrich2025]. The method recovers the local shape of the objective function around the optimum and provides confidence intervals that quantify uncertainty in parameter estimates. Moreover, profile likelihood techniques can be generalized to analyze derived quantities such as model states and predictions. This versatility makes profile likelihood an essential component in model development and uncertainty assessment.
 
-The paper presents `LikelihoodProfiler.jl`, an open-source Julia package for conducting profile likelihood-based identifiability and predictability analysis.
+`LikelihoodProfiler.jl` is an open-source Julia package that implements several profile likelihood methods through a unified interface, enabling parameters and prediction uncertainty analysis across general maximum-likelihood estimation problems.
 
 ## Statement of Need
 
-Current profile likelihood implementations are often tied to specific modeling frameworks or software environments. In addition, different profile likelihood algorithms are spread across separate tools, forcing users to switch between languages and interfaces.
-`LikelihoodProfiler.jl` addresses these limitations by providing:
-- Unified interface to multiple profile likelihood algorithms.
-- Compatibility with common modeling standards (Heta [@Metelkin2021], SBML, PEtab [@Persson2025]).
-- Integration with Julia’s SciML [@Rackauckas2017] for efficient computation and extensibility.
+Researchers across many scientific domains need tools to quantify how well model parameters and predictions are constrained by data. Profile likelihood methods provide an intuitive and interpretable approach to parameter and prediction uncertainty, but existing software implementations - such as `sbioparameterci (MATLAB)`, `dMod (R)`, and `pyPESTO (Python)` - are often tied to specific modeling ecosystems or limited to a single profiling method. Users working with statistical models, mechanistic models, or simulation-based models may therefore need to combine multiple tools or reimplement profiling routines for each workflow.
 
-## Features and Methodologies
-
-`LikelihoodProfiler.jl` provides a unified interface for various profile likelihood methods, including optimization-based **OptimizationProfiler** and integration-based profiles **IntegrationProfiler**, CI endpoints search **CICOProfiler**, and more.
-
-All methods leverage a `CommonSolve` interface [@Rackauckas2017] (`CommonSolve.solve()`), supporting global settings for parallelization and verbosity. Profiling results are directly visualizable using the `Plots.jl` package and exportable as DataFrames for further analysis.
+`LikelihoodProfiler.jl` addresses this need by providing a unified, model-agnostic interface for computing profile likelihoods for parameters and arbitrary functions of parameters. The package offers several profiling methods - such as optimization-based `OptimizationProfiler`, integration-based `IntegrationProfiler`, confidence-interval endpoint search via `CICOProfiler` - and integrates with the Julia SciML [@Rackauckas2017], making profile likelihood analysis accessible and efficient for a wide variety of applied problems.
 
 ## Demonstrative Example: JAK/STAT Signaling Pathway Model
 
-`LikelihoodProfiler.jl`’s functionality and interfaces are demonstrated using the JAK/STAT signaling pathway model [@Boehm2014], which consists of 8 states and 9 parameters. The model and experimental data were sourced from the Benchmark-Models-PEtab repository [@petab_benchmark_collection] and imported through the `PEtab.jl` package [@Persson2025].
+`LikelihoodProfiler.jl`’s functionality is demonstrated using the example from Systems Biology: JAK/STAT signaling pathway ODE model [@Boehm2014], which consists of 8 states and 9 parameters. The model and experimental data were sourced from the Benchmark-Models-PEtab repository [@petab_benchmark_collection] and imported through the `PEtab.jl` package [@Persson2025].
 
 ```julia
-using LikelihoodProfiler, CICOBase, PEtab, Plots
+using LikelihoodProfiler, OptimizationLBFGSB, 
+      OrdinaryDiffEqTsit5, PEtab, CICOBase, Plots
+
 petab_model = PEtabModel("Boehm_JProteomeRes2014.yaml")
 petab_problem = PEtabODEProblem(petab_model)
 ```
 
-To study the identifiability of the JAK/STAT model parameters, we first construct a `ProfileLikelihoodProblem` and select an appropriate profiling method.
-A `ProfileLikelihoodProblem` is defined by providing (i) the objective function (typically the negative log-likelihood) and (ii) the initial parameter values corresponding to the optimum of this objective. `LikelihoodProfiler.jl` builds on the `Optimization.jl` interface [@Dixit2023], and  `ProfileLikelihoodProblem` wraps an `OptimizationProblem`. In addition, `ProfileLikelihoodProblem` allows users to specify optional arguments common across profiling methods, such as the indices of parameters to profile, upper and lower bounds, and other options.
+To study the identifiability of the JAK/STAT model parameters, we first construct a `ProfileLikelihoodProblem`.
+`ProfileLikelihoodProblem` is defined by providing (i) the objective function (typically the negative log-likelihood) and (ii) parameter values corresponding to the optimum of this objective. `LikelihoodProfiler.jl` builds on the `Optimization.jl` interface [@Dixit2023], and  `ProfileLikelihoodProblem` wraps an `OptimizationProblem`. In addition, `ProfileLikelihoodProblem` allows users to specify optional arguments, such as the indices of parameters to profile, upper and lower bounds, and other options.
 
 ```julia
-using OptimizationLBFGSB, OrdinaryDiffEq
 optprob = OptimizationProblem(petab_problem)
 optpars = Vector(get_x(petab_problem))
 param_profile_prob = ProfileLikelihoodProblem(optprob, optpars; idxs=1:3)
 ```
-`LikelihoodProfiler.jl` offers a suite of methods for solving the `ProfileLikelihoodProblem`. In this example, we use the Hessian-free variant of the `IntegrationProfiler` [@Chen2002], which approximates the likelihood profile and performs re-optimization after each ODE solver step to prevent divergence from the true profile trajectory. Each profiling method offers several configurable options.
+`LikelihoodProfiler.jl` offers a suite of methods to solve the `ProfileLikelihoodProblem`. In this example, we use the Hessian-free variant of the `IntegrationProfiler` [@Chen2002], which approximates the likelihood profile and performs re-optimization after each ODE solver step to prevent divergence from the true profile trajectory. Each profiling method offers several configurable options.
+
+All methods use the common `CommonSolve.solve()` interface [@Rackauckas2017], supporting global settings for parallelization, verbosity, and initialization strategies.
 ```julia
-alg_integ = IntegrationProfiler(integrator = Tsit5(), 
+alg_integ = IntegrationProfiler(integrator=Tsit5(), 
   integrator_opts = (dtmax=0.5, reltol=1e-3, abstol=1e-4),
   matrix_type = :identity, gamma=0., reoptimize=true, 
   optimizer = LBFGSB(),optimizer_opts=(maxiters=10000,))
@@ -74,19 +69,18 @@ alg_integ = IntegrationProfiler(integrator = Tsit5(),
 sol_param = solve(param_profile_prob, alg_integ, verbose=true)
 ```
 
-
 An alternative approach, implemented in `CICOProfiler`, estimates the confidence intervals (CI) endpoints directly — without reconstructing the full profile — by solving a constrained optimization problem [@Borisov2020]. This method is often more efficient when only the CI is required.
 
 ```julia
 alg_cico = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-10)
 ```
-Users can get estimated confidence intervals using the `endpoints(sol_param)` function or visualize profile curves with `plot()`.
+Users can get estimated confidence intervals via `endpoints(sol_param)` and identifiability status via `retcodes(sol_param)`. Profile curves can be visualized using `Plots.jl` (`plot(sol_param)`) or exported as DataFrames.
 
 ![Parameter profiles](param_profiles.png)
 
 ![CICO profiles](cico_profiles.png)
 
-The same algorithms can also be applied to arbitrary functions of parameters. This generalization of profile likelihood concept [@Kreutz2012] is used to study model reparametrization or perform predictability analysis. This functionality is available within the same interface: users define functions of parameters and provide them as the third argument to the problem. As an illustration, we define a function that returns the observable value at selected time points:
+The same algorithms can also be applied to arbitrary functions of parameters. This generalization of profile likelihood concept [@Kreutz2012] can be used to study model reparametrization or perform predictability analysis. This functionality is available within the same interface: users define functions of parameters and provide them as the third argument to the problem. As an illustration, we define a function that returns the observable value at selected time points:
 
 ```julia
 function pSTAT5A_rel_obs(x, p, t)
@@ -115,17 +109,18 @@ Prediction confidence interval endpoints can be estimated at a larger set of tim
 ## Implementation and Extensibility
 
 All profiling methods benefit from the unified interface provided by `LikelihoodProfiler.jl`:
-- Integration with `SciML` packages gives users access to a wide range of optimizers, differential equation solvers, and AD backends, enabling efficient profiling configurations.
-- Compatibility with `Heta`, `PEtab` and `SBML` formats broadens the accessibility of the package across different modeling frameworks.
-- `solve()` interface provided by `CommonSolve.jl` provides unified access various profiling methods which can be used both for parameters and for functions identifiability analysis.
-- A common parallelization setup, controlled via the `parallel_type` argument in the `solve()` function, is supported across all methods and can significantly accelerate computations.
-- The interface facilitates integration of new profiling methods and stepping algorithms.
+
+- Integration with `SciML` packages provides access to multiple optimizers, differential equation solvers, and AD backends.
+- Compatibility with `Heta` [@Metelkin2021] and `PEtab` formats broadens the accessibility of the package across different modeling frameworks.
+- A single `solve()` interface enables use of profiling methods for both parameters and functions.
+- A common parallelization setup, controlled via the `parallel_type` argument in the `solve()` can significantly accelerate computations.
+- The interface facilitates integration of new profiling methods and stepping strategies.
 
 Future work will include adding new methods of parameters, functions and predictions profiling and enabling adaptive switching between strategies.
 
 ## Availability
 
-LikelihoodProfiler.jl is open-source and available at: https://github.com/insysbio/LikelihoodProfiler.jl
+`LikelihoodProfiler.jl` is available at: https://github.com/insysbio/LikelihoodProfiler.jl
 
 The package is registered in Julia and can be installed from the Julia REPL using:
 ```julia
@@ -133,9 +128,5 @@ import Pkg; Pkg.add("LikelihoodProfiler")
 ```
 
 Tutorials and documentation are available at: https://insysbio.github.io/LikelihoodProfiler.jl/stable/
-
-## Related packages
-
-Julia packages, such as `ProfileLikelihood.jl` and `InformationGeometry.jl`, offer related functionality but do not provide multiple profiling methods through a unified interface. Outside Julia, tools like `Data2Dynamics (MATLAB)`, `dMod (R)`, and `pyPESTO (Python)` combine parameter estimation and profile likelihoods. However, these frameworks are typically tied to their respective modeling environments and are not designed to support identifiability analysis independently of the model-development workflow.
 
 ## References
