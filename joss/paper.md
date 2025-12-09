@@ -27,7 +27,7 @@ bibliography: paper.bib
 
 ## Summary
 
-Mathematical models — mechanistic, statistical, or otherwise — contain unknown parameters that must be estimated from data to enable reliable predictions. Profile likelihood is a widely used approach for studying the *practical identifiability* of such models, that is, assessing how well parameters are determined by available observations [@Heinrich2025]. The method recovers the local shape of the objective function around the optimum and provides confidence intervals that quantify uncertainty in parameter estimates. Moreover, profile likelihood techniques can be generalized to analyze derived quantities such as model states and predictions. This versatility makes profile likelihood an essential component in model development and uncertainty assessment.
+Mathematical models — mechanistic, statistical, or otherwise — contain unknown parameters that must be estimated from data to enable reliable predictions. Profile likelihood is a widely used approach for studying the *practical identifiability* of such models, that is, assessing whether the available data constrain parameter estimates tightly enough to yield finite confidence intervals. Moreover, profile likelihood techniques can be generalized to analyze derived quantities such as model states and predictions. This versatility makes profile likelihood an essential component in model development and uncertainty assessment [@Heinrich2025].
 
 `LikelihoodProfiler.jl` is an open-source Julia package that implements several profile likelihood methods through a unified interface, enabling parameters and prediction uncertainty analysis across general maximum-likelihood estimation problems.
 
