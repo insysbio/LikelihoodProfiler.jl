@@ -1,5 +1,14 @@
 # Change log
 
+# 1.3.0
+
+- Drop `Optimization.jl` and use `OptimizationBase.jl`
+- Examples and tests modified in order to support new `Optimization.jl` libs
+- `reoptimize_init` kwarg fixed
+- Docs and README updated to reflect JOSS
+- SIR model computational issues fixed
+- Gaussian model added to the Tutorials
+
 # 1.2.1
 
 - Fixing bug in profiling bounds idxs
