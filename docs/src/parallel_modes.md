@@ -24,7 +24,7 @@ using Distributed
 
 addprocs(2)
 
-@everywhere using LikelihoodProfiler, Optimization, ForwardDiff
+@everywhere using LikelihoodProfiler, OptimizationLBFGSB, ForwardDiff
 
 @everywhere rosenbrock(x,p) = (1.0 - x[1])^2 + 100.0*(x[2] - x[1]^2)^2
 
@@ -33,7 +33,7 @@ optf = OptimizationFunction(rosenbrock, AutoForwardDiff())
 optprob = OptimizationProblem(optf, x0)
 
 plprob = ProfileLikelihoodProblem(optprob, x0; profile_lower=-5.0, profile_upper=5.0, threshold = 1.0)
-meth = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.1))
+meth = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=0.1))
 
 sol = solve(plprob, meth; parallel_type=:distributed)
 ```

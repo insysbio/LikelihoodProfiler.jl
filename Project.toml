@@ -8,6 +8,7 @@ repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
 version = "1.2.1"
 
 [deps]
+ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
@@ -27,14 +28,15 @@ CICOBase = "33444335-3134-4342-4659-594331344435"
 CICOBaseExt = "CICOBase"
 
 [compat]
+ADTypes = "1.20.0"
 CICOBase = "0.6.0"
 DataFrames = "1.7.0"
 DataInterpolations = "6.5.2, 7"
 Distributed = "1.10"
 Distributions = "0.25"
 ForwardDiff = "0.10.36, 1"
-Optimization = "4.1.1"
-OptimizationBase = "2.4.0"
+OptimizationBase = "2.4, 3, 4"
+OptimizationLBFGSB = "1.2.1"
 OptimizationNLopt = "0.3.1"
 PreallocationTools = "0.4"
 RecipesBase = "1.1"
@@ -46,11 +48,11 @@ julia = "1.10"
 [extras]
 CICOBase = "33444335-3134-4342-4659-594331344435"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
-Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
+OptimizationLBFGSB = "22f7324a-a79d-40f2-bebe-3af60c77bd15"
 OptimizationNLopt = "4e6fcdb7-1186-4e1f-a706-475e75c168bb"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "CICOBase", "Plots", "ForwardDiff", "Optimization", "OptimizationNLopt", "OrdinaryDiffEq"]
+test = ["Test", "CICOBase", "Plots", "ForwardDiff", "OptimizationLBFGSB", "OptimizationNLopt", "OrdinaryDiffEq"]

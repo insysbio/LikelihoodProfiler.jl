@@ -17,21 +17,21 @@ end
 times = [0., 7., 14., 21., 28., 35., 42., 49., 56., 63., 70., 77., 84., 91., 98.]
 data = [97., 271., 860., 1995., 4419., 6549., 6321., 4763., 2571., 1385., 615., 302., 159., 72., 34.]
 tspan = (0., 98.)
-p0 = [0.4, 0.25, 1/80000]  
+p0 = [0.4, 0.25, 0.8]  
 
-u0_func(p,t) = [1-(data[1]*p[3]), data[1]*p[3], 0.]
+u0_func(p,t) = [1-(data[1]/(1e5*p[3])), data[1]/(1e5*p[3]), 0.]
 
 ode_prob = ODEProblem(ode_func, u0_func, tspan, p0);
 
 # solver algorithm, tolerances
 solver_opts = Dict(
-    :alg => AutoTsit5(Rosenbrock23()),
-    :reltol => 1e-6,
+    :alg => Rodas5P(),
+    :reltol => 1e-8,
     :abstol => 1e-8
 )
 
 function sir_obj(
-  parscur, p;
+  parscur, hyper_pars;
   ode_prob=ode_prob,
   solver_opts=solver_opts,
   times=times,
@@ -54,7 +54,7 @@ function sir_obj(
   params = probcur.p
 
   # observable
-  y = abs.(sol.u/params[3])
+  y = abs.(sol.u*1e5*params[3])
   
   # loss
   return sum(y) - sum(data.*log.(y))

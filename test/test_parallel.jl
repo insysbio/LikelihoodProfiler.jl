@@ -5,7 +5,7 @@ using Test, Base.Threads, Distributed
 
 addprocs(2)
 
-@everywhere using LikelihoodProfiler, Optimization, ForwardDiff, OrdinaryDiffEq, CICOBase
+@everywhere using LikelihoodProfiler, OptimizationLBFGSB, ForwardDiff, OrdinaryDiffEq, CICOBase
 
 @everywhere rosenbrock(x,p) = (1.0 - x[1])^2 + 100.0*(x[2] - x[1]^2)^2
 
@@ -17,7 +17,7 @@ plprob = ProfileLikelihoodProblem(optprob, x0; profile_lower = -5., profile_uppe
 
 for method in [
   IntegrationProfiler(integrator = Tsit5()),
-  OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.1)),
+  OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=0.1)),
   CICOProfiler(scan_tol = 1e-4)
 ]
   

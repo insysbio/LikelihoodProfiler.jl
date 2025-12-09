@@ -1,5 +1,5 @@
 # 1. Imports
-using PEtab, LikelihoodProfiler, ForwardDiff, Optimization, OptimizationNLopt, OrdinaryDiffEq, Sundials
+using PEtab, LikelihoodProfiler, ForwardDiff, OptimizationNLopt, OrdinaryDiffEq, Sundials
 using Plots
 
 # 2. Load the model

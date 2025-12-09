@@ -34,8 +34,8 @@ See the documentation for each stepper type (e.g., `?FixedStep`, `?LineSearchSte
 ### Example
 
 ```julia
-using Optimization
-profiler = OptimizationProfiler(; optimizer = Optimization.LBFGS(), optimizer_opts = (reltol=1e-4,))
+using OptimizationLBFGSB
+profiler = OptimizationProfiler(; optimizer = LBFGSB(), optimizer_opts = (reltol=1e-4,))
 ```
 """
 Base.@kwdef struct OptimizationProfiler{S, opType, optsType} <: AbstractProfilerMethod

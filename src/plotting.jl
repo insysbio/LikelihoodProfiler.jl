@@ -7,7 +7,7 @@
     @series begin
       subplot := i
       xguide --> "x[$(i)]"
-      yguide --> "likelihood L(x)"
+      yguide --> "objective function"
       sol[i]
     end
   end

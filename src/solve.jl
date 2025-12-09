@@ -28,7 +28,7 @@ Profiles the likelihood function for the given problem `plprob` using the specif
 
 ```julia
 plprob = ProfileLikelihoodProblem(optprob, optpars; idxs=1, profile_lower=-10., profile_upper=10.)
-method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep())
+method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep())
 sol = solve(plprob, method)
 ```
 """
@@ -38,12 +38,12 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
   check_prob_alg(plprob, method)
 
   if reoptimize_init
-    !has_optimizer(method) && 
+    !hasoptimizer(method) && 
       throw(ArgumentError("`method` must have a valid `optimizer` provided when `reoptimize_init=true`."))
 
     # start from user 'optpars'
     optprob0 = remake(plprob.optprob; u0 = plprob.optpars)
-    s = solve(optprob0, _optimizer(method); _optimizer_opts(method)...)
+    s = solve(optprob0, get_optimizer(method); get_optimizer_opts(method)...)
     if !SciMLBase.successful_retcode(s)
       @warn "Re-optimization at initial parameter values returned $(s.retcode). Proceeding with the provided initial parameters."
       _plprob = plprob

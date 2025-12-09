@@ -1,5 +1,5 @@
 using LikelihoodProfiler
-using Test, Optimization, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
+using Test, OptimizationLBFGSB, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
 
 const step = 0.3
 const atol = step/2
@@ -10,7 +10,7 @@ function test_parameter_target(method, funcs_dict)
   for (_fname,_f) in funcs_dict 
     @testset "$(_fname)" begin
       if !haskey(_f, :grad!) && !haskey(_f, :hess!)
-        optf = OptimizationFunction(_f[:func], Optimization.AutoForwardDiff())
+        optf = OptimizationFunction(_f[:func], AutoForwardDiff())
       else
         optf = OptimizationFunction(_f[:func]; grad=_f[:grad!], hess=_f[:hess!])
       end
@@ -38,11 +38,11 @@ end
 
 function test_function_target(method, funcs_dict)
   f = funcs_dict[:f_2p]
-  optf = OptimizationFunction(f[:func], Optimization.AutoForwardDiff())
+  optf = OptimizationFunction(f[:func], AutoForwardDiff())
   optprob = OptimizationProblem(optf, f[:optim])
 
-  g_sum = OptimizationFunction((x, p) -> x[1] + x[2], Optimization.AutoForwardDiff())
-  g_diff = OptimizationFunction((x, p) -> x[1] - x[2], Optimization.AutoForwardDiff())
+  g_sum = OptimizationFunction((x, p) -> x[1] + x[2], AutoForwardDiff())
+  g_diff = OptimizationFunction((x, p) -> x[1] - x[2], AutoForwardDiff())
   plprob = ProfileLikelihoodProblem(
     optprob,
     f[:optim],
@@ -69,11 +69,11 @@ function test_function_target(method, funcs_dict)
   end
 
   f_im = funcs_dict[:f_2p_1im]
-  optf_im = OptimizationFunction(f_im[:func], Optimization.AutoForwardDiff())
+  optf_im = OptimizationFunction(f_im[:func], AutoForwardDiff())
   optprob_im = OptimizationProblem(optf_im, f_im[:optim])
 
-  g_first = OptimizationFunction((x, p) -> x[1], Optimization.AutoForwardDiff())
-  g_second = OptimizationFunction((x, p) -> x[2], Optimization.AutoForwardDiff())
+  g_first = OptimizationFunction((x, p) -> x[1], AutoForwardDiff())
+  g_second = OptimizationFunction((x, p) -> x[2], AutoForwardDiff())
   plprob_im = ProfileLikelihoodProblem(
     optprob_im,
     f_im[:optim],
@@ -109,7 +109,7 @@ end
 
 @testset "Analytic funcs. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
 
-  method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=step))
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=step))
   test_parameter_target(method, funcs_dict)
 
 end
@@ -124,7 +124,7 @@ end
 #=
 @testset "Analytic funcs. Adaptive LineSearchStep OptimizationProfiler with gradient-based optimizer" begin
 
-  method = OptimizationProfiler(optimizer = Optimization.LBFGS(), stepper = LineSearchStep(; initial_step=step, direction=:Secant, linesearch=InterpolationLineSearch()))
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = LineSearchStep(; initial_step=step, direction=:Secant, linesearch=InterpolationLineSearch()))
   test_parameter_target(method, funcs_dict)
 
 end
@@ -172,7 +172,7 @@ end
     matrix_type = :identity,
     gamma=0.2,            # (!!!) select "bad" gamma
     reoptimize=true,
-    optimizer = Optimization.LBFGS()
+    optimizer = LBFGSB()
   )
   test_parameter_target(method, funcs_dict)
 
