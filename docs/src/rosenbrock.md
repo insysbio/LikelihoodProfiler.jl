@@ -88,5 +88,8 @@ These values can be accessed directly:
 
 ```@example rosenbrock-1
 retcodes(sol3)
+```
+
+```@example rosenbrock-1
 endpoints(sol3)
 ```

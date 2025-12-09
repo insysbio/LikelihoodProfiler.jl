@@ -5,9 +5,11 @@ This tutorial demonstrates the basic workflow of `LikelihoodProfiler.jl` using o
 ## Model and Data
 
 We assume we observe i.i.d. data:
-$$
-X_1, \ldots, X_n \sim \mathcal{N}(\mu, 1)
-$$
+
+
+$$X_1, \ldots, X_n \sim \mathcal{N}(\mu, 1)$$
+
+
 and want to construct a confidence interval for the mean parameter μ. 
 
 ```@example gaussian-1
@@ -24,9 +26,8 @@ data = rand(Normal(0, 1), n_obs)
 
 With known variance $\sigma^2 = 1$, the log-likelihood for μ is:
 
-$$
-\ell(\mu) = \sum_{i=1}^{n} \log \mathcal{N}(x_i \mid \mu, 1)
-$$
+$$\ell(\mu) = \sum_{i=1}^{n} \log \mathcal{N}(x_i \mid \mu, 1)$$
+
 We minimize negative log-likelihood:
 ```@example gaussian-1
 obj(x, p) = -sum(logpdf.(Normal(x[1], 1.0), data))
