@@ -47,7 +47,9 @@ plprob = ProfileLikelihoodProblem(optprob, optpars; profile_lower = -10., profil
 
 ### Profile Likelihood Methods
 
-`LikelihoodProfiler` provides a range of methods to profile likelihood functions and explore practical identifiability. All methods use the same [`solve`](@ref solve) interface but differ in how the profiles and the associated confidence intervals are computed. For a more detailed description of each method, see the [Profile Likelihood Methods](@ref profile_likelihood_methods) section.
+`LikelihoodProfiler` provides a range of methods to profile likelihood functions and explore practical identifiability. All methods use the same [`solve`](@ref solve) interface but differ in how the profiles and the associated confidence intervals are computed. The `solve` interface exposes a set of common options shared across all profiling methods—such as `parallel_type` for parallel execution, `verbose` for controlling output, and `reoptimize_init` to trigger re-optimization of the initial parameter values before profiling begins.
+
+For a more detailed description of each method, see the [Profile Likelihood Methods](@ref profile_likelihood_methods) section.
 
 #### OptimizationProfiler
 
