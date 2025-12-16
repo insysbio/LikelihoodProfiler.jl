@@ -9,7 +9,7 @@
 
 ## Who is this package for?
 
-`LikelihoodProfiler.jl` is intended for researchers and practitioners working with **maximum-likelihood estimation (MLE) problems** in any scientific or engineering domain. The package does not assume a specific model type and can be applied to statistical models, mechanistic models, models defined through simulations, optimization problems, or arbitrary likelihood functions.
+`LikelihoodProfiler.jl` is intended for researchers and practitioners working with **maximum-likelihood estimation (MLE) problems** in any scientific or engineering domain. The package does not assume a specific model type and can be applied to statistical models, mechanistic models, models defined through simulations, optimization problems, or arbitrary likelihood functions. Applicable to a broad class of MLE problems, profile likelihood is especially valuable for complex nonlinear models — such as high-dimensional mechanistic models — where standard asymptotic confidence intervals can be unreliable.
 
 Typical application areas include (but are not limited to):
 
