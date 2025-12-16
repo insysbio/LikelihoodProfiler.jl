@@ -27,13 +27,13 @@ bibliography: paper.bib
 
 ## Summary
 
-Mathematical models — mechanistic, statistical, or otherwise — contain unknown parameters that must be estimated from data to enable reliable predictions. Profile likelihood is a widely used approach for studying the *practical identifiability* of such models, that is, assessing whether the available data constrain parameter estimates tightly enough to yield finite confidence intervals. Moreover, profile likelihood techniques can be generalized to analyze derived quantities such as model states and predictions. This versatility makes profile likelihood an essential component in model development and uncertainty assessment [@Heinrich2025].
+Mathematical models — mechanistic, statistical, or otherwise — contain unknown parameters that must be estimated from data to enable reliable predictions. Profile likelihood is a widely used approach for studying the *practical identifiability* of such models, that is, assessing whether the available data constrain parameter estimates tightly enough to yield finite confidence intervals. Applicable to a broad class of *maximum-likelihood estimation* problems, profile likelihood is especially valuable for complex nonlinear models — such as high-dimensional mechanistic models — where standard asymptotic confidence intervals can be unreliable. Profile likelihood techniques can also be generalized to analyze derived quantities such as model states and predictions. This versatility makes profile likelihood an essential component in model development and uncertainty assessment [@Heinrich2025].
 
-`LikelihoodProfiler.jl` is an open-source Julia package that implements several profile likelihood methods through a unified interface, enabling parameters and prediction uncertainty analysis across general maximum-likelihood estimation problems.
+`LikelihoodProfiler.jl` is an open-source Julia package that implements several profile likelihood methods through a unified interface, enabling parameters and prediction uncertainty analysis.
 
 ## Statement of Need
 
-Researchers across many scientific domains need tools to quantify how well model parameters and predictions are constrained by data. Profile likelihood methods provide an intuitive and interpretable approach to parameter and prediction uncertainty, but existing software implementations - such as `sbioparameterci (MATLAB)`, `dMod (R)`, and `pyPESTO (Python)` - are often tied to specific modeling ecosystems or limited to a single profiling method. Users working with statistical models, mechanistic models, or simulation-based models may therefore need to combine multiple tools or reimplement profiling routines for each workflow.
+Researchers across many scientific domains need tools to quantify how well estimates of model parameters and predictions are constrained by data. Profile likelihood methods provide an intuitive and interpretable approach to parameter and prediction uncertainty, but existing software implementations - such as `sbioparameterci (MATLAB)`, `dMod (R)`, and `pyPESTO (Python)` - are often tied to specific modeling ecosystems or limited to a single profiling method.  Within the Julia ecosystem, packages such as `ProfileLikelihood.jl` and `InformationGeometry.jl` provide related functionality but focus on specific profile likelihood methods rather than offering multiple profiling strategies through a unified interface. As a result, users working with different model types may need to combine multiple tools or reimplement profiling routines.
 
 `LikelihoodProfiler.jl` addresses this need by providing a unified, model-agnostic interface for computing profile likelihoods for parameters and arbitrary functions of parameters. The package offers several profiling methods - such as optimization-based `OptimizationProfiler`, integration-based `IntegrationProfiler`, confidence-interval endpoint search via `CICOProfiler` - and integrates with the Julia SciML [@Rackauckas2017], making profile likelihood analysis accessible and efficient for a wide variety of applied problems.
 
@@ -80,7 +80,7 @@ Users can get estimated confidence intervals via `endpoints(sol_param)` and iden
 
 ![CICO profiles](cico_profiles.png)
 
-The same algorithms can also be applied to arbitrary functions of parameters. This generalization of profile likelihood concept [@Kreutz2012] can be used to study model reparametrization or perform predictability analysis. This functionality is available within the same interface: users define functions of parameters and provide them as the third argument to the problem. As an illustration, we define a function that returns the observable value at selected time points:
+The same algorithms can also be applied to arbitrary functions of parameters. This generalization of profile likelihood concept [@Kreutz2012] can be used to study model reparametrization or perform predictability analysis. This functionality is available through the same interface: users define functions of parameters and provide them as the third argument to the problem. For illustration, we define a function that returns the observable value at selected time points:
 
 ```julia
 function pSTAT5A_rel_obs(x, p, t)
@@ -117,16 +117,5 @@ All profiling methods benefit from the unified interface provided by `Likelihood
 - The interface facilitates integration of new profiling methods and stepping strategies.
 
 Future work will include adding new methods of parameters, functions and predictions profiling and enabling adaptive switching between strategies.
-
-## Availability
-
-`LikelihoodProfiler.jl` is available at: https://github.com/insysbio/LikelihoodProfiler.jl
-
-The package is registered in Julia and can be installed from the Julia REPL using:
-```julia
-import Pkg; Pkg.add("LikelihoodProfiler")
-```
-
-Tutorials and documentation are available at: https://insysbio.github.io/LikelihoodProfiler.jl/stable/
 
 ## References
