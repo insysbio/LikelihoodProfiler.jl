@@ -76,9 +76,9 @@ alg_cico = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-10)
 ```
 Users can get estimated confidence intervals via `endpoints(sol_param)` and identifiability status via `retcodes(sol_param)`. Profile curves can be visualized using `Plots.jl` (`plot(sol_param)`) or exported as DataFrames.
 
-![Parameter profiles](param_profiles.png)
+![Parameter profiles for the JAK/STAT model computed using an integration-based profiler](param_profiles.png)
 
-![CICO profiles](cico_profiles.png)
+![Parameter profiles for the JAK/STAT model computed using the CICO method](cico_profiles.png)
 
 The same algorithms can also be applied to arbitrary functions of parameters. This generalization of profile likelihood concept [@Kreutz2012] can be used to study model reparametrization or perform predictability analysis. This functionality is available through the same interface: users define functions of parameters and provide them as the third argument to the problem. For illustration, we define a function that returns the observable value at selected time points:
 
@@ -100,11 +100,11 @@ func_profile_prob = ProfileLikelihoodProblem(optprob, optpars,
 
 sol_func = solve(func_profile_prob, alg_integ)
 ```
-![Function profiles](func_profiles.png)
+![Functional profiles of a JAK/STAT model observable evaluated at three time points](func_profiles.png)
 
 Prediction confidence interval endpoints can be estimated at a larger set of time points, and smooth prediction bands can then be plotted.
 
-![Prediction profile](pred_profile.png)
+![Prediction confidence band for a JAK/STAT model observable across multiple time points](pred_profile.png)
 
 ## Implementation and Extensibility
 
