@@ -42,7 +42,7 @@ Researchers across many scientific domains need tools to quantify how well estim
 `LikelihoodProfiler.jl`’s functionality is demonstrated using the example from Systems Biology: JAK/STAT signaling pathway ODE model [@Boehm2014], which consists of 8 states and 9 parameters. The model and experimental data were sourced from the Benchmark-Models-PEtab repository [@petab_benchmark_collection] and imported through the `PEtab.jl` package [@Persson2025].
 
 ```julia
-using LikelihoodProfiler, OptimizationLBFGSB, 
+using LikelihoodProfiler, Optimization, OptimizationLBFGSB, 
       OrdinaryDiffEqTsit5, PEtab, CICOBase, Plots
 
 petab_model = PEtabModel("Boehm_JProteomeRes2014.yaml")
