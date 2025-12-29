@@ -36,6 +36,13 @@ In Julia terminal run the following command:
 import Pkg; Pkg.add("LikelihoodProfiler")
 ```
 
+## Community Guidelines
+
+`LikelihoodProfiler.jl` is developed as an open-source project and contributions from the community are welcome. 
+Users are encouraged to report bugs, request features, or ask questions via the GitHub Issues page.
+Contributions can be made through pull requests following standard GitHub workflows.
+For general questions or usage discussions, opening an issue is the preferred way to seek support.
+
 ## Related packages
 
 Other implementations of the profile likelihood approach in Julia include:
