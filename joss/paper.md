@@ -118,4 +118,8 @@ All profiling methods benefit from the unified interface provided by `Likelihood
 
 Future work will include adding new methods of parameters, functions and predictions profiling and enabling adaptive switching between strategies.
 
+## Acknowledgements
+
+This study was carried out as part of the authors’ work at InSysBio CY LTD. No specific external funding was received.
+
 ## References
