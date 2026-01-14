@@ -5,7 +5,7 @@ license = "MIT"
 desc = "Practical identifiability analysis and confidence intervals estimation"
 authors = ["ivborissov <iv.borissov@gmail.com>", "metelkin <evgeny.metelkin@gmail.com>"]
 repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
-version = "1.3.0"
+version = "1.3.1"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"

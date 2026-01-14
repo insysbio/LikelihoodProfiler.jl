@@ -1,5 +1,9 @@
 # Change log
 
+# 1.3.1
+
+- JOSS paper added
+
 # 1.3.0
 
 - Drop `Optimization.jl` and use `OptimizationBase.jl`
