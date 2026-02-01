@@ -4,6 +4,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://insysbio.github.io/LikelihoodProfiler.jl/latest)
 [![Build Status](https://github.com/insysbio/LikelihoodProfiler.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/insysbio/LikelihoodProfiler.jl/actions/workflows/CI.yml?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/insysbio/LikelihoodProfiler.jl/graph/badge.svg)](https://codecov.io/gh/insysbio/LikelihoodProfiler.jl)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.09501/status.svg)](https://doi.org/10.21105/joss.09501)
 
 `LikelihoodProfiler.jl` is a [Julia](https://julialang.org/downloads/) package for practical identifiability analysis and confidence intervals estimation using the profile likelihood approach. The package provides a unified interface for various profile likelihood methods, including optimization-based **OptimizationProfiler** and integration-based profiles **IntegrationProfiler**, CI endpoints search **CICOProfiler**, and more.
 
@@ -53,4 +54,4 @@ There are also well-known profile likelihood implementations in other languages,
 
 ## Citation
 
-Borisov I., Metelkin E. An Algorithm for Practical Identifiability Analysis and Confidence Intervals Evaluation Based on Constrained Optimization. 2018. October. ICSB2018. https://doi.org/10.13140/RG.2.2.18935.06563
+Borisov et al., (2026). LikelihoodProfiler.jl: Unified profile-likelihood workflows for identifiability and confidence intervals. Journal of Open Source Software, 11(117), 9501, https://doi.org/10.21105/joss.09501
