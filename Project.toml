@@ -3,9 +3,9 @@ uuid = "93acb638-a083-5915-8dce-d129bc6a3f59"
 keywords = ["identifiability", "modeling", "simulations", "sciml", "profile likelihood"]
 license = "MIT"
 desc = "Practical identifiability analysis and confidence intervals estimation"
+version = "1.3.1"
 authors = ["ivborissov <iv.borissov@gmail.com>", "metelkin <evgeny.metelkin@gmail.com>"]
 repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
-version = "1.3.1"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -35,7 +35,7 @@ DataInterpolations = "6.5.2, 7"
 Distributed = "1.10"
 Distributions = "0.25"
 ForwardDiff = "0.10.36, 1"
-OptimizationBase = "2.4, 3, 4"
+OptimizationBase = "2.4, 3, 4, 5"
 OptimizationLBFGSB = "1.2.1"
 OptimizationNLopt = "0.3.1"
 PreallocationTools = "0.4"
