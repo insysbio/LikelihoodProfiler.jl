@@ -1,14 +1,14 @@
 module LikelihoodProfiler
 
-using SciMLBase, PreallocationTools
+using PreallocationTools
 using SimpleUnPack: @unpack
 using Reexport
+using Optimization
 @reexport import SciMLBase: OptimizationFunction, OptimizationProblem, remake, solve, solve!, init
 @reexport using ADTypes
 @reexport using DataFrames
 using LinearAlgebra, DataInterpolations
 using Distributions: quantile, Chisq
-using OptimizationBase
 using RecipesBase
 using Distributed
 

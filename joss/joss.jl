@@ -1,4 +1,4 @@
-using LikelihoodProfiler, Optimization, OptimizationLBFGSB, OrdinaryDiffEqTsit5, PEtab, CICOBase
+using LikelihoodProfiler, Optimization, OptimizationLBFGSB, OrdinaryDiffEq, PEtab
 using Plots
 
 model_name = "Boehm_JProteomeRes2014"
