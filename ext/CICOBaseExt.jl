@@ -54,16 +54,17 @@ function cico_to_profile_values(plprob::ProfileLikelihoodProblem, ep::CICOBase.E
 
   ep_retcode = cico_deduce_retcode(ep.status)
   ep_val = ep.value
+  Tpars = typeof(optpars)
 
   if isleft(ep)
-    pars = ep_retcode == :Identifiable ? [ep.profilePoints[1].params, optpars] : [optpars]
+    pars = ep_retcode == :Identifiable ? [convert(Tpars, ep.profilePoints[1].params), optpars] : [optpars]
     x = ep_retcode == :Identifiable ? [ep_val, x0] : [x0]
     obj = ep_retcode == :Identifiable ? [ep.profilePoints[1].loss, obj0] : [obj0]
     retcodes = (left = ep_retcode, right = :NotStarted)
     endpoints = (left = ep_val, right = nothing)
     stats = (left = LikelihoodProfiler.SciMLBase.OptimizationStats(;fevals=ep.counter), right = nothing)
   else
-    pars = ep_retcode == :Identifiable ? [optpars, ep.profilePoints[1].params] : [optpars]
+    pars = ep_retcode == :Identifiable ? [optpars, convert(Tpars, ep.profilePoints[1].params)] : [optpars]
     x = ep_retcode == :Identifiable ? [x0, ep_val] : [x0]
     obj = ep_retcode == :Identifiable ? [obj0, ep.profilePoints[1].loss] : [obj0]
     retcodes = (left = :NotStarted, right = ep_retcode)
