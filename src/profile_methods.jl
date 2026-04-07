@@ -90,8 +90,8 @@ function IntegrationProfiler(; reoptimize::Bool=false,
                                gamma::Real=1.0)
 
   # matrix_type
-  (matrix_type === :identity || matrix_type === :fisher || matrix_type === :hessian) ||
-      throw(ArgumentError("`matrix_type` must be one of :identity, :fisher, :hessian (got $matrix_type)."))
+  (matrix_type === :identity || matrix_type === :hessian) ||
+      throw(ArgumentError("`matrix_type` must be one of :identity, :hessian (got $matrix_type)."))
 
   # reoptimize requires an optimizer
   reoptimize && optimizer === nothing &&
