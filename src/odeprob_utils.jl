@@ -2,20 +2,15 @@
 function build_odeprob_reduced(plprob::ProfileLikelihoodProblem, method::IntegrationProfiler, idx, dir, profile_range)
   optprob = plprob.optprob
   optpars = plprob.optpars
-  lp = length(optpars)
 
-  odef = build_odefunc_reduced(optprob, optpars, Val(get_matrix_type(method)))
+  u0 = ComponentVector(theta = optpars, lambda = zero(eltype(optpars)))
+
+  odef = build_odefunc_reduced(optprob, u0, Val(get_matrix_type(method)))
 
   gamma = get_gamma(method)
   xf = (dir == -1) ? profile_range[1] : profile_range[2]
   xspan = (optpars[idx], xf)
   p = FixedParamCache(optprob.p, idx, 1.0, dir*gamma)
-
-  u0 = zeros(eltype(optpars), lp+1)
-  for i in eachindex(optpars)
-    u0[i] = optpars[i]
-  end
-  u0[end] = 0.0
 
   return ODEProblem(odef, u0, xspan, p)
 end
@@ -23,9 +18,10 @@ end
 function build_odeprob_full(plprob::ProfileLikelihoodProblem, method::IntegrationProfiler, idx, dir, profile_range)
   optprob = plprob.optprob
   optpars = plprob.optpars
-  lp = length(optpars)
 
-  odef = build_odefunc_full(plprob, idx, Val(get_matrix_type(method)))
+  u0 = ComponentVector(theta = optpars, lambda = zero(eltype(optpars)))
+
+  odef = build_odefunc_full(plprob, u0, idx, Val(get_matrix_type(method)))
 
   gamma = get_gamma(method)
   x0 = evaluate_target_f(plprob.target, idx, optpars)
@@ -33,20 +29,13 @@ function build_odeprob_full(plprob::ProfileLikelihoodProblem, method::Integratio
   xspan = (x0, xf)
   p = FixedParamCache(optprob.p, idx, 1.0, dir*gamma)
 
-  u0 = zeros(eltype(optpars), lp+1)
-  for i in eachindex(optpars)
-    u0[i] = optpars[i]
-  end
-  u0[end] = 0.0
-
   return ODEProblem(odef, u0, xspan, p)
 end
 
-function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:identity})
-  lp = length(optpars)
-  rhs_vec = similar(optpars)
+function build_odefunc_reduced(optprob::OptimizationProblem, u0, ::Val{:identity})
+  rhs_vec = similar(u0.theta)
 
-  optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=true, h=false)
+  optf = OptimizationBase.instantiate_function(optprob.f, u0.theta, optprob.f.adtype, optprob.p; g=true, h=false)
 
   function ode_func(dz, z, p, x)
     idx = get_idx(p)
@@ -54,13 +43,14 @@ function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:ide
 
     grad! = optf.grad
     #grad!(rhs_vec, view(z, 1:lp), p.p)
-    grad!(rhs_vec, z[1:lp], p.p)
-    dz[1:lp] .= .- gamma .* rhs_vec
+    grad!(rhs_vec, z.theta, p.p)
+    dz.theta .= .- gamma .* rhs_vec
     dz[idx] = one(dz[idx])
     dz[end] = rhs_vec[idx] + dz[idx]
   end
 end
 
+#= TODO
 function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:fisher})
   lp = length(optpars)
   T = eltype(optpars)
@@ -112,14 +102,14 @@ function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:fis
     dz .= pinv(lhs) * rhs
   end
 end
-
-function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:hessian})
-  lp = length(optpars)
-  T = eltype(optpars)
+=#
+function build_odefunc_reduced(optprob::OptimizationProblem, u0, ::Val{:hessian})
+  lp = length(u0.theta)
+  T = eltype(u0.theta)
   lhs_mat = zeros(T, lp, lp)
-  rhs_vec = similar(optpars)
+  rhs_vec = similar(u0.theta)
 
-  optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=false, h=true)
+  optf = OptimizationBase.instantiate_function(optprob.f, u0.theta, optprob.f.adtype, optprob.p; g=false, h=true)
 
  function ode_func(dz, z, p, x)
     #=
@@ -137,7 +127,7 @@ function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:hes
     hess! = optf.hess
     #hess!(lhs_mat, view(z, 1:lp), p.p)
     #hess!(lhs_mat, view(z, 1:lp))
-    hess!(lhs_mat, z[1:lp], p.p)
+    hess!(lhs_mat, z.theta, p.p)
 
     # move idx column to the right side
     for i in 1:lp
@@ -159,11 +149,10 @@ function build_odefunc_reduced(optprob::OptimizationProblem, optpars, ::Val{:hes
   end
 end
 
-function build_odefunc_full(plprob::ProfileLikelihoodProblem, idx, ::Val{:hessian})
+function build_odefunc_full(plprob::ProfileLikelihoodProblem, u0, idx, ::Val{:hessian})
   optprob = plprob.optprob
-  optpars = plprob.optpars
-  lp = length(optpars)
-  T = eltype(optpars)
+  lp = length(u0.theta)
+  T = eltype(u0.theta)
   
   lhs_mat = zeros(T, lp+1, lp+1)
   rhs_vec = zeros(T, lp+1)
@@ -174,8 +163,8 @@ function build_odefunc_full(plprob::ProfileLikelihoodProblem, idx, ::Val{:hessia
   g_grad_vec = zeros(T, lp)
 
   profile_f = plprob.target.fs[idx]
-  L_optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=false, h=true)
-  g_optf = OptimizationBase.instantiate_function(profile_f, optpars, profile_f.adtype, optprob.p; g=true, h=true)
+  L_optf = OptimizationBase.instantiate_function(optprob.f, u0.theta, optprob.f.adtype, optprob.p; g=false, h=true)
+  g_optf = OptimizationBase.instantiate_function(profile_f, u0.theta, profile_f.adtype, optprob.p; g=true, h=true)
 
   L_hess! = L_optf.hess
   g_grad! = g_optf.grad
@@ -183,13 +172,13 @@ function build_odefunc_full(plprob::ProfileLikelihoodProblem, idx, ::Val{:hessia
 
   function ode_func(dz, z, p, x)
 
-    L_hess!(L_hess_mat, z[1:lp], p.p)
+    L_hess!(L_hess_mat, z.theta, p.p)
     #@show L_hess_mat
-    g_hess!(g_hess_mat, z[1:lp], p.p)
-    g_grad!(g_grad_vec, z[1:lp], p.p)
+    g_hess!(g_hess_mat, z.theta, p.p)
+    g_grad!(g_grad_vec, z.theta, p.p)
 
     # Top-left block: L_hess_mat .+ z[end] * g_hess_mat
-    lhs_mat[1:lp, 1:lp] .= L_hess_mat .+ z[end] * g_hess_mat
+    lhs_mat[1:lp, 1:lp] .= L_hess_mat .+ z.lambda * g_hess_mat
 
     # Top-right block: g_grad_vec (as a column)
     lhs_mat[1:lp, lp+1] .= g_grad_vec
@@ -206,11 +195,10 @@ function build_odefunc_full(plprob::ProfileLikelihoodProblem, idx, ::Val{:hessia
   end
 end
 
-function build_odefunc_full(plprob::ProfileLikelihoodProblem, idx, ::Val{:identity})
+function build_odefunc_full(plprob::ProfileLikelihoodProblem, u0, idx, ::Val{:identity})
   optprob = plprob.optprob
-  optpars = plprob.optpars
-  lp = length(optpars)
-  T = eltype(optpars)
+  lp = length(u0.theta)
+  T = eltype(u0.theta)
 
   L_grad_vec = zeros(T, lp)
   g_grad_vec = zeros(T, lp)
@@ -221,8 +209,8 @@ function build_odefunc_full(plprob::ProfileLikelihoodProblem, idx, ::Val{:identi
 
 
   profile_f = plprob.target.fs[idx]
-  L_optf = OptimizationBase.instantiate_function(optprob.f, optpars, optprob.f.adtype, optprob.p; g=true, h=false)
-  g_optf = OptimizationBase.instantiate_function(profile_f, optpars, profile_f.adtype, optprob.p; g=true, h=false)
+  L_optf = OptimizationBase.instantiate_function(optprob.f, u0.theta, optprob.f.adtype, optprob.p; g=true, h=false)
+  g_optf = OptimizationBase.instantiate_function(profile_f, u0.theta, profile_f.adtype, optprob.p; g=true, h=false)
 
   L_grad! = L_optf.grad
   g_grad! = g_optf.grad
@@ -233,8 +221,8 @@ function build_odefunc_full(plprob::ProfileLikelihoodProblem, idx, ::Val{:identi
 
   function ode_func(dz, z, p, x)
 
-    L_grad!(L_grad_vec, z[1:lp], p.p)
-    g_grad!(g_grad_vec, z[1:lp], p.p)
+    L_grad!(L_grad_vec, z.theta, p.p)
+    g_grad!(g_grad_vec, z.theta, p.p)
 
     gamma = get_gamma(p)
     # Top-right block: g_grad_vec (as a column)
