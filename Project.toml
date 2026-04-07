@@ -3,7 +3,7 @@ uuid = "93acb638-a083-5915-8dce-d129bc6a3f59"
 keywords = ["identifiability", "modeling", "simulations", "sciml", "profile likelihood"]
 license = "MIT"
 desc = "Practical identifiability analysis and confidence intervals estimation"
-version = "1.4.0"
+version = "1.4.1"
 authors = ["ivborissov <iv.borissov@gmail.com>", "metelkin <evgeny.metelkin@gmail.com>"]
 repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
 
