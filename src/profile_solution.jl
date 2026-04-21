@@ -89,7 +89,20 @@ end
 
 function DataFrames.DataFrame(pc::ProfileCurve)
   npars = length(pc.pars[1])
-  df = DataFrame([getindex.(pc.pars, i) for i in 1:npars], :auto, copycols=false)
+  colnames = Symbol.("x", 1:npars)
+  target = pc.plprob.target
+  if target isa ParameterTarget
+    lbls = get_profile_labels(target)
+    idxs = get_profile_idxs(target)
+    if !isnothing(lbls) && length(lbls) == length(idxs)
+      for (idx, lbl) in zip(idxs, lbls)
+        if 1 <= idx <= npars
+          colnames[idx] = lbl
+        end
+      end
+    end
+  end
+  df = DataFrame([getindex.(pc.pars, i) for i in 1:npars], colnames, copycols=false)
   df[!,:objective] = pc.obj
   return df
 end
@@ -200,8 +213,17 @@ function Base.show(io::IO, mime::MIME"text/plain", pc::ProfileLikelihoodSolution
 end
 
 Base.getindex(A::ProfileLikelihoodSolution, i::Int) = A.profiles[i]
+function Base.getindex(A::ProfileLikelihoodSolution, i::Symbol)
+  lbls = profile_labels(A.prob)
+  isnothing(lbls) && throw(ArgumentError("No symbolic labels are defined for this solution."))
+  idx = findfirst(==(i), lbls)
+  isnothing(idx) && throw(BoundsError("Symbol `$i` is not among profiled labels $lbls"))
+  return A.profiles[idx]
+end
 Base.size(A::ProfileLikelihoodSolution) = size(A.profiles)
 Base.length(A::ProfileLikelihoodSolution) = length(A.profiles)
+
+profile_labels(sol::ProfileLikelihoodSolution) = profile_labels(sol.prob)
 
 endpoints(sol::ProfileLikelihoodSolution) = endpoints.(sol.profiles)
 retcodes(sol::ProfileLikelihoodSolution) = retcodes.(sol.profiles)

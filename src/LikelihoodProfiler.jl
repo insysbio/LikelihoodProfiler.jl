@@ -1,7 +1,6 @@
 module LikelihoodProfiler
 
 using PreallocationTools
-using ComponentArrays
 using SimpleUnPack: @unpack
 using Reexport
 using Optimization
@@ -39,5 +38,6 @@ export FixedStep # LineSearchStep, InterpolationLineSearch
 export chi2_quantile
 export OptimizationProfiler, IntegrationProfiler, CICOProfiler
 export endpoints, stats, retcodes, obj_level
+export profile_labels
 
 end #module LikelihoodProfiler
