@@ -156,7 +156,7 @@ end
         profile_lower=-2.0, profile_upper=2.0)
     @test isnothing(profile_labels(prob_default))
 
-    fs_named = ComponentArray(sum12=g1, diff23=g2)
+    fs_named = (sum12=g1, diff23=g2)
     prob_named = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], fs_named;
         profile_lower=-2.0, profile_upper=2.0)
     @test profile_labels(prob_named) == [:sum12, :diff23]

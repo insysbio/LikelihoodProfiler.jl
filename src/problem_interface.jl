@@ -234,12 +234,12 @@ function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::Abstrac
   return ProfileLikelihoodProblem(optprob, optpars, tgt; kwargs...)
 end
 
-function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, fs::Union{F, AbstractVector{F}}; 
-  profile_lower=nothing, profile_upper=nothing, kwargs...) where {F<:OptimizationFunction}
+function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, fs;
+  profile_lower=nothing, profile_upper=nothing, kwargs...)
 
   (isnothing(profile_lower) || isnothing(profile_upper)) &&
     throw(ArgumentError("Function targets require `profile_lower` and `profile_upper` (scalar or vector)."))
-  Fs = fs isa AbstractVector ? collect(fs) : [fs]
+  Fs = _materialize_profile_functions(fs)
 
   lbv = _materialize_profile_bound(profile_lower, length(Fs))
   ubv = _materialize_profile_bound(profile_upper, length(Fs))
@@ -302,7 +302,18 @@ function _infer_container_labels(x)
   return nothing
 end
 
+_infer_container_labels(x::NamedTuple) = Symbol.(collect(keys(x)))
+
 _infer_container_labels(x::AbstractVector) = nothing
+
+_materialize_profile_functions(f::OptimizationFunction) = [f]
+_materialize_profile_functions(fs::AbstractVector{<:OptimizationFunction}) = collect(fs)
+function _materialize_profile_functions(fs::NamedTuple)
+  vals = collect(values(fs))
+  all(f -> f isa OptimizationFunction, vals) ||
+    throw(ArgumentError("All entries of named function container must be `OptimizationFunction`s."))
+  return OptimizationFunction[vals...]
+end
 
 function _materialize_labels(labels, n::Int)
   if isnothing(labels)
