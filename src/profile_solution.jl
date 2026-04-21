@@ -200,6 +200,12 @@ A number of selectors are available to extract information from the `sol::Profil
 - `endpoints(sol[i])`: Returns the confidence interval (CI) endpoints, marking the intersection of the profile with the `threshold`.
 - `retcodes(sol[i])`: Returns the retcodes of the CI endpoints estimation.
 - `stats(sol[i])`: Returns the statistics of the profile computation.
+- `profile_labels(sol)`: Returns labels of profiled quantities, if available.
+
+### Indexing
+
+- `sol[i::Int]`: Access profile by position.
+- `sol[s::Symbol]`: Access profile by symbolic label (requires labels).
 """
 struct ProfileLikelihoodSolution{probType,P}
   prob::probType

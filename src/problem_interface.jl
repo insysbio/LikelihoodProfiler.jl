@@ -9,6 +9,7 @@ Profile target representing profiling of model parameters.
 - `idxs::AbstractVector{<:Integer}`: Indices of the parameters being profiled.
 - `profile_lower::AbstractVector{<:Real}`: Lower bounds for the profile likelihood. 
 - `profile_upper::AbstractVector{<:Real}`: Upper bounds for the profile likelihood. 
+- `labels::Union{Nothing,AbstractVector{<:Symbol}}`: Optional labels for profiled quantities (same length/order as `idxs`).
 
 Profile bounds `profile_lower` and `profile_upper` should be vectors of finite numerical values. 
 
@@ -16,7 +17,7 @@ Profile bounds `profile_lower` and `profile_upper` should be vectors of finite n
 
 Create a target with explicit lower and upper bounds for each index.
 ```julia
-ParameterTarget(; idxs::AbstractVector{<:Integer}, profile_lower::AbstractVector{<:Real}, profile_upper::AbstractVector{<:Real})
+ParameterTarget(; idxs::AbstractVector{<:Integer}, profile_lower::AbstractVector{<:Real}, profile_upper::AbstractVector{<:Real}, labels=nothing)
 ```
 """
 struct ParameterTarget{I<:AbstractVector{<:Integer}, B<:AbstractVector{<:Real}, L} <: AbstractProfileTarget
@@ -54,6 +55,7 @@ Profile target representing profiling of functions of model parameters.
 - `fs::AbstractVector{<:OptimizationFunction}`: Functions of the parameters being profiled.
 - `profile_lower::AbstractVector{<:Real}`: Lower bounds for the profile likelihood. 
 - `profile_upper::AbstractVector{<:Real}`: Upper bounds for the profile likelihood. 
+- `labels::Union{Nothing,AbstractVector{<:Symbol}}`: Optional labels for profiled functions (same length/order as `fs`).
 
 Profile bounds `profile_lower` and `profile_upper` should be vectors of finite numerical values. 
 
@@ -61,7 +63,7 @@ Profile bounds `profile_lower` and `profile_upper` should be vectors of finite n
 
 Create a target with explicit lower and upper bounds for each function of parameters.
 ```julia
-FunctionTarget(; fs::AbstractVector{<:OptimizationFunction}, profile_lower::AbstractVector{<:Real}, profile_upper::AbstractVector{<:Real})
+FunctionTarget(; fs::AbstractVector{<:OptimizationFunction}, profile_lower::AbstractVector{<:Real}, profile_upper::AbstractVector{<:Real}, labels=nothing)
 ```
 """
 struct FunctionTarget{F<:AbstractVector{<:OptimizationFunction}, B<:AbstractVector{<:Real}, L} <: AbstractProfileTarget
@@ -159,17 +161,19 @@ ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<
 ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real};
   idxs = nothing, profile_lower = nothing, profile_upper = nothing, kwargs...)
 ```
-  - `idxs`: Indices of parameters to profile; Integer or vector of integers; if nothing, profile all parameters.
+  - `idxs`: Indices of parameters to profile; Integer/Symbol or vector mixing Integers/Symbols; if nothing, profile all parameters.
+    Symbolic indices are resolved against inferred labels of `optpars` (e.g. named `ComponentArray`).
   - `profile_lower`, `profile_upper`: Bounds for profiling. Accept scalars or vectors of finite numbers; if `nothing`, taken from `optprob`.
     If scalar bounds are provided, they will be expanded to match the number of parameters being profiled.
   - `kwargs...`: passed to the explicit target constructor.
 
 3. Function profiling sugar
 ```julia
-ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real};
-  fs = nothing, profile_lower = nothing, profile_upper = nothing, kwargs...)
+ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, fs;
+  profile_lower = nothing, profile_upper = nothing, kwargs...)
 ```
-`fs`: `OptimizationFunction` or vector of `OptimizationFunction` - functions of parameters to be profiled.
+`fs`: `OptimizationFunction`, vector of `OptimizationFunction`, or named container of `OptimizationFunction`s.
+Named containers propagate keys to profile labels.
   - `profile_lower`, `profile_upper`: Bounds for profiling. Accept scalars or vectors of finite numbers.
     If scalar bounds are provided, they will be expanded to match the number of functions being profiled.
   - `kwargs...`: passed to the explicit target constructor.
@@ -180,6 +184,15 @@ struct ProfileLikelihoodProblem{T,probType,P} <: AbstractProfileLikelihoodProble
   target::T
   threshold::Float64
 end
+
+"""
+    profile_labels(x)
+
+Return labels for profiled quantities.
+
+- `profile_labels(plprob::ProfileLikelihoodProblem)`: labels of the active profile target.
+- `profile_labels(sol::ProfileLikelihoodSolution)`: labels used to index solution profiles by `Symbol`.
+"""
 
 function Base.show(io::IO, mime::MIME"text/plain", plprob::ProfileLikelihoodProblem) 
   println(io, "Profile Likelihood Problem. Profile threshold: $(plprob.threshold)")
