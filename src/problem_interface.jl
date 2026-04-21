@@ -221,7 +221,7 @@ function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::Abstrac
   (isnothing(lb) || isnothing(ub)) &&
      throw(ArgumentError("Bounds not found in `OptimizationProblem`; pass `profile_lower`/`profile_upper`."))
 
-  I = _materialize_idxs(idxs, n; syms=param_labels)
+  I = _materialize_idxs(idxs, n; labels=param_labels)
   lbv = _materialize_profile_bound(lb, length(I))
   ubv = _materialize_profile_bound(ub, length(I))
 
@@ -270,7 +270,7 @@ function _check_prob_target(optprob::OptimizationProblem, optpars::AbstractVecto
   return nothing
 end
 
-function _materialize_idxs(idxs, n::Int; syms=nothing)
+function _materialize_idxs(idxs, n::Int; labels=nothing)
   if isnothing(idxs)
     return collect(Base.OneTo(n))
   elseif idxs isa Integer && 1 <= idxs <= n
@@ -278,11 +278,11 @@ function _materialize_idxs(idxs, n::Int; syms=nothing)
   elseif idxs isa AbstractVector{<:Integer} && all(1 .<= idxs .<= n)
     return Int.(collect(idxs))
   elseif idxs isa Symbol
-    return [_symbol_to_idx(idxs, syms, n)]
+    return [_symbol_to_idx(idxs, labels, n)]
   elseif idxs isa AbstractVector{<:Symbol}
-    return [_symbol_to_idx(s, syms, n) for s in idxs]
+    return [_symbol_to_idx(s, labels, n) for s in idxs]
   elseif idxs isa AbstractVector && all(x -> (x isa Integer || x isa Symbol), idxs)
-    I = [x isa Integer ? Int(x) : _symbol_to_idx(x, syms, n) for x in idxs]
+    I = [x isa Integer ? Int(x) : _symbol_to_idx(x, labels, n) for x in idxs]
     all(1 .<= I .<= n) || throw(ArgumentError("`idxs` must be within 1:$n."))
     return I
   else
@@ -290,25 +290,15 @@ function _materialize_idxs(idxs, n::Int; syms=nothing)
   end
 end
 
-function _symbol_to_idx(s::Symbol, syms, n::Int)
-  isnothing(syms) &&
-    throw(ArgumentError("Symbolic `idxs` requested but parameter symbols were not detected. Pass named `ComponentArray` as `optpars` (e.g. `ComponentArray(a=..., b=...)`) or use integer indices."))
-  idx = findfirst(==(s), syms)
-  isnothing(idx) && throw(ArgumentError("Symbol `$s` is not present in parameter symbols $syms."))
+function _symbol_to_idx(s::Symbol, labels, n::Int)
+  isnothing(labels) &&
+    throw(ArgumentError("Symbolic `idxs` requested but parameter labels were not detected. Pass named parameter labels through `labels` or use integer indices."))
+  idx = findfirst(==(s), labels)
+  isnothing(idx) && throw(ArgumentError("Symbol `$s` is not present in parameter labels $labels."))
   return idx
 end
 
 function _infer_parameter_labels(optpars::AbstractVector)
-  n = length(optpars)
-  if optpars isa ComponentArrays.ComponentArray
-    ks = collect(keys(optpars))
-    if length(ks) == n && all(k -> (k isa Symbol || k isa AbstractString), ks)
-      inferred_syms = [k isa Symbol ? k : Symbol(k) for k in ks]
-      allunique(inferred_syms) || return nothing
-      return inferred_syms
-    end
-  end
-
   return nothing
 end
 
@@ -333,9 +323,7 @@ function _materialize_labels(labels, n::Int)
   return collect(labels)
 end
 
-parameter_syms(plprob::ProfileLikelihoodProblem) = get_profile_labels(plprob.target)
-profile_syms(plprob::ProfileLikelihoodProblem) = get_profile_labels(plprob.target)
-profile_labels(plprob::ProfileLikelihoodProblem) = get_profile_labels(plprob.target)
+labels(plprob::ProfileLikelihoodProblem) = get_profile_labels(plprob.target)
 
 function _materialize_profile_bound(b, I::Int)
   if b isa Real
