@@ -129,10 +129,15 @@ end
     optpars = ComponentArray(a=0.0, b=0.0, c=0.0)
     optprob = OptimizationProblem(f, [1.0, 2.0, 3.0])
 
-    prob = ProfileLikelihoodProblem(optprob, optpars;
+    prob1 = ProfileLikelihoodProblem(optprob, optpars;
         idxs=[:a, :c], profile_lower=-5.0, profile_upper=5.0)
-    @test prob.target.idxs == [1, 3]
-    @test profile_labels(prob) == [:a, :c]
+    @test prob1.target.idxs == [1, 3]
+    @test profile_labels(prob1) == [:a, :c]
+
+    prob2 = ProfileLikelihoodProblem(optprob, optpars;
+        idxs=:b, profile_lower=-5.0, profile_upper=5.0)
+    @test prob2.target.idxs == [2]
+    @test profile_labels(prob2) == [:b]
 
     # symbolic idxs are not available without named parameters
     @test_throws ArgumentError ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0];
