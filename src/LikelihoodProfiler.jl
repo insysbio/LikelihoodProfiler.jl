@@ -1,6 +1,7 @@
 module LikelihoodProfiler
 
 using PreallocationTools
+using ComponentArrays
 using SimpleUnPack: @unpack
 using Reexport
 using Optimization
