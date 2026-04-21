@@ -19,21 +19,24 @@ Create a target with explicit lower and upper bounds for each index.
 ParameterTarget(; idxs::AbstractVector{<:Integer}, profile_lower::AbstractVector{<:Real}, profile_upper::AbstractVector{<:Real})
 ```
 """
-struct ParameterTarget{I<:AbstractVector{<:Integer}, B<:AbstractVector{<:Real}} <: AbstractProfileTarget
+struct ParameterTarget{I<:AbstractVector{<:Integer}, B<:AbstractVector{<:Real}, L} <: AbstractProfileTarget
   idxs::I
   profile_lower::B
   profile_upper::B
+  labels::L
 
   function ParameterTarget(idxs::I, 
                            profile_lower::AbstractVector{<:Real}, 
-                           profile_upper::AbstractVector{<:Real}) where {I<:AbstractVector{<:Integer}}
+                           profile_upper::AbstractVector{<:Real},
+                           labels = nothing) where {I<:AbstractVector{<:Integer}}
     n = length(idxs)
     n > 0           || throw(ArgumentError("`idxs` must be non-empty."))
     allunique(idxs) || throw(ArgumentError("`idxs` must be unique."))
     all(>=(1), idxs) || throw(ArgumentError("`idxs` must be positive integers."))
+    labels_typed = _materialize_labels(labels, n)
     
     lb_typed, ub_typed = _promote_profile_bounds(profile_lower, profile_upper, n)
-    new{I,typeof(lb_typed)}(idxs, lb_typed, ub_typed)
+    new{I,typeof(lb_typed),typeof(labels_typed)}(idxs, lb_typed, ub_typed, labels_typed)
   end
 end
 
@@ -61,18 +64,21 @@ Create a target with explicit lower and upper bounds for each function of parame
 FunctionTarget(; fs::AbstractVector{<:OptimizationFunction}, profile_lower::AbstractVector{<:Real}, profile_upper::AbstractVector{<:Real})
 ```
 """
-struct FunctionTarget{F<:AbstractVector{<:OptimizationFunction}, B<:AbstractVector{<:Real}} <: AbstractProfileTarget
+struct FunctionTarget{F<:AbstractVector{<:OptimizationFunction}, B<:AbstractVector{<:Real}, L} <: AbstractProfileTarget
   fs::F
   profile_lower::B
   profile_upper::B
+  labels::L
 
   function FunctionTarget(fs::F, 
                            profile_lower::AbstractVector{<:Real}, 
-                           profile_upper::AbstractVector{<:Real}) where {F<:AbstractVector{<:OptimizationFunction}}
+                           profile_upper::AbstractVector{<:Real},
+                           labels = nothing) where {F<:AbstractVector{<:OptimizationFunction}}
     n = length(fs)
     n > 0 || throw(ArgumentError("`fs` must be non-empty."))
+    labels_typed = _materialize_labels(labels, n)
     lb_typed, ub_typed = _promote_profile_bounds(profile_lower, profile_upper, n)
-    new{F,typeof(lb_typed)}(fs, lb_typed, ub_typed)
+    new{F,typeof(lb_typed),typeof(labels_typed)}(fs, lb_typed, ub_typed, labels_typed)
   end
 end
 
@@ -101,14 +107,15 @@ function get_idx_profile_ub(t::AbstractProfileTarget, idx)
 end
 
 get_profile_fs(ft::FunctionTarget) = ft.fs
+get_profile_labels(t::AbstractProfileTarget) = t.labels
 
 ############################### CONSTRUCTORS ###############################
 
-ParameterTarget(; idxs::AbstractVector{<:Integer}, profile_lower::AbstractVector{<:Real}, profile_upper::AbstractVector{<:Real}) =
-  ParameterTarget(idxs, profile_lower, profile_upper)
+ParameterTarget(; idxs::AbstractVector{<:Integer}, profile_lower::AbstractVector{<:Real}, profile_upper::AbstractVector{<:Real}, labels=nothing) =
+  ParameterTarget(idxs, profile_lower, profile_upper, labels)
 
-FunctionTarget(; fs::AbstractVector{<:OptimizationFunction}, profile_lower::AbstractVector{<:Real}, profile_upper::AbstractVector{<:Real}) =
-  FunctionTarget(fs, profile_lower, profile_upper)
+FunctionTarget(; fs::AbstractVector{<:OptimizationFunction}, profile_lower::AbstractVector{<:Real}, profile_upper::AbstractVector{<:Real}, labels=nothing) =
+  FunctionTarget(fs, profile_lower, profile_upper, labels)
 
 ################################ HELPERS ################################
 
@@ -177,6 +184,9 @@ end
 function Base.show(io::IO, mime::MIME"text/plain", plprob::ProfileLikelihoodProblem) 
   println(io, "Profile Likelihood Problem. Profile threshold: $(plprob.threshold)")
   show(io, mime, plprob.target)
+  if !isnothing(get_profile_labels(plprob.target))
+    println(io, "Profile labels: $(get_profile_labels(plprob.target))")
+  end
   println(io, "Parameters' optimal values: ")
   show(io, mime, plprob.optpars)
 end
@@ -202,15 +212,16 @@ function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::Abstrac
 end
 
 function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}; 
-  idxs=nothing, profile_lower=nothing, profile_upper=nothing, kwargs...)
+  idxs=nothing, profile_lower=nothing, profile_upper=nothing, labels=nothing, kwargs...)
   
   n = length(optpars)
+  param_labels = _materialize_parameter_labels(labels, optpars)
   lb = isnothing(profile_lower) ? optprob.lb : profile_lower
   ub = isnothing(profile_upper) ? optprob.ub : profile_upper
   (isnothing(lb) || isnothing(ub)) &&
      throw(ArgumentError("Bounds not found in `OptimizationProblem`; pass `profile_lower`/`profile_upper`."))
 
-  I = _materialize_idxs(idxs, n)
+  I = _materialize_idxs(idxs, n; syms=param_labels)
   lbv = _materialize_profile_bound(lb, length(I))
   ubv = _materialize_profile_bound(ub, length(I))
 
@@ -218,12 +229,13 @@ function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::Abstrac
   ubI = (length(ubv) == n) ? ubv[I] : ubv
   lbv_typed, ubv_typed = _ensure_real_bounds(lbI, ubI)
   
-  tgt = ParameterTarget(; idxs=I, profile_lower=lbv_typed, profile_upper=ubv_typed)
+  prof_labels = isnothing(param_labels) ? nothing : param_labels[I]
+  tgt = ParameterTarget(; idxs=I, profile_lower=lbv_typed, profile_upper=ubv_typed, labels=prof_labels)
   return ProfileLikelihoodProblem(optprob, optpars, tgt; kwargs...)
 end
 
 function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, fs::Union{F, AbstractVector{F}}; 
-  profile_lower=nothing, profile_upper=nothing, kwargs...) where {F<:OptimizationFunction}
+  profile_lower=nothing, profile_upper=nothing, labels=nothing, kwargs...) where {F<:OptimizationFunction}
 
   (isnothing(profile_lower) || isnothing(profile_upper)) &&
     throw(ArgumentError("Function targets require `profile_lower` and `profile_upper` (scalar or vector)."))
@@ -233,7 +245,8 @@ function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::Abstrac
   ubv = _materialize_profile_bound(profile_upper, length(Fs))
   lbv_typed, ubv_typed = _ensure_real_bounds(lbv, ubv)
 
-  tgt = FunctionTarget(; fs=Fs, profile_lower=lbv_typed, profile_upper=ubv_typed)
+  prof_labels = isnothing(labels) ? Symbol.("f", 1:length(Fs)) : labels
+  tgt = FunctionTarget(; fs=Fs, profile_lower=lbv_typed, profile_upper=ubv_typed, labels=prof_labels)
   return ProfileLikelihoodProblem(optprob, optpars, tgt; kwargs...)
 end
 
@@ -257,17 +270,72 @@ function _check_prob_target(optprob::OptimizationProblem, optpars::AbstractVecto
   return nothing
 end
 
-function _materialize_idxs(idxs, n::Int)
+function _materialize_idxs(idxs, n::Int; syms=nothing)
   if isnothing(idxs)
     return collect(Base.OneTo(n))
   elseif idxs isa Integer && 1 <= idxs <= n
     return [Int(idxs)]
   elseif idxs isa AbstractVector{<:Integer} && all(1 .<= idxs .<= n)
     return Int.(collect(idxs))
+  elseif idxs isa Symbol
+    return [_symbol_to_idx(idxs, syms, n)]
+  elseif idxs isa AbstractVector{<:Symbol}
+    return [_symbol_to_idx(s, syms, n) for s in idxs]
+  elseif idxs isa AbstractVector && all(x -> (x isa Integer || x isa Symbol), idxs)
+    I = [x isa Integer ? Int(x) : _symbol_to_idx(x, syms, n) for x in idxs]
+    all(1 .<= I .<= n) || throw(ArgumentError("`idxs` must be within 1:$n."))
+    return I
   else
-    throw(ArgumentError("`idxs` must be a positive Integer or a vector of positive Integers."))
+    throw(ArgumentError("`idxs` must be an Integer, Symbol, or a vector of Integers/Symbols."))
   end
 end
+
+function _symbol_to_idx(s::Symbol, syms, n::Int)
+  isnothing(syms) &&
+    throw(ArgumentError("Symbolic `idxs` requested but parameter symbols were not detected. Pass named `ComponentArray` as `optpars` (e.g. `ComponentArray(a=..., b=...)`) or use integer indices."))
+  idx = findfirst(==(s), syms)
+  isnothing(idx) && throw(ArgumentError("Symbol `$s` is not present in parameter symbols $syms."))
+  return idx
+end
+
+function _infer_parameter_labels(optpars::AbstractVector)
+  n = length(optpars)
+  if optpars isa ComponentArrays.ComponentArray
+    ks = collect(keys(optpars))
+    if length(ks) == n && all(k -> (k isa Symbol || k isa AbstractString), ks)
+      inferred_syms = [k isa Symbol ? k : Symbol(k) for k in ks]
+      allunique(inferred_syms) || return nothing
+      return inferred_syms
+    end
+  end
+
+  return nothing
+end
+
+function _materialize_parameter_labels(labels, optpars::AbstractVector)
+  if isnothing(labels)
+    return _infer_parameter_labels(optpars)
+  end
+  labels isa AbstractVector{<:Symbol} || throw(ArgumentError("`labels` must be a vector of Symbols."))
+  length(labels) == length(optpars) ||
+    throw(DimensionMismatch("For parameter profiling, when provided, `labels` must have `length(optpars)` entries."))
+  allunique(labels) || throw(ArgumentError("`labels` must contain unique symbols."))
+  return collect(labels)
+end
+
+function _materialize_labels(labels, n::Int)
+  if isnothing(labels)
+    return nothing
+  end
+  labels isa AbstractVector{<:Symbol} || throw(ArgumentError("`labels` must be a vector of Symbols."))
+  length(labels) == n || throw(DimensionMismatch("`labels` must have length $n."))
+  allunique(labels) || throw(ArgumentError("`labels` must contain unique symbols."))
+  return collect(labels)
+end
+
+parameter_syms(plprob::ProfileLikelihoodProblem) = get_profile_labels(plprob.target)
+profile_syms(plprob::ProfileLikelihoodProblem) = get_profile_labels(plprob.target)
+profile_labels(plprob::ProfileLikelihoodProblem) = get_profile_labels(plprob.target)
 
 function _materialize_profile_bound(b, I::Int)
   if b isa Real
@@ -302,6 +370,5 @@ function SciMLBase.remake(plprob::ProfileLikelihoodProblem;
   if threshold === missing
     threshold = plprob.threshold
   end
-
   return ProfileLikelihoodProblem(optprob, optpars, target; threshold)
 end

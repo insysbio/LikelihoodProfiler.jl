@@ -39,5 +39,7 @@ export FixedStep # LineSearchStep, InterpolationLineSearch
 export chi2_quantile
 export OptimizationProfiler, IntegrationProfiler, CICOProfiler
 export endpoints, stats, retcodes, obj_level
+export parameter_syms, profile_syms
+export profile_labels
 
 end #module LikelihoodProfiler

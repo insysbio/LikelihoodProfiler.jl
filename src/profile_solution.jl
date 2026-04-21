@@ -200,6 +200,13 @@ function Base.show(io::IO, mime::MIME"text/plain", pc::ProfileLikelihoodSolution
 end
 
 Base.getindex(A::ProfileLikelihoodSolution, i::Int) = A.profiles[i]
+function Base.getindex(A::ProfileLikelihoodSolution, i::Symbol)
+  syms = profile_syms(A.prob)
+  isnothing(syms) && throw(ArgumentError("No symbolic parameter mapping is defined for this solution."))
+  idx = findfirst(==(i), syms)
+  isnothing(idx) && throw(BoundsError("Symbol `$i` is not among profiled symbols $syms"))
+  return A.profiles[idx]
+end
 Base.size(A::ProfileLikelihoodSolution) = size(A.profiles)
 Base.length(A::ProfileLikelihoodSolution) = length(A.profiles)
 

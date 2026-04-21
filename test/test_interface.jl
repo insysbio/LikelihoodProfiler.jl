@@ -1,5 +1,6 @@
 using Test
 using LikelihoodProfiler
+using ComponentArrays
 
 # ----------------------------
 # ParameterTarget constructors
@@ -121,6 +122,44 @@ end
         idxs=0, profile_lower=-1.0, profile_upper=1.0)
     @test_throws ArgumentError ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0];
         idxs=[1,4], profile_lower=-1.0, profile_upper=1.0)
+end
+
+@testset "PL sugar: symbolic parameter indexing" begin
+    f = OptimizationFunction((x,p)->x[1]^2 + x[2]^2 + x[3]^2)
+    optpars = ComponentArray(a=0.0, b=0.0, c=0.0)
+    optprob = OptimizationProblem(f, [1.0, 2.0, 3.0])
+
+    prob = ProfileLikelihoodProblem(optprob, optpars;
+        idxs=[:a, :c], profile_lower=-5.0, profile_upper=5.0)
+    @test prob.target.idxs == [1, 3]
+    @test parameter_syms(prob) == [:a, :c]
+    @test profile_syms(prob) == [:a, :c]
+
+    # mixing integer and symbolic indexing is supported
+    prob_mixed = ProfileLikelihoodProblem(optprob, optpars;
+        idxs=Any[1, :c], profile_lower=-5.0, profile_upper=5.0)
+    @test prob_mixed.target.idxs == [1, 3]
+
+    # symbolic idxs are not available without named parameters
+    @test_throws ArgumentError ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0];
+        idxs=[:a], profile_lower=-1.0, profile_upper=1.0)
+    @test_throws ArgumentError ProfileLikelihoodProblem(optprob, optpars;
+        idxs=[:z], profile_lower=-1.0, profile_upper=1.0)
+end
+
+@testset "Function target labels" begin
+    f = OptimizationFunction((x,p)->sum(abs2, x))
+    optprob = OptimizationProblem(f, [1.0, 2.0, 3.0])
+    g1 = OptimizationFunction((x,p)->x[1] + x[2])
+    g2 = OptimizationFunction((x,p)->x[2] - x[3])
+
+    prob_default = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], [g1, g2];
+        profile_lower=-2.0, profile_upper=2.0)
+    @test profile_syms(prob_default) == [:f1, :f2]
+
+    prob_named = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], [g1, g2];
+        profile_lower=-2.0, profile_upper=2.0, labels=[:sum12, :diff23])
+    @test profile_syms(prob_named) == [:sum12, :diff23]
 end
 
 # ----------------------------
