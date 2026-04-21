@@ -212,10 +212,10 @@ function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::Abstrac
 end
 
 function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}; 
-  idxs=nothing, profile_lower=nothing, profile_upper=nothing, labels=nothing, kwargs...)
+  idxs=nothing, profile_lower=nothing, profile_upper=nothing, kwargs...)
   
   n = length(optpars)
-  param_labels = _materialize_parameter_labels(labels, optpars)
+  param_labels = _infer_container_labels(optpars)
   lb = isnothing(profile_lower) ? optprob.lb : profile_lower
   ub = isnothing(profile_upper) ? optprob.ub : profile_upper
   (isnothing(lb) || isnothing(ub)) &&
@@ -235,7 +235,7 @@ function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::Abstrac
 end
 
 function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real}, fs::Union{F, AbstractVector{F}}; 
-  profile_lower=nothing, profile_upper=nothing, labels=nothing, kwargs...) where {F<:OptimizationFunction}
+  profile_lower=nothing, profile_upper=nothing, kwargs...) where {F<:OptimizationFunction}
 
   (isnothing(profile_lower) || isnothing(profile_upper)) &&
     throw(ArgumentError("Function targets require `profile_lower` and `profile_upper` (scalar or vector)."))
@@ -245,7 +245,8 @@ function ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::Abstrac
   ubv = _materialize_profile_bound(profile_upper, length(Fs))
   lbv_typed, ubv_typed = _ensure_real_bounds(lbv, ubv)
 
-  prof_labels = isnothing(labels) ? Symbol.("f", 1:length(Fs)) : labels
+  inferred_labels = _infer_container_labels(fs)
+  prof_labels = isnothing(inferred_labels) ? Symbol.("f", 1:length(Fs)) : inferred_labels
   tgt = FunctionTarget(; fs=Fs, profile_lower=lbv_typed, profile_upper=ubv_typed, labels=prof_labels)
   return ProfileLikelihoodProblem(optprob, optpars, tgt; kwargs...)
 end
@@ -298,20 +299,15 @@ function _symbol_to_idx(s::Symbol, labels, n::Int)
   return idx
 end
 
-function _infer_parameter_labels(optpars::AbstractVector)
+function _infer_container_labels(x)
   return nothing
 end
 
-function _materialize_parameter_labels(labels, optpars::AbstractVector)
-  if isnothing(labels)
-    return _infer_parameter_labels(optpars)
-  end
-  labels isa AbstractVector{<:Symbol} || throw(ArgumentError("`labels` must be a vector of Symbols."))
-  length(labels) == length(optpars) ||
-    throw(DimensionMismatch("For parameter profiling, when provided, `labels` must have `length(optpars)` entries."))
-  allunique(labels) || throw(ArgumentError("`labels` must contain unique symbols."))
-  return collect(labels)
+function _infer_container_labels(x::AbstractVector)
+  return _infer_container_labels(typeof(x), x)
 end
+
+_infer_container_labels(::Type, x) = nothing
 
 function _materialize_labels(labels, n::Int)
   if isnothing(labels)
@@ -323,7 +319,7 @@ function _materialize_labels(labels, n::Int)
   return collect(labels)
 end
 
-labels(plprob::ProfileLikelihoodProblem) = get_profile_labels(plprob.target)
+profile_labels(plprob::ProfileLikelihoodProblem) = get_profile_labels(plprob.target)
 
 function _materialize_profile_bound(b, I::Int)
   if b isa Real

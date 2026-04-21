@@ -201,7 +201,7 @@ end
 
 Base.getindex(A::ProfileLikelihoodSolution, i::Int) = A.profiles[i]
 function Base.getindex(A::ProfileLikelihoodSolution, i::Symbol)
-  lbls = labels(A.prob)
+  lbls = profile_labels(A.prob)
   isnothing(lbls) && throw(ArgumentError("No symbolic labels are defined for this solution."))
   idx = findfirst(==(i), lbls)
   isnothing(idx) && throw(BoundsError("Symbol `$i` is not among profiled labels $lbls"))
@@ -210,7 +210,7 @@ end
 Base.size(A::ProfileLikelihoodSolution) = size(A.profiles)
 Base.length(A::ProfileLikelihoodSolution) = length(A.profiles)
 
-labels(sol::ProfileLikelihoodSolution) = labels(sol.prob)
+profile_labels(sol::ProfileLikelihoodSolution) = profile_labels(sol.prob)
 
 endpoints(sol::ProfileLikelihoodSolution) = endpoints.(sol.profiles)
 retcodes(sol::ProfileLikelihoodSolution) = retcodes.(sol.profiles)

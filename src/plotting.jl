@@ -1,7 +1,7 @@
 
 @recipe function f(sol::ProfileLikelihoodSolution)
   ls = length(sol)
-  lbls = labels(sol)
+  lbls = profile_labels(sol)
 
   layout --> ls
   for i in 1:ls

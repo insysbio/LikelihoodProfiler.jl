@@ -132,7 +132,7 @@ end
     prob = ProfileLikelihoodProblem(optprob, optpars;
         idxs=[:a, :c], profile_lower=-5.0, profile_upper=5.0)
     @test prob.target.idxs == [1, 3]
-    @test labels(prob) == [:a, :c]
+    @test profile_labels(prob) == [:a, :c]
 
     # mixing integer and symbolic indexing is supported
     prob_mixed = ProfileLikelihoodProblem(optprob, optpars;
@@ -154,15 +154,12 @@ end
 
     prob_default = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], [g1, g2];
         profile_lower=-2.0, profile_upper=2.0)
-    @test labels(prob_default) == [:f1, :f2]
+    @test profile_labels(prob_default) == [:f1, :f2]
 
-    prob_named = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], [g1, g2];
-        profile_lower=-2.0, profile_upper=2.0, labels=[:sum12, :diff23])
-    @test labels(prob_named) == [:sum12, :diff23]
-    @test_throws DimensionMismatch ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], [g1, g2];
-        profile_lower=-2.0, profile_upper=2.0, labels=[:only_one])
-    @test_throws ArgumentError ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], [g1, g2];
-        profile_lower=-2.0, profile_upper=2.0, labels=[:dup, :dup])
+    fs_named = ComponentArray(sum12=g1, diff23=g2)
+    prob_named = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], fs_named;
+        profile_lower=-2.0, profile_upper=2.0)
+    @test profile_labels(prob_named) == [:sum12, :diff23]
 end
 
 # ----------------------------
