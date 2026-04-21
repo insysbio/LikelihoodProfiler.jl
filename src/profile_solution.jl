@@ -89,21 +89,17 @@ end
 
 function DataFrames.DataFrame(pc::ProfileCurve)
   npars = length(pc.pars[1])
-  colnames = Symbol.("x", 1:npars)
+  param_labels = _infer_container_labels(pc.plprob.optpars)
+  colnames = (isnothing(param_labels) || length(param_labels) != npars) ? Symbol.("x", 1:npars) : copy(param_labels)
   target = pc.plprob.target
-  if target isa ParameterTarget
-    lbls = get_profile_labels(target)
-    idxs = get_profile_idxs(target)
-    if !isnothing(lbls) && length(lbls) == length(idxs)
-      for (idx, lbl) in zip(idxs, lbls)
-        if 1 <= idx <= npars
-          colnames[idx] = lbl
-        end
-      end
-    end
-  end
   df = DataFrame([getindex.(pc.pars, i) for i in 1:npars], colnames, copycols=false)
-  df[!,:objective] = pc.obj
+  extra_col = if target isa FunctionTarget
+    lbls = get_profile_labels(target)
+    (!isnothing(lbls) && 1 <= pc.idx <= length(lbls)) ? lbls[pc.idx] : :objective
+  else
+    :objective
+  end
+  df[!,extra_col] = pc.obj
   return df
 end
 

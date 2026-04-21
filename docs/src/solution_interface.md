@@ -30,4 +30,5 @@ The following keyword arguments can be used in `plot` function:
 Also each profile contained in the `sol::ProfileLikelihoodSolution` can be represented as a DataFrame with `DataFrame(sol[i])`.
 If profile labels are present, symbolic indexing is available: `sol[:label]`.
 Use `profile_labels(sol)` to inspect available labels.
-For parameter profiles, `DataFrame(sol[i])` uses labels for matching parameter columns when available.
+When parameter labels are available, `DataFrame(sol[i])` uses them for all parameter columns.
+For function targets, the additional column is named by the profiled function label (or `:objective` if no label exists).

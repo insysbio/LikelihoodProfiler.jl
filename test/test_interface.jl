@@ -180,8 +180,18 @@ end
 
     pc = LikelihoodProfiler.solution_init(prob, 1, 1, [0.0, 0.0, 0.0], 0.0, 0.0, 1.0)
     df = DataFrame(pc)
-    @test Symbol.(names(df))[1:3] == [:a, :x2, :c]
+    @test Symbol.(names(df))[1:3] == [:a, :b, :c]
     @test :objective in Symbol.(names(df))
+
+    g1 = OptimizationFunction((x,p)->x[1] + x[2])
+    g2 = OptimizationFunction((x,p)->x[2] - x[3])
+    fs_named = (sum12=g1, diff23=g2)
+    prob_f = ProfileLikelihoodProblem(optprob, optpars, fs_named;
+        profile_lower=-2.0, profile_upper=2.0)
+    pc_f = LikelihoodProfiler.solution_init(prob_f, 1, 1, [0.0, 0.0, 0.0], 0.0, 0.0, 1.0)
+    df_f = DataFrame(pc_f)
+    @test Symbol.(names(df_f))[1:3] == [:a, :b, :c]
+    @test :sum12 in Symbol.(names(df_f))
 end
 
 # ----------------------------
