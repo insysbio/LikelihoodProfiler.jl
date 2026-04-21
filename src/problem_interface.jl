@@ -161,7 +161,7 @@ ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<
 ProfileLikelihoodProblem(optprob::OptimizationProblem, optpars::AbstractVector{<:Real};
   idxs = nothing, profile_lower = nothing, profile_upper = nothing, kwargs...)
 ```
-  - `idxs`: Indices of parameters to profile; Integer/Symbol or vector mixing Integers/Symbols; if nothing, profile all parameters.
+  - `idxs`: Indices of parameters to profile; Integer, vector of Integers, Symbol, or vector of Symbols; if nothing, profile all parameters.
     Symbolic indices are resolved against inferred labels of `optpars` (e.g. named `ComponentArray`).
   - `profile_lower`, `profile_upper`: Bounds for profiling. Accept scalars or vectors of finite numbers; if `nothing`, taken from `optprob`.
     If scalar bounds are provided, they will be expanded to match the number of parameters being profiled.
@@ -294,12 +294,8 @@ function _materialize_idxs(idxs, n::Int; labels=nothing)
     return [_symbol_to_idx(idxs, labels, n)]
   elseif idxs isa AbstractVector{<:Symbol}
     return [_symbol_to_idx(s, labels, n) for s in idxs]
-  elseif idxs isa AbstractVector && all(x -> (x isa Integer || x isa Symbol), idxs)
-    I = [x isa Integer ? Int(x) : _symbol_to_idx(x, labels, n) for x in idxs]
-    all(1 .<= I .<= n) || throw(ArgumentError("`idxs` must be within 1:$n."))
-    return I
   else
-    throw(ArgumentError("`idxs` must be an Integer, Symbol, or a vector of Integers/Symbols."))
+    throw(ArgumentError("`idxs` must be an Integer, vector of Integers, Symbol, or vector of Symbols."))
   end
 end
 

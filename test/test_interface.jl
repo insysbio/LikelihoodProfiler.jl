@@ -134,11 +134,6 @@ end
     @test prob.target.idxs == [1, 3]
     @test profile_labels(prob) == [:a, :c]
 
-    # mixing integer and symbolic indexing is supported
-    prob_mixed = ProfileLikelihoodProblem(optprob, optpars;
-        idxs=Any[1, :c], profile_lower=-5.0, profile_upper=5.0)
-    @test prob_mixed.target.idxs == [1, 3]
-
     # symbolic idxs are not available without named parameters
     @test_throws ArgumentError ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0];
         idxs=[:a], profile_lower=-1.0, profile_upper=1.0)

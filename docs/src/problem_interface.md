@@ -73,7 +73,7 @@ ProfileLikelihoodProblem(::OptimizationProblem, ::AbstractVector{<:Real}; idxs, 
 ProfileLikelihoodProblem(::OptimizationProblem, ::AbstractVector{<:Real}, fs; profile_lower, profile_upper)
 ```
 
-- `idxs` may contain integers, symbols, or mixed vectors of both.
+- `idxs` may contain integers (scalar/vector) or symbols (scalar/vector).
 - For symbolic parameter indexing (`idxs=[:a,:b]`), labels are inferred from named parameter containers (e.g. `ComponentArray`) when available.
 - For function targets, labels are inferred from named function containers (e.g. `NamedTuple`) when available.
 
