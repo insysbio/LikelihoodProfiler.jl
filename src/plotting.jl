@@ -1,12 +1,14 @@
 
 @recipe function f(sol::ProfileLikelihoodSolution)
   ls = length(sol)
+  lbls = profile_labels(sol)
 
   layout --> ls
   for i in 1:ls
+    xlbl = isnothing(lbls) ? "x[$(i)]" : string(lbls[i])
     @series begin
       subplot := i
-      xguide --> "x[$(i)]"
+      xguide --> xlbl
       yguide --> "objective function"
       sol[i]
     end

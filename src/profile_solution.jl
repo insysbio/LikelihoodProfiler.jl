@@ -89,8 +89,17 @@ end
 
 function DataFrames.DataFrame(pc::ProfileCurve)
   npars = length(pc.pars[1])
-  df = DataFrame([getindex.(pc.pars, i) for i in 1:npars], :auto, copycols=false)
-  df[!,:objective] = pc.obj
+  param_labels = _infer_container_labels(pc.plprob.optpars)
+  colnames = (isnothing(param_labels) || length(param_labels) != npars) ? Symbol.("x", 1:npars) : copy(param_labels)
+  target = pc.plprob.target
+  df = DataFrame([getindex.(pc.pars, i) for i in 1:npars], colnames, copycols=false)
+  extra_col = if target isa FunctionTarget
+    lbls = get_profile_labels(target)
+    (!isnothing(lbls) && 1 <= pc.idx <= length(lbls)) ? lbls[pc.idx] : :objective
+  else
+    :objective
+  end
+  df[!,extra_col] = pc.obj
   return df
 end
 
@@ -187,6 +196,12 @@ A number of selectors are available to extract information from the `sol::Profil
 - `endpoints(sol[i])`: Returns the confidence interval (CI) endpoints, marking the intersection of the profile with the `threshold`.
 - `retcodes(sol[i])`: Returns the retcodes of the CI endpoints estimation.
 - `stats(sol[i])`: Returns the statistics of the profile computation.
+- `profile_labels(sol)`: Returns labels of profiled quantities, if available.
+
+### Indexing
+
+- `sol[i::Int]`: Access profile by position.
+- `sol[s::Symbol]`: Access profile by symbolic label (requires labels).
 """
 struct ProfileLikelihoodSolution{probType,P}
   prob::probType
@@ -200,8 +215,17 @@ function Base.show(io::IO, mime::MIME"text/plain", pc::ProfileLikelihoodSolution
 end
 
 Base.getindex(A::ProfileLikelihoodSolution, i::Int) = A.profiles[i]
+function Base.getindex(A::ProfileLikelihoodSolution, i::Symbol)
+  lbls = profile_labels(A.prob)
+  isnothing(lbls) && throw(ArgumentError("No symbolic labels are defined for this solution."))
+  idx = findfirst(==(i), lbls)
+  isnothing(idx) && throw(BoundsError("Symbol `$i` is not among profiled labels $lbls"))
+  return A.profiles[idx]
+end
 Base.size(A::ProfileLikelihoodSolution) = size(A.profiles)
 Base.length(A::ProfileLikelihoodSolution) = length(A.profiles)
+
+profile_labels(sol::ProfileLikelihoodSolution) = profile_labels(sol.prob)
 
 endpoints(sol::ProfileLikelihoodSolution) = endpoints.(sol.profiles)
 retcodes(sol::ProfileLikelihoodSolution) = retcodes.(sol.profiles)

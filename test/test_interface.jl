@@ -1,5 +1,6 @@
 using Test
 using LikelihoodProfiler
+using ComponentArrays
 
 # ----------------------------
 # ParameterTarget constructors
@@ -121,6 +122,81 @@ end
         idxs=0, profile_lower=-1.0, profile_upper=1.0)
     @test_throws ArgumentError ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0];
         idxs=[1,4], profile_lower=-1.0, profile_upper=1.0)
+end
+
+@testset "PL sugar: symbolic parameter indexing" begin
+    f = OptimizationFunction((x,p)->x[1]^2 + x[2]^2 + x[3]^2)
+    optpars = ComponentArray(a=0.0, b=0.0, c=0.0)
+    optprob = OptimizationProblem(f, [1.0, 2.0, 3.0])
+
+    prob1 = ProfileLikelihoodProblem(optprob, optpars;
+        idxs=[:a, :c], profile_lower=-5.0, profile_upper=5.0)
+    @test prob1.target.idxs == [1, 3]
+    @test profile_labels(prob1) == [:a, :c]
+
+    prob2 = ProfileLikelihoodProblem(optprob, optpars;
+        idxs=:b, profile_lower=-5.0, profile_upper=5.0)
+    @test prob2.target.idxs == [2]
+    @test profile_labels(prob2) == [:b]
+
+    # symbolic idxs are not available without named parameters
+    @test_throws ArgumentError ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0];
+        idxs=[:a], profile_lower=-1.0, profile_upper=1.0)
+    @test_throws ArgumentError ProfileLikelihoodProblem(optprob, optpars;
+        idxs=[:z], profile_lower=-1.0, profile_upper=1.0)
+end
+
+@testset "Function target labels" begin
+    f = OptimizationFunction((x,p)->sum(abs2, x))
+    optprob = OptimizationProblem(f, [1.0, 2.0, 3.0])
+    g1 = OptimizationFunction((x,p)->x[1] + x[2])
+    g2 = OptimizationFunction((x,p)->x[2] - x[3])
+
+    prob_default = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], [g1, g2];
+        profile_lower=-2.0, profile_upper=2.0)
+    @test isnothing(profile_labels(prob_default))
+
+    fs_named = (sum12=g1, diff23=g2)
+    prob_named = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], fs_named;
+        profile_lower=-2.0, profile_upper=2.0)
+    @test profile_labels(prob_named) == [:sum12, :diff23]
+end
+
+@testset "ProfileLikelihoodSolution symbolic indexing" begin
+    f = OptimizationFunction((x,p)->sum(abs2, x))
+    optpars = ComponentArray(a=0.0, b=0.0, c=0.0)
+    optprob = OptimizationProblem(f, [1.0, 2.0, 3.0])
+    prob = ProfileLikelihoodProblem(optprob, optpars;
+        idxs=[:a, :c], profile_lower=-5.0, profile_upper=5.0)
+
+    sol = ProfileLikelihoodSolution(prob, [:profile_a, :profile_c], 0.0)
+    @test sol[1] == :profile_a
+    @test sol[:a] == :profile_a
+    @test sol[:c] == :profile_c
+    @test_throws BoundsError sol[:b]
+end
+
+@testset "ProfileCurve DataFrame column labels" begin
+    f = OptimizationFunction((x,p)->sum(abs2, x))
+    optpars = ComponentArray(a=0.0, b=0.0, c=0.0)
+    optprob = OptimizationProblem(f, [1.0, 2.0, 3.0])
+    prob = ProfileLikelihoodProblem(optprob, optpars;
+        idxs=[:a, :c], profile_lower=-5.0, profile_upper=5.0)
+
+    pc = LikelihoodProfiler.solution_init(prob, 1, 1, [0.0, 0.0, 0.0], 0.0, 0.0, 1.0)
+    df = DataFrame(pc)
+    @test Symbol.(names(df))[1:3] == [:a, :b, :c]
+    @test :objective in Symbol.(names(df))
+
+    g1 = OptimizationFunction((x,p)->x[1] + x[2])
+    g2 = OptimizationFunction((x,p)->x[2] - x[3])
+    fs_named = (sum12=g1, diff23=g2)
+    prob_f = ProfileLikelihoodProblem(optprob, optpars, fs_named;
+        profile_lower=-2.0, profile_upper=2.0)
+    pc_f = LikelihoodProfiler.solution_init(prob_f, 1, 1, [0.0, 0.0, 0.0], 0.0, 0.0, 1.0)
+    df_f = DataFrame(pc_f)
+    @test Symbol.(names(df_f))[1:3] == [:a, :b, :c]
+    @test :sum12 in Symbol.(names(df_f))
 end
 
 # ----------------------------

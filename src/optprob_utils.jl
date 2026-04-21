@@ -116,5 +116,11 @@ function build_optf_constrained(plprob::ProfileLikelihoodProblem, idx)
     res[1] = cons_optf.f(x, p)
     return nothing
   end
-  return OptimizationFunction(optprob.f.f, cons_optf.adtype; grad=optprob.f.grad, hess=optprob.f.hess, cons = cons_f)
+  kwargs = Dict{Symbol,Any}()
+  for p in propertynames(optprob.f)
+    if p ∉ (:f, :adtype, :grad, :hess, :cons)
+      kwargs[p] = getfield(optprob.f, p)
+    end
+  end
+  return OptimizationFunction(optprob.f.f, cons_optf.adtype; grad=optprob.f.grad, hess=optprob.f.hess, cons = cons_f, kwargs...)
 end

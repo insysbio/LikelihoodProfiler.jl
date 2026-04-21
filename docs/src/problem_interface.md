@@ -12,7 +12,7 @@ A **profile target** specifies the quantity whose profile you want: either one o
 
 #### ParameterTarget
 
-`ParameterTarget` profiles model **parameters by index**. 
+`ParameterTarget` profiles model **parameters by index** and can optionally carry `labels` (symbols aligned with profiled indices).
 While you can build `ParameterTarget` directly, most users prefer the convenience constructor on `ProfileLikelihoodProblem`, which accepts idxs and bounds and constructs the target for you. See `ProfileLikelihoodProblem` interface.
 
 ```@docs; canonical=false
@@ -29,7 +29,8 @@ optprob = OptimizationProblem(f, [1.0, 2.0, 3.0])
 
 pt = ParameterTarget(; idxs=[1,3],
                      profile_lower=[-5.0, -1.0],
-                     profile_upper=[ 2.0,  4.0])
+                     profile_upper=[ 2.0,  4.0],
+                     labels=[:a, :c])
 
 plprob = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], pt;
                                   conf_level=0.95)  # threshold derived from χ²
@@ -37,7 +38,7 @@ plprob = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], pt;
 
 #### FunctionTarget
 
-`FunctionTarget` profiles **functions of the parameters**.
+`FunctionTarget` profiles **functions of the parameters** and can optionally carry labels for each function.
 While you can build `FunctionTarget` directly, most users prefer the convenience constructor on `ProfileLikelihoodProblem`, which accepts functions and bounds and constructs the target for you. See `ProfileLikelihoodProblem` interface.
 
 ```@docs; canonical=false
@@ -57,7 +58,8 @@ g2 = OptimizationFunction((θ,p)->θ[2] - θ[3])
 
 ft = FunctionTarget(; fs=[g1,g2],
                     profile_lower=[-2.0, -1.0],
-                    profile_upper=[ 2.0,  1.0])
+                    profile_upper=[ 2.0,  1.0],
+                    labels=[:sum12, :diff23])
 
 plprob = ProfileLikelihoodProblem(optprob, [0.0, 0.0, 0.0], ft)
 ```
@@ -68,5 +70,11 @@ For ergonomics, `ProfileLikelihoodProblem` provides keyword constructors that bu
 
 ```julia
 ProfileLikelihoodProblem(::OptimizationProblem, ::AbstractVector{<:Real}; idxs, profile_lower, profile_upper)
-ProfileLikelihoodProblem(::OptimizationProblem, ::AbstractVector{<:Real}, ::Union{OptimizationFunction,AbstractVector{<:OptimizationFunction}}; profile_lower, profile_upper)
+ProfileLikelihoodProblem(::OptimizationProblem, ::AbstractVector{<:Real}, fs; profile_lower, profile_upper)
 ```
+
+- `idxs` may contain integers (scalar/vector) or symbols (scalar/vector).
+- For symbolic parameter indexing (`idxs=[:a,:b]`), labels are inferred from named parameter containers (e.g. `ComponentArray`) when available.
+- For function targets, labels are inferred from named function containers (e.g. `NamedTuple`) when available.
+
+`profile_labels(plprob)` returns active labels associated with profiled quantities.
