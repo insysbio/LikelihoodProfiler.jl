@@ -57,12 +57,28 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
   verbose && @info "Computing initial values."
   obj0 = evaluate_obj(_plprob, _plprob.optpars)
 
+  return __solve(_plprob, method; obj0, parallel_type, verbose, kwargs...)
+end
+
+"""
+    __solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod; 
+            parallel_type::Symbol=:none, kwargs...)
+
+Internal solve dispatcher used by `solve` after input validation and optional re-optimization.
+By default, it constructs parameter profile branches `(idx, dir)` and forwards them to
+`__solve_parallel`. Profilers with a different execution model (e.g. non-branch methods)
+can overload this function.
+"""
+function __solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod; 
+  parallel_type::Symbol=:none, kwargs...)
+
   !(parallel_type in (:none, :threads, :distributed)) && 
     throw(ArgumentError("Invalid `parallel_type`: $parallel_type. 
                          Supported values are :none, :threads, :distributed."))
+
   II = [(idx, dir) for idx in get_profile_idxs(plprob.target) for dir in (-1, 1)]
 
-  return __solve_parallel(_plprob, method, Val(parallel_type), II; obj0, verbose, kwargs...)
+  return __solve_parallel(plprob, method, Val(parallel_type), II; kwargs...)
 end
 
 ###################################### PARALLEL SOLVE ##################################
