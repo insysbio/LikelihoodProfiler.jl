@@ -113,6 +113,36 @@ get_integrator(ip::IntegrationProfiler) = ip.integrator
 get_integrator_opts(ip::IntegrationProfiler) = ip.integrator_opts
 get_matrix_type(ip::IntegrationProfiler) = ip.matrix_type
 get_gamma(ip::IntegrationProfiler) = ip.gamma
+
+############################## FIMProfiler ##############################
+
+"""
+    FIMProfiler
+
+Fisher Information Matrix (FIM)-based asymptotic confidence intervals (Wald approximation).
+By default this method reuses Hessian logic from `OptimizationProblem` (user-supplied Hessian or AD backend).
+If `ProfileLikelihoodProblem` carries a custom `fim` provider, it is used instead.
+
+### Fields
+
+- `inversion::Symbol`: Matrix inversion strategy (`:cholesky`, `:pinv`, `:svd`).
+- `clamp_to_bounds::Bool`: Clip estimated interval endpoints to profile bounds.
+"""
+Base.@kwdef struct FIMProfiler <: AbstractProfilerMethod
+  inversion::Symbol = :cholesky
+  clamp_to_bounds::Bool = true
+
+  function FIMProfiler(inversion::Symbol, clamp_to_bounds::Bool)
+    inversion in (:cholesky, :pinv, :svd) ||
+      throw(ArgumentError("`inversion` must be one of :cholesky, :pinv, :svd (got $inversion)."))
+
+    new(inversion, clamp_to_bounds)
+  end
+end
+
+get_inversion(fp::FIMProfiler) = fp.inversion
+get_clamp_to_bounds(fp::FIMProfiler) = fp.clamp_to_bounds
+
 ############################## CICOProfiler ##############################
 
 """

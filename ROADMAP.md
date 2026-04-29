@@ -6,3 +6,5 @@
 - add `HybridProfiler`
 - add interface to profile functions of parameters
 - add Venzon Moolgavkar method 
+
+- implement FIMProfiler (Fisher Information Matrix-based asymptotic CI method)
