@@ -39,6 +39,6 @@ export FixedStep # LineSearchStep, InterpolationLineSearch
 export chi2_quantile
 export OptimizationProfiler, IntegrationProfiler, CICOProfiler, FIMProfiler
 export endpoints, stats, retcodes, obj_level
-export profile_labels, resolve_fim
+export profile_labels, evaluate_FIM
 
 end #module LikelihoodProfiler

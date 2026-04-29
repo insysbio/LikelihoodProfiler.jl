@@ -121,11 +121,10 @@ get_gamma(ip::IntegrationProfiler) = ip.gamma
 
 Fisher Information Matrix (FIM)-based asymptotic confidence intervals (Wald approximation).
 By default this method reuses Hessian logic from `OptimizationProblem` (user-supplied Hessian or AD backend).
-If `ProfileLikelihoodProblem` carries a custom `fim` provider, it is used instead.
 
 ### Fields
 
-- `inversion::Symbol`: Matrix inversion strategy (`:cholesky`, `:pinv`, `:svd`).
+- `inversion::Symbol`: Matrix inversion strategy (`:cholesky`, `:pinv`).
 - `clamp_to_bounds::Bool`: Clip estimated interval endpoints to profile bounds.
 """
 Base.@kwdef struct FIMProfiler <: AbstractProfilerMethod
@@ -133,8 +132,8 @@ Base.@kwdef struct FIMProfiler <: AbstractProfilerMethod
   clamp_to_bounds::Bool = true
 
   function FIMProfiler(inversion::Symbol, clamp_to_bounds::Bool)
-    inversion in (:cholesky, :pinv, :svd) ||
-      throw(ArgumentError("`inversion` must be one of :cholesky, :pinv, :svd (got $inversion)."))
+    inversion in (:cholesky, :pinv) ||
+      throw(ArgumentError("`inversion` must be one of :cholesky, :pinv (got $inversion)."))
 
     new(inversion, clamp_to_bounds)
   end

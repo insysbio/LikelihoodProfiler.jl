@@ -38,10 +38,7 @@ References:
 
 ### [FIM-based asymptotic intervals](@id fim_profiles)
 
-`FIMProfiler` computes fast, local confidence-interval estimates using a Wald approximation around the optimum. By default it reuses Hessian logic from `OptimizationProblem` (including user-selected AD/Hessian backend).
-
 ```@docs; canonical=false
 FIMProfiler
 ```
 
-See also: [FIMProfiler proposal](fim_profiler_proposal.md).

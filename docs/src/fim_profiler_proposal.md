@@ -21,7 +21,7 @@ sol = solve(plprob, profiler)
 
 ### Fields
 
-- `resolve_fim(plprob, method::FIMProfiler)` is exported for users who want direct access to the matrix used by `FIMProfiler`.
+- `evaluate_FIM(plprob, method::FIMProfiler)` is exported for users who want direct access to the matrix used by `FIMProfiler`.
 - `inversion::Symbol`
   - `:cholesky`, `:pinv`, or `:svd`.
 - `clamp_to_bounds::Bool`

@@ -21,5 +21,5 @@ for i in 1:length(sol)
   @test retcodes(sol[i]).right in (:Identifiable, :NonIdentifiable)
 end
 
-F = resolve_fim(plprob, FIMProfiler())
+F = evaluate_FIM(plprob, x0)
 @test size(F) == (2, 2)
