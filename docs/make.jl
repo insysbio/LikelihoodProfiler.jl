@@ -15,8 +15,7 @@ makedocs(
             "Problem interface" => "problem_interface.md",
             "Profile likelihood methods" => "profile_methods.md",
             "Solution interface" => "solution_interface.md",
-            "Parallel execution" => "parallel_modes.md",
-            "FIMProfiler proposal" => "fim_profiler_proposal.md"
+            "Parallel execution" => "parallel_modes.md"
         ],
         "API" => "api.md",
     ],
