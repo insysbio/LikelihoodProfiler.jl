@@ -42,13 +42,16 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
       throw(ArgumentError("`method` must have a valid `optimizer` provided when `reoptimize_init=true`."))
 
     # start from user 'optpars'
-    optprob0 = remake(plprob.optprob; u0 = plprob.optpars)
+    θ₀= plprob.optpars
+    T = float(eltype(θ₀))
+
+    optprob0 = remake(plprob.optprob; u0=θ₀)
     s = solve(optprob0, get_optimizer(method); get_optimizer_opts(method)...)
     if !SciMLBase.successful_retcode(s)
       @warn "Re-optimization at initial parameter values returned $(s.retcode). Proceeding with the provided initial parameters."
       _plprob = plprob
     else
-      _plprob = remake(plprob; optpars=s.u)
+      _plprob = remake(plprob; optpars=T.(s.u))
     end
   else
     _plprob = plprob
@@ -57,7 +60,7 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
   verbose && @info "Computing initial values."
   obj0 = evaluate_obj(_plprob, _plprob.optpars)
 
-  return __solve(_plprob, method; obj0, parallel_type, verbose, kwargs...)
+  return __solve(_plprob, method; obj0=T(obj0), parallel_type, verbose, kwargs...)
 end
 
 """
@@ -79,99 +82,6 @@ function __solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMetho
   II = [(idx, dir) for idx in get_profile_idxs(plprob.target) for dir in (-1, 1)]
 
   return __solve_parallel(plprob, method, Val(parallel_type), II; kwargs...)
-end
-
-function __solve(plprob::ProfileLikelihoodProblem, method::FIMProfiler;
-  obj0=nothing, parallel_type::Symbol=:none, kwargs...)
-
-  parallel_type == :none || @warn "`parallel_type=$parallel_type` is ignored by `FIMProfiler`; running in serial mode."
-  isfinite(plprob.threshold) || throw(ArgumentError("`FIMProfiler` requires finite `plprob.threshold` to define CI level."))
-
-  target = plprob.target
-  idxs = get_profile_idxs(target)
-  θ̂ = plprob.optpars
-  T = float(eltype(θ̂))
-  obj0_t = isnothing(obj0) ? T(evaluate_obj(plprob, θ̂)) : T(obj0)
-  obj_level = obj0_t + T(plprob.threshold)
-
-  F = resolve_fim(plprob, method, θ̂)
-  Fsym = Matrix(Symmetric(F))
-
-  Σ, inversion_used = _invert_fim(Fsym, get_inversion(method))
-  inversion_used != get_inversion(method) &&
-    @warn "Requested inversion $(get_inversion(method)) was unstable; used $inversion_used instead."
-
-  z = T(sqrt(plprob.threshold))
-  elapsed_time = @elapsed begin
-    profile_data = map(idxs) do idx
-      lb = T(get_idx_profile_lb(target, idx))
-      ub = T(get_idx_profile_ub(target, idx))
-      θi = T(θ̂[idx])
-      var_i = T(Σ[idx, idx])
-
-      if !isfinite(var_i)
-        x = T[θi]
-        obj = T[obj0_t]
-        pars = [copy(θ̂)]
-        base = solution_init(plprob, idx, 0, copy(θ̂), θi, obj0_t, obj_level)
-        return remake(base; pars=pars, x=x, obj=obj,
-          retcodes=(left=:Failure, right=:Failure),
-          endpoints=(left=nothing, right=nothing),
-          stats=(left=nothing, right=nothing))
-      end
-
-      se = sqrt(max(var_i, zero(T)))
-      Δ = z * se
-
-      l_raw = θi - Δ
-      r_raw = θi + Δ
-      l = get_clamp_to_bounds(method) ? clamp(l_raw, lb, ub) : l_raw
-      r = get_clamp_to_bounds(method) ? clamp(r_raw, lb, ub) : r_raw
-
-      left_status = (l != l_raw) ? :NonIdentifiable : :Identifiable
-      right_status = (r != r_raw) ? :NonIdentifiable : :Identifiable
-
-      x = T[l, θi, r]
-      denom = max(var_i, sqrt(eps(T)))
-      obj = T[obj0_t + ((xx - θi)^2) / (2 * denom) for xx in x]
-      pars = [begin
-          θp = copy(θ̂)
-          θp[idx] = xx
-          θp
-        end for xx in x]
-
-      base = solution_init(plprob, idx, 0, copy(θ̂), θi, obj0_t, obj_level)
-      remake(base; pars=pars, x=x, obj=obj,
-        retcodes=(left=left_status, right=right_status),
-        endpoints=(left=l, right=r),
-        stats=(left=nothing, right=nothing))
-    end
-  end
-
-  return ProfileLikelihoodSolution{typeof(plprob), typeof(profile_data)}(plprob, profile_data, elapsed_time)
-end
-
-function resolve_fim(plprob::ProfileLikelihoodProblem, method::FIMProfiler, θ̂=plprob.optpars)
-  return evaluate_hessf(plprob.optprob, θ̂)
-end
-
-function _invert_fim(F::AbstractMatrix, inversion::Symbol)
-  if inversion == :cholesky
-    try
-      C = cholesky(Symmetric(F), check=true)
-      return inv(C), :cholesky
-    catch
-      return pinv(F), :pinv
-    end
-  elseif inversion == :pinv
-    return pinv(F), :pinv
-  elseif inversion == :svd
-    S = svd(F)
-    tol = maximum(size(F)) * eps(real(eltype(F))) * maximum(S.S)
-    Sinv = Diagonal(map(s -> s > tol ? inv(s) : zero(s), S.S))
-    return S.V * Sinv * S.U', :svd
-  end
-  throw(ArgumentError("Unsupported inversion mode: $inversion"))
 end
 
 ###################################### PARALLEL SOLVE ##################################

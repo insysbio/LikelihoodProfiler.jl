@@ -24,6 +24,7 @@ abstract type AbstractProfilerStep{S} end
 
 include("problem_interface.jl")
 include("profile_methods.jl")
+include("methods/FIM.jl")
 include("caches.jl")
 include("solve.jl")
 include("profile_solution.jl")
