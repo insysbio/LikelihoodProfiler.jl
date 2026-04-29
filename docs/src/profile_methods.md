@@ -35,3 +35,13 @@ References:
 1. Borisov, I. & Metelkin, E. Confidence intervals by constrained optimization—An algorithm and software package for practical identifiability analysis in systems biology. PLoS Comput Biol 16, e1008495 (2020).
 2. Venzon, D. J. & Moolgavkar, S. H. A Method for Computing Profile-Likelihood-Based Confidence Intervals. Applied Statistics 37, 87 (1988).
 
+
+### [FIM-based asymptotic intervals](@id fim_profiles)
+
+`FIMProfiler` computes fast, local confidence-interval estimates using a Wald approximation around the optimum. By default it reuses Hessian logic from `OptimizationProblem` (including user-selected AD/Hessian backend).
+
+```@docs; canonical=false
+FIMProfiler
+```
+
+See also: [FIMProfiler proposal](fim_profiler_proposal.md).

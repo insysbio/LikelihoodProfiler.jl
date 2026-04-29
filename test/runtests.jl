@@ -24,3 +24,7 @@ end
   include("test_jak-stat_model.jl")
 end
 =#
+
+@testset "FIM profiler" begin
+  include("test_fim_profiler.jl")
+end
