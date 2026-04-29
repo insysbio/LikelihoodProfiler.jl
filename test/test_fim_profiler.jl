@@ -1,5 +1,5 @@
 using Test, Optimization
-using LikelihoodProfiler, OptimizationLBFGSB
+using LikelihoodProfiler
 
 const CONF_LEVEL = 0.95
 const DF = 1
@@ -9,7 +9,9 @@ rosenbrock(x, p) = (1.0 - x[1])^2 + 100.0*(x[2] - x[1]^2)^2
 x0 = [1.0, 1.0]
 optf = OptimizationFunction(rosenbrock, AutoForwardDiff())
 optprob = OptimizationProblem(optf, x0)
-plprob = ProfileLikelihoodProblem(optprob, x0; idxs=[1,2], profile_lower=-10.0, profile_upper=10.0, conf_level=CONF_LEVEL, df=DF)
+plprob = ProfileLikelihoodProblem(optprob, x0; 
+  profile_lower=-10.0, profile_upper=10.0, 
+  conf_level=CONF_LEVEL, df=DF)
 
 F = evaluate_FIM(plprob, x0)
 F_true = [802.0  -400.0; -400.0  200.0]
@@ -29,19 +31,17 @@ for i in 1:length(sol)
   @test isapprox(endpoints(sol[i]).left, ep_true.left)
   @test isapprox(endpoints(sol[i]).right, ep_true.right)
   @test retcodes(sol[i]) == (left=:Identifiable, right=:Identifiable)
+  @test isapprox(sol[i].obj[1], obj_level(sol[1]))
 end
 
 
-
-
-
-method2 = FIMProfiler(covariance_factor=2.0)
+method2 = FIMProfiler(cov_factor=2.0)
 sol2 = solve(plprob, method2)
 for i in 1:length(sol2)
   ep_true2 = (left=x0[i]-sqrt(2*chi2_quantile(CONF_LEVEL, DF)*Finv_true[i,i]),
               right=x0[i]+sqrt(2*chi2_quantile(CONF_LEVEL, DF)*Finv_true[i,i]))
   @test isapprox(endpoints(sol2[i]).left, ep_true2.left)
   @test isapprox(endpoints(sol2[i]).right, ep_true2.right)
+  @test isapprox(sol2[i].obj[1], obj_level(sol2[1]))
 end
 
-@test_throws ArgumentError FIMProfiler(covariance_factor=0.0)

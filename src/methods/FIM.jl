@@ -10,7 +10,7 @@ The confidence interval is computed as `θ̂ ± z * sqrt(Σ[idx, idx])`, where
         - `z` is the quantile of the chi-squared distribution corresponding to the `conf_level` and `df` parameters of the `ProfileLikelihoodProblem`,
         - `Σ` is the covariance matrix obtained by inverting the FIM.
 
-`covariance_factor` controls Hessian/objective scaling conventions. Common choices are:
+`cov_factor` controls Hessian/objective scaling conventions. Common choices are:
 - `1.0` when Hessian is for `-logL`.
 - `2.0` when Hessian is for `-2logL` and you want covariance on the `-logL` scale.
 
@@ -20,26 +20,26 @@ Any strictly positive value is allowed (not only `1` or `2`), which can be usefu
 
 - `inversion::Symbol`: Matrix inversion strategy (`:cholesky`, `:pinv`).
 - `clamp_to_bounds::Bool`: Clip estimated interval endpoints to profile bounds.
-- `covariance_factor::Real`: Multiplicative factor applied to `inv(H)` to obtain covariance (`Σ = covariance_factor * inv(H)`).
+- `cov_factor::Real`: Multiplicative factor applied to `inv(H)` to obtain covariance (`Σ = cov_factor * inv(H)`).
 """
 Base.@kwdef struct FIMProfiler <: AbstractProfilerMethod
   inversion::Symbol = :cholesky
   clamp_to_bounds::Bool = true
-  covariance_factor::Float64 = 1.0
+  cov_factor::Float64 = 1.0
 
-  function FIMProfiler(inversion::Symbol, clamp_to_bounds::Bool, covariance_factor::Real)
+  function FIMProfiler(inversion::Symbol, clamp_to_bounds::Bool, cov_factor::Real)
     inversion in (:cholesky, :pinv) ||
       throw(ArgumentError("`inversion` must be one of :cholesky, :pinv (got $inversion)."))
 
-    covariance_factor > 0 || throw(ArgumentError("`covariance_factor` must be strictly positive (got $covariance_factor)."))
+    cov_factor > 0 || throw(ArgumentError("`cov_factor` must be strictly positive (got $cov_factor)."))
 
-    new(inversion, clamp_to_bounds, float(covariance_factor))
+    new(inversion, clamp_to_bounds, float(cov_factor))
   end
 end
 
 get_inversion(fp::FIMProfiler) = fp.inversion
 get_clamp_to_bounds(fp::FIMProfiler) = fp.clamp_to_bounds
-get_covariance_factor(fp::FIMProfiler) = fp.covariance_factor
+get_cov_factor(fp::FIMProfiler) = fp.cov_factor
 
 
 function __solve(plprob::ProfileLikelihoodProblem, method::FIMProfiler;
@@ -59,7 +59,7 @@ function __solve(plprob::ProfileLikelihoodProblem, method::FIMProfiler;
   Fsym = Matrix(Symmetric(F))
 
   Σ, inversion_used = _invert_matrix(Fsym, get_inversion(method))
-  Σ .*= T(get_covariance_factor(method))
+  Σ .*= T(get_cov_factor(method))
   inversion_used != get_inversion(method) &&
     @warn "Requested inversion $(get_inversion(method)) was unstable; used $inversion_used instead."
 
@@ -71,11 +71,12 @@ function __solve(plprob::ProfileLikelihoodProblem, method::FIMProfiler;
       θi = θ[idx]
       Σᵢᵢ = T(Σ[idx, idx])
 
+      sol = solution_init(plprob, idx, 0, copy(θ), θi, obj0_t, obj_level)
       if !isfinite(Σᵢᵢ)
         x = T[θi]
         obj = T[obj0_t]
         pars = [copy(θ)]
-        sol = solution_init(plprob, idx, 0, copy(θ), θi, obj0_t, obj_level)
+        
         return remake(sol; pars=pars, x=x, obj=obj,
           retcodes=(left=:Failure, right=:Failure),
           endpoints=(left=nothing, right=nothing),
@@ -102,7 +103,6 @@ function __solve(plprob::ProfileLikelihoodProblem, method::FIMProfiler;
           θp
         end for xx in x]
 
-      sol = solution_init(plprob, idx, 0, copy(θ), θi, obj0_t, obj_level)
       remake(sol; pars=pars, x=x, obj=obj,
         retcodes=(left=left_status, right=right_status),
         endpoints=(left=l, right=r),
