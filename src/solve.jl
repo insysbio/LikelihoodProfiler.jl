@@ -36,15 +36,15 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
   reoptimize_init::Bool=false, parallel_type::Symbol=:none, verbose::Bool=false, kwargs...)
 
   check_prob_alg(plprob, method)
+  
+  θ₀= plprob.optpars
+  T = float(eltype(θ₀))
 
   if reoptimize_init
     !hasoptimizer(method) && 
       throw(ArgumentError("`method` must have a valid `optimizer` provided when `reoptimize_init=true`."))
 
     # start from user 'optpars'
-    θ₀= plprob.optpars
-    T = float(eltype(θ₀))
-
     optprob0 = remake(plprob.optprob; u0=θ₀)
     s = solve(optprob0, get_optimizer(method); get_optimizer_opts(method)...)
     if !SciMLBase.successful_retcode(s)

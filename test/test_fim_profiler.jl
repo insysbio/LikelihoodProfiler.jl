@@ -1,25 +1,35 @@
 using Test, Optimization
-using LikelihoodProfiler
+using LikelihoodProfiler, OptimizationLBFGSB
 
-rosenbrock(x, p) = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2
+const CONF_LEVEL = 0.95
+const DF = 1
+
+rosenbrock(x, p) = (1.0 - x[1])^2 + 100.0*(x[2] - x[1]^2)^2
 
 x0 = [1.0, 1.0]
 optf = OptimizationFunction(rosenbrock, AutoForwardDiff())
-optprob = OptimizationProblem(optf, x0; lb=[-5.0, -5.0], ub=[5.0, 5.0])
-plprob = ProfileLikelihoodProblem(optprob, x0; idxs=[1,2], profile_lower=-5.0, profile_upper=5.0)
+optprob = OptimizationProblem(optf, x0)
+plprob = ProfileLikelihoodProblem(optprob, x0; idxs=[1,2], profile_lower=-10.0, profile_upper=10.0, conf_level=CONF_LEVEL, df=DF)
+
+F = evaluate_FIM(plprob, x0)
+F_true = [802.0  -400.0; -400.0  200.0]
+@test F == F_true
+
+Finv, _ = LikelihoodProfiler._invert_matrix(F, :cholesky)
+Finv_true = [0.5 1.0; 1.0 2.005]
+@test isapprox(Finv, Finv_true)
 
 method = FIMProfiler()
 sol = solve(plprob, method)
 
-@test length(sol) == 2
+@test size(sol) == (2,)
 for i in 1:length(sol)
-  ep = endpoints(sol[i])
-  @test !isnothing(ep.left)
-  @test !isnothing(ep.right)
-  @test ep.left <= x0[i] <= ep.right
-  @test retcodes(sol[i]).left in (:Identifiable, :NonIdentifiable)
-  @test retcodes(sol[i]).right in (:Identifiable, :NonIdentifiable)
+  ep_true = (left=x0[i]-sqrt(chi2_quantile(CONF_LEVEL, DF)*Finv_true[i,i]), 
+            right=x0[i]+sqrt(chi2_quantile(CONF_LEVEL, DF)*Finv_true[i,i]))
+  @test isapprox(endpoints(sol[i]).left, ep_true.left)
+  @test isapprox(endpoints(sol[i]).right, ep_true.right)
+  @test retcodes(sol[i]) == (left=:Identifiable, right=:Identifiable)
 end
 
-F = evaluate_FIM(plprob, x0)
-@test size(F) == (2, 2)
+
+

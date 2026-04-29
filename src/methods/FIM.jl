@@ -39,12 +39,12 @@ function __solve(plprob::ProfileLikelihoodProblem, method::FIMProfiler;
 
   target = plprob.target
   idxs = get_profile_idxs(target)
-  θ̂ = plprob.optpars
-  T = float(eltype(θ̂))
-  obj0_t = isnothing(obj0) ? evaluate_obj(plprob, θ̂ ): obj0
+  θ= plprob.optpars
+  T = float(eltype(θ))
+  obj0_t = isnothing(obj0) ? evaluate_obj(plprob, θ) : obj0
   obj_level = obj0_t + plprob.threshold
 
-  F = evaluate_FIM(plprob, θ̂)
+  F = evaluate_FIM(plprob, θ)
   Fsym = Matrix(Symmetric(F))
 
   Σ, inversion_used = _invert_matrix(Fsym, get_inversion(method))
@@ -56,15 +56,15 @@ function __solve(plprob::ProfileLikelihoodProblem, method::FIMProfiler;
     profile_data = map(idxs) do idx
       lb = get_idx_profile_lb(target, idx)
       ub = get_idx_profile_ub(target, idx)
-      θi = θ̂[idx]
+      θi = θ[idx]
       Σᵢᵢ = T(Σ[idx, idx])
 
       if !isfinite(Σᵢᵢ)
         x = T[θi]
         obj = T[obj0_t]
-        pars = [copy(θ̂)]
-        base = solution_init(plprob, idx, 0, copy(θ̂), θi, obj0_t, obj_level)
-        return remake(base; pars=pars, x=x, obj=obj,
+        pars = [copy(θ)]
+        sol = solution_init(plprob, idx, 0, copy(θ), θi, obj0_t, obj_level)
+        return remake(sol; pars=pars, x=x, obj=obj,
           retcodes=(left=:Failure, right=:Failure),
           endpoints=(left=nothing, right=nothing),
           stats=(left=nothing, right=nothing))
@@ -85,24 +85,29 @@ function __solve(plprob::ProfileLikelihoodProblem, method::FIMProfiler;
       denom = max(Σᵢᵢ, sqrt(eps(T)))
       obj = T[obj0_t + ((xx - θi)^2) / (2 * denom) for xx in x]
       pars = [begin
-          θp = copy(θ̂)
+          θp = copy(θ)
           θp[idx] = xx
           θp
         end for xx in x]
 
-      base = solution_init(plprob, idx, 0, copy(θ̂), θi, obj0_t, obj_level)
-      remake(base; pars=pars, x=x, obj=obj,
+      sol = solution_init(plprob, idx, 0, copy(θ), θi, obj0_t, obj_level)
+      remake(sol; pars=pars, x=x, obj=obj,
         retcodes=(left=left_status, right=right_status),
         endpoints=(left=l, right=r),
         stats=(left=nothing, right=nothing))
     end
   end
-
+  
   return ProfileLikelihoodSolution{typeof(plprob), typeof(profile_data)}(plprob, profile_data, elapsed_time)
 end
 
-function evaluate_FIM(plprob::ProfileLikelihoodProblem, method::FIMProfiler, θ̂=plprob.optpars)
-  return evaluate_hessf(plprob.optprob, θ̂)
+"""
+    evaluate_FIM(plprob::ProfileLikelihoodProblem, θ=plprob.optpars)
+
+Evaluates the Fisher Information Matrix (FIM) at the given parameter values `θ` (default: `plprob.optpars`) by computing the Hessian of the objective function.
+"""
+function evaluate_FIM(plprob::ProfileLikelihoodProblem,  θ=plprob.optpars)
+  return evaluate_hessf(plprob.optprob, θ)
 end
 
 function _invert_matrix(F::AbstractMatrix, inversion::Symbol)
