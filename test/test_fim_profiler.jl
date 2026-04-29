@@ -33,3 +33,15 @@ end
 
 
 
+
+
+method2 = FIMProfiler(covariance_factor=2.0)
+sol2 = solve(plprob, method2)
+for i in 1:length(sol2)
+  ep_true2 = (left=x0[i]-sqrt(2*chi2_quantile(CONF_LEVEL, DF)*Finv_true[i,i]),
+              right=x0[i]+sqrt(2*chi2_quantile(CONF_LEVEL, DF)*Finv_true[i,i]))
+  @test isapprox(endpoints(sol2[i]).left, ep_true2.left)
+  @test isapprox(endpoints(sol2[i]).right, ep_true2.right)
+end
+
+@test_throws ArgumentError FIMProfiler(covariance_factor=0.0)
