@@ -38,7 +38,7 @@ export ProfileLikelihoodProblem, ProfileLikelihoodSolution
 export ParameterTarget, FunctionTarget
 export FixedStep # LineSearchStep, InterpolationLineSearch
 export chi2_quantile
-export OptimizationProfiler, IntegrationProfiler, CICOProfiler, FIMProfiler
+export OptimizationProfiler, IntegrationProfiler, CICOProfiler, QuadraticApproxProfiler
 export endpoints, stats, retcodes, obj_level
 export profile_labels, evaluate_FIM
 

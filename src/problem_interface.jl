@@ -185,14 +185,6 @@ struct ProfileLikelihoodProblem{T,probType,P} <: AbstractProfileLikelihoodProble
   threshold::Float64
 end
 
-"""
-    profile_labels(x)
-
-Return labels for profiled quantities.
-
-- `profile_labels(plprob::ProfileLikelihoodProblem)`: labels of the active profile target.
-- `profile_labels(sol::ProfileLikelihoodSolution)`: labels used to index solution profiles by `Symbol`.
-"""
 
 function Base.show(io::IO, mime::MIME"text/plain", plprob::ProfileLikelihoodProblem) 
   println(io, "Profile Likelihood Problem. Profile threshold: $(plprob.threshold)")

@@ -39,6 +39,6 @@ References:
 ### [FIM-based asymptotic intervals](@id fim_profiles)
 
 ```@docs; canonical=false
-FIMProfiler
+QuadraticApproxProfiler
 ```
 

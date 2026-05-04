@@ -1,5 +1,5 @@
 using Test, Optimization
-using LikelihoodProfiler
+using LikelihoodProfiler, OptimizationLBFGSB, Plots
 
 const CONF_LEVEL = 0.95
 const DF = 1
@@ -21,7 +21,9 @@ Finv, _ = LikelihoodProfiler._invert_matrix(F, :cholesky)
 Finv_true = [0.5 1.0; 1.0 2.005]
 @test isapprox(Finv, Finv_true)
 
-method = FIMProfiler()
+evaluate_FIM(plprob, x0)  
+
+method = QuadraticApproxProfiler()
 sol = solve(plprob, method)
 
 @test size(sol) == (2,)
@@ -34,8 +36,10 @@ for i in 1:length(sol)
   @test isapprox(sol[i].obj[1], obj_level(sol[1]))
 end
 
+meth_opt = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=0.15))
+sol_opt = solve(plprob, meth_opt)
 
-method2 = FIMProfiler(cov_factor=2.0)
+method2 = QuadraticApproxProfiler(cov_factor=2.0)
 sol2 = solve(plprob, method2)
 for i in 1:length(sol2)
   ep_true2 = (left=x0[i]-sqrt(2*chi2_quantile(CONF_LEVEL, DF)*Finv_true[i,i]),

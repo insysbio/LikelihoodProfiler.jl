@@ -235,14 +235,14 @@ function check_prob_alg(plprob::ProfileLikelihoodProblem, target::ParameterTarge
 end
 
 
-function check_prob_alg(plprob::ProfileLikelihoodProblem, target::ParameterTarget, method::FIMProfiler)
+function check_prob_alg(plprob::ProfileLikelihoodProblem, target::ParameterTarget, method::QuadraticApproxProfiler)
   optf = plprob.optprob.f
   !hashess(optf) && throw(ArgumentError(OPTF_HESS_ERROR))
   return nothing
 end
 
-check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::FIMProfiler) =
-  throw(ArgumentError("`FIMProfiler` currently supports only parameter targets."))
+check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::QuadraticApproxProfiler) =
+  throw(ArgumentError("`QuadraticApproxProfiler` currently supports only parameter targets."))
 
 function check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::IntegrationProfiler)
   optf = plprob.optprob.f

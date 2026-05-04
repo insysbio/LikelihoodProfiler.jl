@@ -1,7 +1,7 @@
-############################## FIMProfiler ##############################
+############################## QuadraticApproxProfiler ##############################
 
 """
-    FIMProfiler
+    QuadraticApproxProfiler
 
 Fisher Information Matrix (FIM)-based asymptotic confidence intervals (Wald approximation).
 By default this method reuses Hessian logic from `OptimizationProblem` (user-supplied Hessian or AD backend).
@@ -22,12 +22,12 @@ Any strictly positive value is allowed (not only `1` or `2`), which can be usefu
 - `clamp_to_bounds::Bool`: Clip estimated interval endpoints to profile bounds.
 - `cov_factor::Real`: Multiplicative factor applied to `inv(H)` to obtain covariance (`Σ = cov_factor * inv(H)`).
 """
-Base.@kwdef struct FIMProfiler <: AbstractProfilerMethod
+Base.@kwdef struct QuadraticApproxProfiler <: AbstractProfilerMethod
   inversion::Symbol = :cholesky
   clamp_to_bounds::Bool = true
   cov_factor::Float64 = 1.0
 
-  function FIMProfiler(inversion::Symbol, clamp_to_bounds::Bool, cov_factor::Real)
+  function QuadraticApproxProfiler(inversion::Symbol, clamp_to_bounds::Bool, cov_factor::Real)
     inversion in (:cholesky, :pinv) ||
       throw(ArgumentError("`inversion` must be one of :cholesky, :pinv (got $inversion)."))
 
@@ -37,16 +37,16 @@ Base.@kwdef struct FIMProfiler <: AbstractProfilerMethod
   end
 end
 
-get_inversion(fp::FIMProfiler) = fp.inversion
-get_clamp_to_bounds(fp::FIMProfiler) = fp.clamp_to_bounds
-get_cov_factor(fp::FIMProfiler) = fp.cov_factor
+get_inversion(fp::QuadraticApproxProfiler) = fp.inversion
+get_clamp_to_bounds(fp::QuadraticApproxProfiler) = fp.clamp_to_bounds
+get_cov_factor(fp::QuadraticApproxProfiler) = fp.cov_factor
 
 
-function __solve(plprob::ProfileLikelihoodProblem, method::FIMProfiler;
+function __solve(plprob::ProfileLikelihoodProblem, method::QuadraticApproxProfiler;
   obj0=nothing, parallel_type::Symbol=:none, kwargs...)
 
-  parallel_type == :none || @warn "`parallel_type=$parallel_type` is ignored by `FIMProfiler`; running in serial mode."
-  isfinite(plprob.threshold) || throw(ArgumentError("`FIMProfiler` requires finite `plprob.threshold` to define CI level."))
+  parallel_type == :none || @warn "`parallel_type=$parallel_type` is ignored by `QuadraticApproxProfiler`; running in serial mode."
+  isfinite(plprob.threshold) || throw(ArgumentError("`QuadraticApproxProfiler` requires finite `plprob.threshold` to define CI level."))
 
   target = plprob.target
   idxs = get_profile_idxs(target)
