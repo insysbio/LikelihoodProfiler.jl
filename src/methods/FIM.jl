@@ -23,25 +23,29 @@ Any strictly positive value is allowed (not only `1` or `2`), which can be usefu
 - `inversion::Symbol`: Matrix inversion strategy (`:cholesky`, `:pinv`).
 - `clamp_to_bounds::Bool`: Clip estimated interval endpoints to profile bounds.
 - `cov_factor::Real`: Multiplicative factor applied to `inv(H)` to obtain covariance (`Σ = cov_factor * inv(H)`).
+- `resolution::Int`: Number of points per branch (left/right) used to sample the quadratic approximation.
 """
 Base.@kwdef struct QuadraticApproxProfiler <: AbstractProfilerMethod
   inversion::Symbol = :cholesky
   clamp_to_bounds::Bool = true
   cov_factor::Float64 = 1.0
+  resolution::Int = 50
 
-  function QuadraticApproxProfiler(inversion::Symbol, clamp_to_bounds::Bool, cov_factor::Real)
+  function QuadraticApproxProfiler(inversion::Symbol, clamp_to_bounds::Bool, cov_factor::Real, resolution::Int)
     inversion in (:cholesky, :pinv) ||
       throw(ArgumentError("`inversion` must be one of :cholesky, :pinv (got $inversion)."))
 
     cov_factor > 0 || throw(ArgumentError("`cov_factor` must be strictly positive (got $cov_factor)."))
+    resolution > 0 || throw(ArgumentError("`resolution` must be a positive integer (got $resolution)."))
 
-    new(inversion, clamp_to_bounds, float(cov_factor))
+    new(inversion, clamp_to_bounds, float(cov_factor), resolution)
   end
 end
 
 get_inversion(fp::QuadraticApproxProfiler) = fp.inversion
 get_clamp_to_bounds(fp::QuadraticApproxProfiler) = fp.clamp_to_bounds
 get_cov_factor(fp::QuadraticApproxProfiler) = fp.cov_factor
+get_resolution(fp::QuadraticApproxProfiler) = fp.resolution
 
 
 function __solve(plprob::ProfileLikelihoodProblem, method::QuadraticApproxProfiler;
@@ -96,7 +100,10 @@ function __solve(plprob::ProfileLikelihoodProblem, method::QuadraticApproxProfil
       left_status = (l != l_raw) ? :NonIdentifiable : :Identifiable
       right_status = (r != r_raw) ? :NonIdentifiable : :Identifiable
 
-      x = T[l, θi, r]
+      n = get_resolution(method)
+      left_x = collect(range(l, θi; length=n + 1))
+      right_x = collect(range(θi, r; length=n + 1))
+      x = T[vcat(left_x, right_x[2:end])...]
       denom = max(Σᵢᵢ, sqrt(eps(T)))
       obj = T[obj0_t + ((xx - θi)^2) / denom for xx in x]
       pars = [begin

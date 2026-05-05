@@ -97,7 +97,7 @@ F = evaluate_FIM(plprob, optpars)
 Then solve using the quadratic-approximation method (FIM-based curvature):
 
 ```@example rosenbrock-1
-meth_fim = QuadraticApproxProfiler()
+meth_fim = QuadraticApproxProfiler(resolution=100)
 sol4 = solve(plprob, meth_fim)
 plot(sol4, size=(800,300), margins=5Plots.mm)
 ```
