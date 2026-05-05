@@ -3,7 +3,9 @@
 """
     QuadraticApproxProfiler
 
-Fisher Information Matrix (FIM)-based asymptotic confidence intervals (Wald approximation).
+Quadratic-approximation confidence intervals (Wald approximation) based on local curvature at the optimum.
+In this package, that curvature is estimated from the Hessian/Fisher Information Matrix (FIM), so the
+resulting interval reflects the local quadratic shape implied by the FIM around `optpars`.
 By default this method reuses Hessian logic from `OptimizationProblem` (user-supplied Hessian or AD backend).
 The confidence interval is computed as `θ̂ ± z * sqrt(Σ[idx, idx])`, where 
         - `θ̂` is the `optpars[idx]`, 
@@ -116,7 +118,9 @@ end
 """
     evaluate_FIM(plprob::ProfileLikelihoodProblem, θ=plprob.optpars)
 
-Evaluates the Fisher Information Matrix (FIM) at the given parameter values `θ` (default: `plprob.optpars`) by computing the Hessian of the objective function.
+Evaluates the Fisher Information Matrix (FIM) at the given parameter values `θ` (default: `plprob.optpars`)
+by computing the Hessian of the objective function. This is the local curvature used by
+[`QuadraticApproxProfiler`](@ref QuadraticApproxProfiler) to build the quadratic approximation near the optimum.
 """
 function evaluate_FIM(plprob::ProfileLikelihoodProblem,  θ=plprob.optpars)
   return evaluate_hessf(plprob.optprob, θ)
@@ -142,4 +146,3 @@ function _invert_matrix(F::AbstractMatrix, inversion::Symbol)
   end
   throw(ArgumentError("Unsupported inversion mode: $inversion"))
 end
-

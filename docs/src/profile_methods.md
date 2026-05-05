@@ -36,9 +36,8 @@ References:
 2. Venzon, D. J. & Moolgavkar, S. H. A Method for Computing Profile-Likelihood-Based Confidence Intervals. Applied Statistics 37, 87 (1988).
 
 
-### [FIM-based asymptotic intervals](@id fim_profiles)
+### [Quadratic approximation (FIM curvature at optimum)](@id fim_profiles)
 
 ```@docs; canonical=false
 QuadraticApproxProfiler
 ```
-
