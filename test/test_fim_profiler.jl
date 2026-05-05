@@ -34,6 +34,7 @@ for i in 1:length(sol)
   @test isapprox(endpoints(sol[i]).right, ep_true.right)
   @test retcodes(sol[i]) == (left=:Identifiable, right=:Identifiable)
   @test isapprox(sol[i].obj[1], obj_level(sol[1]))
+  @test length(sol[i].x) == 101
 end
 
 meth_opt = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=0.15))
@@ -49,3 +50,8 @@ for i in 1:length(sol2)
   @test isapprox(sol2[i].obj[1], obj_level(sol2[1]))
 end
 
+method3 = QuadraticApproxProfiler(resolution=10)
+sol3 = solve(plprob, method3)
+for i in 1:length(sol3)
+  @test length(sol3[i].x) == 21
+end

@@ -3,7 +3,9 @@
 """
     QuadraticApproxProfiler
 
-Fisher Information Matrix (FIM)-based asymptotic confidence intervals (Wald approximation).
+Quadratic-approximation confidence intervals (Wald approximation) based on local curvature at the optimum.
+In this package, that curvature is estimated from the Hessian/Fisher Information Matrix (FIM), so the
+resulting interval reflects the local quadratic shape implied by the FIM around `optpars`.
 By default this method reuses Hessian logic from `OptimizationProblem` (user-supplied Hessian or AD backend).
 The confidence interval is computed as `θ̂ ± z * sqrt(Σ[idx, idx])`, where 
         - `θ̂` is the `optpars[idx]`, 
@@ -21,25 +23,29 @@ Any strictly positive value is allowed (not only `1` or `2`), which can be usefu
 - `inversion::Symbol`: Matrix inversion strategy (`:cholesky`, `:pinv`).
 - `clamp_to_bounds::Bool`: Clip estimated interval endpoints to profile bounds.
 - `cov_factor::Real`: Multiplicative factor applied to `inv(H)` to obtain covariance (`Σ = cov_factor * inv(H)`).
+- `resolution::Int`: Number of points per branch (left/right) used to sample the quadratic approximation.
 """
 Base.@kwdef struct QuadraticApproxProfiler <: AbstractProfilerMethod
   inversion::Symbol = :cholesky
   clamp_to_bounds::Bool = true
   cov_factor::Float64 = 1.0
+  resolution::Int = 50
 
-  function QuadraticApproxProfiler(inversion::Symbol, clamp_to_bounds::Bool, cov_factor::Real)
+  function QuadraticApproxProfiler(inversion::Symbol, clamp_to_bounds::Bool, cov_factor::Real, resolution::Int)
     inversion in (:cholesky, :pinv) ||
       throw(ArgumentError("`inversion` must be one of :cholesky, :pinv (got $inversion)."))
 
     cov_factor > 0 || throw(ArgumentError("`cov_factor` must be strictly positive (got $cov_factor)."))
+    resolution > 0 || throw(ArgumentError("`resolution` must be a positive integer (got $resolution)."))
 
-    new(inversion, clamp_to_bounds, float(cov_factor))
+    new(inversion, clamp_to_bounds, float(cov_factor), resolution)
   end
 end
 
 get_inversion(fp::QuadraticApproxProfiler) = fp.inversion
 get_clamp_to_bounds(fp::QuadraticApproxProfiler) = fp.clamp_to_bounds
 get_cov_factor(fp::QuadraticApproxProfiler) = fp.cov_factor
+get_resolution(fp::QuadraticApproxProfiler) = fp.resolution
 
 
 function __solve(plprob::ProfileLikelihoodProblem, method::QuadraticApproxProfiler;
@@ -94,7 +100,10 @@ function __solve(plprob::ProfileLikelihoodProblem, method::QuadraticApproxProfil
       left_status = (l != l_raw) ? :NonIdentifiable : :Identifiable
       right_status = (r != r_raw) ? :NonIdentifiable : :Identifiable
 
-      x = T[l, θi, r]
+      n = get_resolution(method)
+      left_x = collect(range(l, θi; length=n + 1))
+      right_x = collect(range(θi, r; length=n + 1))
+      x = T[vcat(left_x, right_x[2:end])...]
       denom = max(Σᵢᵢ, sqrt(eps(T)))
       obj = T[obj0_t + ((xx - θi)^2) / denom for xx in x]
       pars = [begin
@@ -116,7 +125,9 @@ end
 """
     evaluate_FIM(plprob::ProfileLikelihoodProblem, θ=plprob.optpars)
 
-Evaluates the Fisher Information Matrix (FIM) at the given parameter values `θ` (default: `plprob.optpars`) by computing the Hessian of the objective function.
+Evaluates the Fisher Information Matrix (FIM) at the given parameter values `θ` (default: `plprob.optpars`)
+by computing the Hessian of the objective function. This is the local curvature used by
+[`QuadraticApproxProfiler`](@ref QuadraticApproxProfiler) to build the quadratic approximation near the optimum.
 """
 function evaluate_FIM(plprob::ProfileLikelihoodProblem,  θ=plprob.optpars)
   return evaluate_hessf(plprob.optprob, θ)
@@ -142,4 +153,3 @@ function _invert_matrix(F::AbstractMatrix, inversion::Symbol)
   end
   throw(ArgumentError("Unsupported inversion mode: $inversion"))
 end
-

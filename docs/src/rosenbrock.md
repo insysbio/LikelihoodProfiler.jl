@@ -84,7 +84,8 @@ plot(sol3, size=(800,300), margins=5Plots.mm)
 
 #### QuadraticApproxProfiler
 
-[`QuadraticApproxProfiler`](@ref QuadraticApproxProfiler) builds a local quadratic approximation around the optimum using the Hessian (Fisher information approximation).
+[`QuadraticApproxProfiler`](@ref QuadraticApproxProfiler) builds a local quadratic approximation around the optimum from curvature information.
+In practice, this curvature is estimated via the Hessian/Fisher Information Matrix (FIM), which defines the local quadratic shape near the optimum.
 This method is fast and provides Wald-type confidence intervals without tracing the full likelihood profile.
 
 You can inspect the local information matrix directly with [`evaluate_FIM`](@ref evaluate_FIM):
@@ -93,16 +94,16 @@ You can inspect the local information matrix directly with [`evaluate_FIM`](@ref
 F = evaluate_FIM(plprob, optpars)
 ```
 
-Then solve using the FIM-based method:
+Then solve using the quadratic-approximation method (FIM-based curvature):
 
 ```@example rosenbrock-1
-meth_fim = QuadraticApproxProfiler()
+meth_fim = QuadraticApproxProfiler(resolution=100)
 sol4 = solve(plprob, meth_fim)
 plot(sol4, size=(800,300), margins=5Plots.mm)
 ```
 
 !!! note
-    The FIM-based CI is a **local approximation** around the optimum.
+    The quadratic/FIM-based CI is a **local approximation** around the optimum.
     It may not reflect the true global likelihood shape (e.g. asymmetry or non-quadratic behavior).
     
 ### Profile Likelihood Solution
