@@ -101,9 +101,9 @@ function __solve(plprob::ProfileLikelihoodProblem, method::QuadraticApproxProfil
       right_status = (r != r_raw) ? :NonIdentifiable : :Identifiable
 
       n = get_resolution(method)
-      left_x = collect(range(l, θi; length=n + 1))
-      right_x = collect(range(θi, r; length=n + 1))
-      x = T[vcat(left_x, right_x[2:end])...]
+      left_r = range(l, θi; length=n+1)
+      right_r = range(θi, r; length=n+1)
+      x = vcat(left_r, right_r[2:end])
       denom = max(Σᵢᵢ, sqrt(eps(T)))
       obj = T[obj0_t + ((xx - θi)^2) / denom for xx in x]
       pars = [begin
