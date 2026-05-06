@@ -29,7 +29,7 @@ CICOBase = "33444335-3134-4342-4659-594331344435"
 CICOBaseExt = "CICOBase"
 
 [compat]
-ADTypes = "1.21.0"
+ADTypes = "1.21.0" 
 CICOBase = "0.6.0"
 ComponentArrays = "0.15.33"
 DataFrames = "1.7.0"
@@ -43,7 +43,7 @@ OptimizationNLopt = "0.3.1"
 PreallocationTools = "1"
 RecipesBase = "1.1"
 Reexport = "1.2.2"
-SciMLBase = "2.152.1"
+SciMLBase = "2.152.1, 3"
 SimpleUnPack = "1.1.0"
 julia = "1.10"
 
