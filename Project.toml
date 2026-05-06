@@ -29,7 +29,7 @@ CICOBase = "33444335-3134-4342-4659-594331344435"
 CICOBaseExt = "CICOBase"
 
 [compat]
-ADTypes = "1.21.0"
+ADTypes = "1.21.0" 
 CICOBase = "0.6.0"
 ComponentArrays = "0.15.33"
 DataFrames = "1.7.0"
