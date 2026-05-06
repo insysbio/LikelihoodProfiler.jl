@@ -24,6 +24,7 @@ abstract type AbstractProfilerStep{S} end
 
 include("problem_interface.jl")
 include("profile_methods.jl")
+include("methods/FIM.jl")
 include("caches.jl")
 include("solve.jl")
 include("profile_solution.jl")
@@ -37,8 +38,8 @@ export ProfileLikelihoodProblem, ProfileLikelihoodSolution
 export ParameterTarget, FunctionTarget
 export FixedStep # LineSearchStep, InterpolationLineSearch
 export chi2_quantile
-export OptimizationProfiler, IntegrationProfiler, CICOProfiler
+export OptimizationProfiler, IntegrationProfiler, CICOProfiler, QuadraticApproxProfiler
 export endpoints, stats, retcodes, obj_level
-export profile_labels
+export profile_labels, evaluate_FIM
 
 end #module LikelihoodProfiler

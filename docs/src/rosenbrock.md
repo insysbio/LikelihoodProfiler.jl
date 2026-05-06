@@ -35,14 +35,14 @@ sol = solve(optprob, LBFGSB())
 
 ### Profile Likelihood Problem Interface
 
-To construct a `ProfileLikelihoodProblem`, we provide the `OptimizationProblem` together with the optimal parameter values obtained from solving it. We can also set the profiling domain with the `profile_lower`, `profile_upper` arguments, indicies of parameters to profile with `idxs` and the `threshold`, which is the confidence level required to estimate confidence intervals. Please consult `?ProfileLikelihoodProblem` on the details of the interface.
+To construct a `ProfileLikelihoodProblem`, we provide the `OptimizationProblem` together with the optimal parameter values obtained from solving it. We can also set the profiling domain with the `profile_lower`, `profile_upper` arguments, indicies of parameters to profile with `idxs` and confidence settings (`conf_level`, `df`) used to compute the profile threshold for confidence intervals. Please consult `?ProfileLikelihoodProblem` on the details of the interface.
 
 ```@example rosenbrock-1
 # optimal values of the parameters
 optpars = sol.u
 
 # profile likelihood problem
-plprob = ProfileLikelihoodProblem(optprob, optpars; profile_lower = -10., profile_upper=10., threshold = 4.0)
+plprob = ProfileLikelihoodProblem(optprob, optpars; profile_lower = -10., profile_upper=10., conf_level=0.95, df=1)
 ```
 
 ### Profile Likelihood Methods
@@ -82,6 +82,30 @@ sol3 = solve(plprob, meth_cico)
 plot(sol3, size=(800,300), margins=5Plots.mm)
 ```
 
+#### QuadraticApproxProfiler
+
+[`QuadraticApproxProfiler`](@ref QuadraticApproxProfiler) builds a local quadratic approximation around the optimum from curvature information.
+This curvature is approximated by the Fisher Information Matrix (FIM)/Hessian.
+This method is fast and provides Wald-type confidence intervals without tracing the full likelihood profile.
+
+You can inspect the Fisher Information Matrix (FIM) directly with [`evaluate_FIM`](@ref evaluate_FIM):
+
+```@example rosenbrock-1
+F = evaluate_FIM(plprob, optpars)
+```
+
+Then solve using the quadratic-approximation method (FIM-based curvature):
+
+```@example rosenbrock-1
+meth_fim = QuadraticApproxProfiler(resolution=50)
+sol4 = solve(plprob, meth_fim)
+plot(sol4, size=(800,300), margins=5Plots.mm)
+```
+
+!!! note
+    The quadratic/FIM-based CI is a **local approximation** around the optimum.
+    It may not reflect the true global likelihood shape (e.g. asymmetry or non-quadratic behavior).
+    
 ### Profile Likelihood Solution
 A `ProfileLikelihoodSolution` stores more than just the profile curves (see [Solution Interface](@ref solution_interface)). It also contains the estimated confidence-interval endpoints and identification retcodes, which indicate whether each parameter (or function of parameters) is practically identifiable.
 These values can be accessed directly:

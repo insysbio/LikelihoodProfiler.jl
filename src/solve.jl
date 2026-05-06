@@ -36,19 +36,22 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
   reoptimize_init::Bool=false, parallel_type::Symbol=:none, verbose::Bool=false, kwargs...)
 
   check_prob_alg(plprob, method)
+  
+  θ₀= plprob.optpars
+  T = float(eltype(θ₀))
 
   if reoptimize_init
     !hasoptimizer(method) && 
       throw(ArgumentError("`method` must have a valid `optimizer` provided when `reoptimize_init=true`."))
 
     # start from user 'optpars'
-    optprob0 = remake(plprob.optprob; u0 = plprob.optpars)
+    optprob0 = remake(plprob.optprob; u0=θ₀)
     s = solve(optprob0, get_optimizer(method); get_optimizer_opts(method)...)
     if !SciMLBase.successful_retcode(s)
       @warn "Re-optimization at initial parameter values returned $(s.retcode). Proceeding with the provided initial parameters."
       _plprob = plprob
     else
-      _plprob = remake(plprob; optpars=s.u)
+      _plprob = remake(plprob; optpars=T.(s.u))
     end
   else
     _plprob = plprob
@@ -57,12 +60,28 @@ function SciMLBase.solve(plprob::ProfileLikelihoodProblem, method::AbstractProfi
   verbose && @info "Computing initial values."
   obj0 = evaluate_obj(_plprob, _plprob.optpars)
 
+  return __solve(_plprob, method; obj0=T(obj0), parallel_type, verbose, kwargs...)
+end
+
+"""
+    __solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod; 
+            parallel_type::Symbol=:none, kwargs...)
+
+Internal solve dispatcher used by `solve` after input validation and optional re-optimization.
+By default, it constructs parameter profile branches `(idx, dir)` and forwards them to
+`__solve_parallel`. Profilers with a different execution model (e.g. non-branch methods)
+can overload this function.
+"""
+function __solve(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod; 
+  parallel_type::Symbol=:none, kwargs...)
+
   !(parallel_type in (:none, :threads, :distributed)) && 
     throw(ArgumentError("Invalid `parallel_type`: $parallel_type. 
                          Supported values are :none, :threads, :distributed."))
+
   II = [(idx, dir) for idx in get_profile_idxs(plprob.target) for dir in (-1, 1)]
 
-  return __solve_parallel(_plprob, method, Val(parallel_type), II; obj0, verbose, kwargs...)
+  return __solve_parallel(plprob, method, Val(parallel_type), II; kwargs...)
 end
 
 ###################################### PARALLEL SOLVE ##################################
@@ -198,7 +217,7 @@ end
 function check_prob_alg(plprob::ProfileLikelihoodProblem, target::ParameterTarget, method::IntegrationProfiler)
   optf = plprob.optprob.f
 
-  if method.matrix_type == :hessian
+  if get_matrix_type(method) == :hessian
     !hashess(optf) && throw(ArgumentError(OPTF_HESS_ERROR))
   else
     !hasgrad(optf) && throw(ArgumentError(OPTF_GRAD_ERROR))
@@ -215,11 +234,21 @@ function check_prob_alg(plprob::ProfileLikelihoodProblem, target::ParameterTarge
   return nothing
 end
 
+
+function check_prob_alg(plprob::ProfileLikelihoodProblem, target::ParameterTarget, method::QuadraticApproxProfiler)
+  optf = plprob.optprob.f
+  !hashess(optf) && throw(ArgumentError(OPTF_HESS_ERROR))
+  return nothing
+end
+
+check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::QuadraticApproxProfiler) =
+  throw(ArgumentError("`QuadraticApproxProfiler` currently supports only parameter targets."))
+
 function check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::IntegrationProfiler)
   optf = plprob.optprob.f
   profile_fs = get_profile_fs(target)
 
-  if method.matrix_type == :hessian
+  if get_matrix_type(method) == :hessian
     !hashess(optf) && throw(ArgumentError(OPTF_HESS_ERROR))
     for f in profile_fs
       !hashess(f) && throw(ArgumentError(OPTF_HESS_ERROR))

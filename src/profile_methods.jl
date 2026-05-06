@@ -113,6 +113,7 @@ get_integrator(ip::IntegrationProfiler) = ip.integrator
 get_integrator_opts(ip::IntegrationProfiler) = ip.integrator_opts
 get_matrix_type(ip::IntegrationProfiler) = ip.matrix_type
 get_gamma(ip::IntegrationProfiler) = ip.gamma
+
 ############################## CICOProfiler ##############################
 
 """

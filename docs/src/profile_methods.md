@@ -35,3 +35,9 @@ References:
 1. Borisov, I. & Metelkin, E. Confidence intervals by constrained optimization—An algorithm and software package for practical identifiability analysis in systems biology. PLoS Comput Biol 16, e1008495 (2020).
 2. Venzon, D. J. & Moolgavkar, S. H. A Method for Computing Profile-Likelihood-Based Confidence Intervals. Applied Statistics 37, 87 (1988).
 
+
+### [Quadratic approximation (FIM curvature at optimum)](@id fim_profiles)
+
+```@docs; canonical=false
+QuadraticApproxProfiler
+```
