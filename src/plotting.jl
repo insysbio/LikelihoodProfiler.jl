@@ -1,5 +1,5 @@
 
-@recipe function f(sol::ProfileLikelihoodSolution)
+@recipe function f(sol::ProfileLikelihoodSolution; xtransform=identity)
   ls = length(sol)
   lbls = profile_labels(sol)
 
@@ -10,25 +10,26 @@
       subplot := i
       xguide --> xlbl
       yguide --> "objective function"
+      xtransform := xtransform
       sol[i]
     end
   end
   return nothing
 end
 
-@recipe function f(c::ProfileCurve; steps=true, threshold=hasthreshold(c.plprob), endpoints=false)
+@recipe function f(c::ProfileCurve; steps=true, threshold=hasthreshold(c.plprob), endpoints=false, xtransform=identity)
 
   @series begin
     color --> :blue
     linewidth --> 3
     endpoints ? (label --> "CI interval") : (label --> "profile")
-    (c.x, c.obj)
+    (xtransform.(c.x), c.obj)
   end
   if steps 
     @series begin
       seriestype --> :scatter
       endpoints ? (label --> "CI endpoints") : (label --> "profiler steps")
-      (c.x, c.obj)
+      (xtransform.(c.x), c.obj)
     end
   end 
   if threshold

@@ -26,6 +26,7 @@ The following keyword arguments can be used in `plot` function:
 
 - `steps::Bool` - whether to scatter steps performed by the profiler. Defaults to `true`.
 - `threshold::Bool` - whether to plot `threshold` defined in `ProfileLikelihoodProblem`. Defaults to `isfinite(threshold)`
+- `xtransform::Function` - transform applied to x-values before plotting (e.g. `exp10` to show log10-parameter profiles in linear space). Defaults to `identity`.
 
 Also each profile contained in the `sol::ProfileLikelihoodSolution` can be represented as a DataFrame with `DataFrame(sol[i])`.
 If profile labels are present, symbolic indexing is available: `sol[:label]`.
