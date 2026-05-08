@@ -19,17 +19,19 @@ end
 
 @recipe function f(c::ProfileCurve; steps=true, threshold=hasthreshold(c.plprob), endpoints=false, xtransform=identity)
 
+  xvals = map(xtransform, c.x)
+
   @series begin
     color --> :blue
     linewidth --> 3
     endpoints ? (label --> "CI interval") : (label --> "profile")
-    (xtransform.(c.x), c.obj)
+    (xvals, c.obj)
   end
   if steps 
     @series begin
       seriestype --> :scatter
       endpoints ? (label --> "CI endpoints") : (label --> "profiler steps")
-      (xtransform.(c.x), c.obj)
+      (xvals, c.obj)
     end
   end 
   if threshold

@@ -1,5 +1,5 @@
 using Test, Optimization
-using LikelihoodProfiler, OptimizationLBFGSB, Plots
+using LikelihoodProfiler
 
 const CONF_LEVEL = 0.95
 const DF = 1
@@ -36,9 +36,6 @@ for i in 1:length(sol)
   @test isapprox(sol[i].obj[1], obj_level(sol[1]))
   @test length(sol[i].x) == 101
 end
-
-meth_opt = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=0.15))
-sol_opt = solve(plprob, meth_opt)
 
 method2 = QuadraticApproxProfiler(cov_factor=2.0)
 sol2 = solve(plprob, method2)
