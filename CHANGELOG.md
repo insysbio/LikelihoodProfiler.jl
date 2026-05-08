@@ -1,5 +1,24 @@
 # Change log
 
+# 1.5.1
+
+- evaluate_FIM and QuadraticApproxProfiler added
+- xtransform kwarg added to plots
+
+# 1.5.0
+
+- Support for symbolic indexing added
+
+# 1.4.1
+
+- Custom arrays (e.g. ComponentArrays) support added
+
+# 1.4.0
+
+- Optimization compat updated to v5.0
+- drop OptimizationBase
+- compat updated
+
 # 1.3.1
 
 - JOSS paper added
