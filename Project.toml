@@ -3,23 +3,24 @@ uuid = "93acb638-a083-5915-8dce-d129bc6a3f59"
 keywords = ["identifiability", "modeling", "simulations", "sciml", "profile likelihood"]
 license = "MIT"
 desc = "Practical identifiability analysis and confidence intervals estimation"
+version = "1.5.1"
 authors = ["ivborissov <iv.borissov@gmail.com>", "metelkin <evgeny.metelkin@gmail.com>"]
 repo-url = "https://github.com/insysbio/LikelihoodProfiler.jl"
-version = "1.1.2"
 
 [deps]
-CommonSolve = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
+ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
+ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
-LineSearch = "87fe0de2-c867-4266-b59a-2f0a94fc965b"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-OptimizationBase = "bca83a33-5cc9-4baa-983d-23429ab6bcbb"
+Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
 PreallocationTools = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+SimpleUnPack = "ce78b400-467f-4804-87d8-8f486da07d0a"
 
 [weakdeps]
 CICOBase = "33444335-3134-4342-4659-594331344435"
@@ -28,31 +29,32 @@ CICOBase = "33444335-3134-4342-4659-594331344435"
 CICOBaseExt = "CICOBase"
 
 [compat]
+ADTypes = "1.21.0" 
 CICOBase = "0.6.0"
-CommonSolve = "0.2.4"
+ComponentArrays = "0.15.33"
 DataFrames = "1.7.0"
-DataInterpolations = "6.5.2, 7"
+DataInterpolations = "7, 8"
 Distributed = "1.10"
 Distributions = "0.25"
 ForwardDiff = "0.10.36, 1"
-LineSearch = "0.1.4"
-Optimization = "4.1.1"
-OptimizationBase = "2.4.0"
+Optimization = "5"
+OptimizationLBFGSB = "1.2.1"
 OptimizationNLopt = "0.3.1"
-PreallocationTools = "0.4"
+PreallocationTools = "1"
 RecipesBase = "1.1"
 Reexport = "1.2.2"
-SciMLBase = "2.0"
+SciMLBase = "2.152.1, 3"
+SimpleUnPack = "1.1.0"
 julia = "1.10"
 
 [extras]
 CICOBase = "33444335-3134-4342-4659-594331344435"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
-Optimization = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
+OptimizationLBFGSB = "22f7324a-a79d-40f2-bebe-3af60c77bd15"
 OptimizationNLopt = "4e6fcdb7-1186-4e1f-a706-475e75c168bb"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "CICOBase", "Plots", "ForwardDiff", "Optimization", "OptimizationNLopt", "OrdinaryDiffEq"]
+test = ["Test", "CICOBase", "Plots", "ForwardDiff", "OptimizationLBFGSB", "OptimizationNLopt", "OrdinaryDiffEq"]

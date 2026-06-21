@@ -1,95 +1,92 @@
-using Optimization, LikelihoodProfiler, OrdinaryDiffEq, Plots, CICOBase
-using PEtab
+using LikelihoodProfiler, Optimization, OptimizationLBFGSB, OrdinaryDiffEq, PEtab
+using Plots
 
 model_name = "Boehm_JProteomeRes2014"
 path_yaml = joinpath(@__DIR__, "../models/", "$model_name/$model_name.yaml")
+
 petab_model = PEtabModel(path_yaml)
 petab_problem = PEtabODEProblem(petab_model)
 
 optprob = OptimizationProblem(petab_problem)
-#optsol = solve(optprob, Optimization.LBFGS())
-#=
-# The initial parameters are taken from the yaml file.
-init_pars = ComponentVector(
-  log10_Epo_degradation_BaF3 = -1.6, 
-  log10_k_exp_hetero = -4.0, 
-  log10_k_exp_homo = -2.2, 
-  log10_k_imp_hetero = -1.8, 
-  log10_k_imp_homo = 4.0, 
-  log10_k_phos = 4.25, 
-  log10_sd_pSTAT5A_rel = 0.6, 
-  log10_sd_pSTAT5B_rel = 0.8, 
-  log10_sd_rSTAT5A_rel = 0.4
-)
+optpars = Vector(get_x(petab_problem))
+param_profile_prob = ProfileLikelihoodProblem(optprob, optpars; idxs=1:3)
 
-init_pars = ComponentVector(
-  log10_Epo_degradation_BaF3 = -1.5689175883999988, 
-  log10_k_exp_hetero = -4.999704893599998, 
-  log10_k_exp_homo = -2.2096987817000167, 
-  log10_k_imp_hetero = -1.78600654750001, 
-  log10_k_imp_homo = 4.9901140088, 
-  log10_k_phos = 4.1977354885, 
-  log10_sd_pSTAT5A_rel = 0.5857552705999998, 
-  log10_sd_pSTAT5B_rel = 0.8189828191999999, 
-  log10_sd_rSTAT5A_rel = 0.49868440400000047
-)
-=#
+alg_integ = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.5, reltol=1e-3, abstol=1e-4),
+  matrix_type = :identity, gamma=0., reoptimize=true, 
+  optimizer = LBFGSB(),optimizer_opts=(maxiters=11000,))
 
-init_pars = log10.([
-    0.026982514033029,      # Epo_degradation_BaF3
-    0.0000100067973851508,  # k_exp_hetero
-    0.006170228086381,      # k_exp_homo
-    0.0163679184468,        # k_imp_hetero
-    97749.3794024716,       # k_imp_homo
-    15766.5070195731,       # k_phos
-    3.85261197844677,       # sd_pSTAT5A_rel
-    6.59147818673419,       # sd_pSTAT5B_rel
-    3.15271275648527        # sd_rSTAT5A_rel
-])
+###################################### PARAMETER PROFILES ######################################
 
-init_pars = get_x(petab_problem)
-plprob = ProfileLikelihoodProblem(optprob, init_pars)
+sol_param = solve(param_profile_prob, alg_integ, verbose=true)
 
-alg1 = OptimizationProfiler(; optimizer = Optimization.LBFGS(), stepper = FixedStep(; initial_step=0.07))
-alg2 = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.07,), matrix_type = :hessian)
-alg3 = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-10)
+alg_cico = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-10)
+sol_cico = solve(param_profile_prob, alg_cico, verbose=true)
 
-sol1 = solve(plprob, alg1)
-sol2 = solve(plprob, alg2)
-sol3 = solve(plprob, alg3)
+w, h = 1100, 300
 
-w, h = 1000, 300
+p11 = plot(sol_param[1] , dpi=400, xguide="log10(Epo_degradation_BaF3)", yguide="Objective function value", legend=false)
+p12 = plot(sol_param[2] , dpi=400, xguide="log10(k_exp_hetero)", yguide="Objective function value", legend=false, title="Parameter profiles (integration-based)")
+p13 = plot(sol_param[3] , dpi=400, xguide="log10(k_exp_homo)", yguide="Objective function value", legend=:outerright)
 
-p11 = plot(sol1[1] , dpi=400, xguide="log10_Epo_degradation_BaF3", yguide="likelihood", legend=false)
-p12 = plot(sol1[2] , dpi=400, xguide="log10_k_exp_hetero", yguide="likelihood", legend=false, title="OptimizationProfiler")
-p13 = plot(sol1[3] , dpi=400, xguide="log10_k_exp_homo", yguide="likelihood", legend=:outerright)
+p1 = plot(p11, p12, p13, layout=(1,3), size=(w,h), margins=5Plots.mm, dpi=400)
 
-p1 = plot(p11, p12, p13, layout=(1,3), size=(w,h), dpi=400)
+savefig(p1, joinpath(@__DIR__, "param_profiles.png"))
 
-p21 = plot(sol2[1] , dpi=400, xguide="log10_Epo_degradation_BaF3", yguide="likelihood", legend=false)
-p22 = plot(sol2[2] , dpi=400, xguide="log10_k_exp_hetero", yguide="likelihood", legend=false, title="IntegrationProfiler")
-p23 = plot(sol2[3] , dpi=400, xguide="log10_k_exp_homo", yguide="likelihood", legend=:outerright)
+p21 = plot(sol_cico[1] , dpi=400, xguide="log10(Epo_degradation_BaF3)", yguide="Objective function value", legend=false)
+p22 = plot(sol_cico[2] , dpi=400, xguide="log10(k_exp_hetero)", yguide="Objective function value", legend=false, title="Parameter profiles (CICO)")
+p23 = plot(sol_cico[3] , dpi=400, xguide="log10(k_exp_homo)", yguide="Objective function value", legend=:outerright)
 
-p2 = plot(p21, p22, p23, layout=(1,3), size=(w,h), dpi=400)
+p2 = plot(p21, p22, p23, layout=(1,3), size=(w,h), margins=5Plots.mm, dpi=400)
 
-p31 = plot(sol3[1] , dpi=400, xguide="log10_Epo_degradation_BaF3", yguide="likelihood", legend=false)
-p32 = plot(sol3[2] , dpi=400, xguide="log10_k_exp_hetero", yguide="likelihood", legend=false, title="CICOProfiler")
-p33 = plot(sol3[3] , dpi=400, xguide="log10_k_exp_homo", yguide="likelihood", legend=:outerright)
+savefig(p2, joinpath(@__DIR__, "cico_profiles.png"))
 
-p3 = plot(p31, p32, p33, layout=(1,3), size=(w,h), dpi=400)
+###################################### FUNCTION PROFILES ######################################
 
-p = plot(p1, p2, p3, layout=(3,1), size=(w,3*h), dpi=400)
-
-savefig(p, joinpath(@__DIR__, "profiles.png"))
-
-df = DataFrame(
-    parameter = collect(keys(get_x(petab_problem))),
-    OptimizationProfiler = [get_endpoints(sol1[i]) for i in 1:length(sol1)],
-    IntegrationProfiler = [get_endpoints(sol2[i]) for i in 1:length(sol2)],
-    CICOProfiler = [get_endpoints(sol3[i]) for i in 1:length(sol3)]
-)
-
-using PrettyTables
-open(joinpath(@__DIR__, "ci_table.md"), "w") do io
-  pretty_table(io, df, backend = Val(:markdown))
+function pSTAT5A_rel_obs(x, p, t)
+  sol = get_odesol(x, petab_problem)(t)
+  specC17 = 0.107
+  return (100 * sol[7] + 200 * sol[6] * specC17) / (sol[7] + sol[1] * specC17 + 2 * sol[6] * specC17)
 end
+
+pSTAT5A_rel_optf(t) = OptimizationFunction((x, p) -> pSTAT5A_rel_obs(x, p, t), AutoFiniteDiff())
+
+times1 = [2.5, 60.0, 200.0]
+func_profile_prob = ProfileLikelihoodProblem(optprob, optpars, [pSTAT5A_rel_optf(t) for t in times1];
+  profile_lower=0.0, profile_upper=120.0)
+
+sol_func = solve(func_profile_prob, alg_integ, verbose=true)
+
+w, h = 1100, 300
+
+p31 = plot(sol_func[1] , dpi=400, xguide="pSTAT5A_rel(t=2.5)", yguide="Objective function value", legend=false)
+p32 = plot(sol_func[2] , dpi=400, xguide="pSTAT5A_rel(t=60)", yguide="Objective function value", legend=false, title="Functional profiles")
+p33 = plot(sol_func[3] , dpi=400, xticks=[25.,30.,35.], xguide="pSTAT5A_rel(t=200)", yguide="Objective function value", legend=:outerright)
+
+p3 = plot(p31, p32, p33, layout=(1,3), size=(w,h), margins=5Plots.mm, dpi=400)
+
+savefig(p3, joinpath(@__DIR__, "func_profiles.png"))
+
+###################################### PREDICTION PROFILES ######################################
+
+times2 = [2.5, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0, 120.0, 160.0, 200.0, 240.0]
+
+pred_profile_prob = ProfileLikelihoodProblem(optprob, optpars, [pSTAT5A_rel_optf(t) for t in times2]; profile_lower=0.0, profile_upper=100.0)
+
+sol_pred = solve(pred_profile_prob, alg_integ, verbose=true)
+
+x = [0; times2]
+y = [pSTAT5A_rel_obs(get_x(petab_problem), 0, t) for t in [0; times2]]
+
+# profile endpoints
+ep_lower = [0.; [endpoints(sol_pred[i]).left for i in eachindex(times2)]]
+ep_upper = [0.; [endpoints(sol_pred[i]).right for i in eachindex(times2)]]
+
+# experimental data
+pSTAT5A_rel_data = petab_problem.model_info.petab_measurements.measurement[1:16]
+
+p4 = plot(x, y, ribbon = (y .- ep_lower, ep_upper .- y), xguide="Time", lw=2.5, yguide="Predicted pSTAT5A_rel", label = "simulation with prediction band", title="Prediction confidence band", dpi=400)
+scatter!(p4, [0; times2], pSTAT5A_rel_data, label="experimental data")
+
+savefig(p4, joinpath(@__DIR__, "pred_profile.png"))
+
+

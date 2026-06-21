@@ -1,5 +1,55 @@
 # Change log
 
+# 1.5.1
+
+- evaluate_FIM and QuadraticApproxProfiler added
+- xtransform kwarg added to plots
+
+# 1.5.0
+
+- Support for symbolic indexing added
+
+# 1.4.1
+
+- Custom arrays (e.g. ComponentArrays) support added
+
+# 1.4.0
+
+- Optimization compat updated to v5.0
+- drop OptimizationBase
+- compat updated
+
+# 1.3.1
+
+- JOSS paper added
+
+# 1.3.0
+
+- Drop `Optimization.jl` and use `OptimizationBase.jl`
+- Examples and tests modified in order to support new `Optimization.jl` libs
+- `reoptimize_init` kwarg fixed
+- Docs and README updated to reflect JOSS
+- SIR model computational issues fixed
+- Gaussian model added to the Tutorials
+
+# 1.2.1
+
+- Fixing bug in profiling bounds idxs
+
+# 1.2.0
+
+### Breaking changes
+- `idxs` moved to problem level
+- `profile_range` replaced with `profile_lower/profile_upper`
+### Other changes
+- target constructors added
+- functions profiling added
+
+## 1.1.3
+
+- Zenodo release
+- joss script fixed
+
 ## 1.1.2
 
 - JOSS paper added

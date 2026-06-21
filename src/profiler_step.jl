@@ -1,4 +1,70 @@
-abstract type AbstractProfilerStep{S} end
+
+################################################## OPTIMIZATION PROFILER STEP ##################################################
+
+function profiler_step!(profiler_cache::ProfilerCache, target::ParameterTarget, solver_cache::OptimizationSolverCache)
+  @unpack opt_cache, stepper = solver_cache
+  idx = get_profile_idx(profiler_cache)
+
+  pars_guess = propose_next_pars!(profiler_cache, stepper)
+
+  fill_x_reduced!(opt_cache.reinit_cache.u0, pars_guess, idx)
+  set_x_fixed!(opt_cache.reinit_cache.p, pars_guess[idx])
+
+  sol = solve_opt_cache(opt_cache)
+
+  if SciMLBase.successful_retcode(sol.retcode)
+    fill_x_full!(profiler_cache.pars_cur, sol.u, idx, pars_guess[idx])
+    profiler_cache.x_cur = pars_guess[idx]
+    profiler_cache.obj_cur = sol.objective
+    profiler_cache.iter += 1
+  else
+    @warn "Solver returned $(sol.retcode) retcode at profile point x = $(profiler_cache.x_cur). Profiling is interrupted."
+  end
+  solver_cache.retcode_original = sol.retcode
+  return nothing
+end
+
+function solve_opt_cache(opt_cache::OptimizationCache)
+  if isempty(opt_cache.reinit_cache.u0)
+    return solve_empty_opt_cache(opt_cache)
+  else
+    return solve!(opt_cache)
+  end
+end
+
+function solve_empty_opt_cache(opt_cache::OptimizationCache)
+  u = opt_cache.reinit_cache.u0
+  p = opt_cache.reinit_cache.p
+
+  t = @elapsed obj = opt_cache.f(u, p)
+  stats = SciMLBase.OptimizationStats(; iterations = 1, time = t, fevals = 1)
+
+  return SciMLBase.build_solution(opt_cache, opt_cache.opt, u, obj;
+    retcode = ReturnCode.Success, stats)
+end
+
+################################################## INTEGRATION PROFILER STEP ##################################################
+
+function profiler_step!(profiler_cache::ProfilerCache, target::AbstractProfileTarget, solver_cache::IntegrationSolverCache)
+  @unpack ode_cache, opt_cache = solver_cache
+
+  integrator = ode_cache
+  SciMLBase.step!(integrator)
+
+  if SciMLBase.successful_retcode(integrator.sol.retcode)
+    profiler_cache.pars_cur .= view(integrator.u, 1:length(integrator.u)-1)
+    profiler_cache.x_cur = integrator.t
+    profiler_cache.obj_cur = evaluate_obj(get_plprob(profiler_cache), profiler_cache.pars_cur)
+    profiler_cache.iter += 1
+  else
+    @warn "Solver returned $(integrator.sol.retcode) retcode at profile point x = $(profiler_cache.x_cur). Profiling is interrupted."
+
+  end
+  solver_cache.retcode_original = integrator.sol.retcode
+  return nothing
+end
+
+################################################## OPTIMIZATION PROFILER STEPPERS ##################################################
 
 const DEFAULT_INIT_STEP = 1e-2
 
@@ -127,201 +193,115 @@ prepare_initial_step(step::Function) = step
 get_step(s::AbstractProfilerStep{S}, pars, i) where S <: Function = s.initial_step(pars, i)
 
 
-function propose_next_pars!(profiler_state::ProfilerState, s::FixedStep)
-  θ_idx = get_idx(profiler_state)
-  θ_cur = get_curpars(profiler_state)
-  x_cur = θ_cur[θ_idx]
-  x_dir = get_dir(profiler_state)
-  step_size = get_step(s, θ_cur, θ_idx)
-  x_bounds = get_profile_range(profiler_state, θ_idx)
+function propose_next_pars!(profiler_cache::ProfilerCache, s::FixedStep)
+  @unpack pars_cur, x_cur, profile_range = profiler_cache
+  idx = get_profile_idx(profiler_cache)
+  step_size = get_step(s, pars_cur, idx)
+  dir = get_profile_dir(profiler_cache)
 
-  profiler_state.pars_cache .= θ_cur
-  profiler_state.pars_cache[θ_idx] = clamp_within_bounds(x_cur + x_dir * step_size, x_bounds)
-  return profiler_state.pars_cache
+  profiler_cache.pars_cache .= pars_cur
+  profiler_cache.pars_cache[idx] = clamp_within_bounds(x_cur + dir * step_size, profile_range)
+  return profiler_cache.pars_cache
 end
 
-function propose_next_pars!(profiler_state::ProfilerState, s::LineSearchStep)
-  θ_cur = get_curpars(profiler_state)
-  θ_bounds = get_profile_range(profiler_state)
+function propose_next_pars!(profiler_cache::ProfilerCache, s::LineSearchStep)
+  @unpack pars_cur, x_cur, profile_range = profiler_cache
 
-  isfirststep = get_numiter(profiler_state) < 2
+  isfirststep = profiler_cache.iter < 2
 
   if isfirststep
     # If this is the first step, we can use the previous pars to compute the direction
-    return propose_next_pars!(profiler_state, FixedStep(; initial_step=s.initial_step))
+    return propose_next_pars!(profiler_cache, FixedStep(; initial_step=s.initial_step))
   else
-    ls_dir = compute_direction(profiler_state, Val(s.direction))
-    step_size, ls_retcode = compute_step_size(profiler_state, s.linesearch, ls_dir)
+    ls_dir = compute_direction(profiler_cache, Val(s.direction))
+    step_size, ls_retcode = compute_step_size(profiler_cache, s.linesearch, ls_dir)
     #@show step_size, ls_retcode
     if ls_retcode == :Success
-      @. profiler_state.pars_cache = θ_cur + ls_dir*step_size
-      clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-      return profiler_state.pars_cache
+      @. profiler_cache.pars_cache = pars_cur + ls_dir*step_size
+      clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+      return profiler_cache.pars_cache
     else
       @warn "Line search didn't find a suitable step size and returned $ls_retcode. Continuing with the previous successful step size (FixedStep)."
-      x_cur = get_curx(profiler_state)
-      x_prev = get_prevx(profiler_state)
+      x_cur = profiler_cache.x_cur
+      x_prev = get_x_prev(profiler_cache)
       step_prev = abs(x_cur - x_prev)
-      return propose_next_pars!(profiler_state, FixedStep(; initial_step=step_prev))
+      return propose_next_pars!(profiler_cache, FixedStep(; initial_step=step_prev))
     end
   end
 end
 
-function compute_direction(profiler_state::ProfilerState, direction::Val{:SingleAxis})
-  θ_idx = get_idx(profiler_state)
-  θ_cur = get_curpars(profiler_state)
-  x_dir = get_dir(profiler_state)
-  
-  ls_dir = zeros(eltype(θ_cur), length(θ_cur))
-  ls_dir[θ_idx] = x_dir
+function compute_direction(profiler_cache::ProfilerCache, direction::Val{:SingleAxis})
+  idx = get_profile_idx(profiler_cache)
+  x_dir = get_profile_dir(profiler_cache)
+
+  pars_cur = profiler_cache.pars_cur
+  ls_dir = zeros(eltype(pars_cur), length(pars_cur))
+  ls_dir[idx] = x_dir
   return ls_dir
 end
 
-function compute_direction(profiler_state::ProfilerState, direction::Val{:Secant})
-  θ_cur = get_curpars(profiler_state)
-  θ_prev = get_prevpars(profiler_state)
+function compute_direction(profiler_cache::ProfilerCache, direction::Val{:Secant})
+  @unpack pars_cur, x_cur = profiler_cache
+  pars_prev = get_pars_prev(profiler_cache)
+  x_prev = get_x_prev(profiler_cache)
+  dx = abs(x_cur - x_prev)
 
-  x_cur = get_curx(profiler_state)
-  x_prev = get_prevx(profiler_state)
-
-  return (θ_cur .- θ_prev) ./ abs(x_cur - x_prev)
+  dx <= eps(float(typeof(dx))) && return compute_direction(profiler_cache, Val(:SingleAxis))
+  return (pars_cur .- pars_prev) ./ dx
 end
 
-function compute_direction(profiler_state::ProfilerState, direction::Val{:Gradient})
-  optprob = get_optprob(profiler_state)
-  θ_idx = get_idx(profiler_state)
-  θ_cur = get_curpars(profiler_state)
+function compute_direction(profiler_cache::ProfilerCache, direction::Val{:Gradient})
+  optprob = get_optprob(profiler_cache)
+  idx = get_profile_idx(profiler_cache)
+  pars_cur = profiler_cache.pars_cur
 
-  grad = evaluate_gradf(optprob, θ_cur)
-  return grad ./ abs(grad[θ_idx])
+  grad = evaluate_gradf(optprob, pars_cur)
+  return grad ./ abs(grad[idx])
 end
 
-function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationLineSearch, ls_dir)
+function compute_step_size(profiler_cache::ProfilerCache, ls_alg::InterpolationLineSearch, ls_dir)
+  @unpack pars_cur, x_cur, obj_cur = profiler_cache
+  x_prev = get_x_prev(profiler_cache)
+  plprob = get_plprob(profiler_cache)
+  obj_prev = get_obj_prev(profiler_cache)
 
-  θ_cur = get_curpars(profiler_state)
-  x_cur = get_curx(profiler_state)
-  x_prev = get_prevx(profiler_state)
-  θ_bounds = get_profile_range(profiler_state)
-  opt_prob = get_optprob(profiler_state)
-  obj_cur = get_curobj(profiler_state)
-  obj_prev = get_prevobj(profiler_state)
-
-
-
-  Δ_obj_prev = abs(obj_cur - obj_prev)
-  Δ_obj_prev = max(Δ_obj_prev, ls_alg.min_obj_change)
-
+  Δ_obj_prev = max(abs(obj_cur - obj_prev), ls_alg.min_obj_change)
   obj_target = obj_cur + ls_alg.objective_factor * Δ_obj_prev
-  increasing_profile = obj_prev < obj_cur
-  undershoot = increasing_profile ? (obj -> obj < obj_target) :
-                                    (obj -> obj > obj_target)
 
   step_high = abs(x_cur - x_prev)
   step_high = clamp(step_high, ls_alg.min_step_size, ls_alg.max_step_size)
-
-  bracketed = increasing_profile ?
-      ((low, high) -> low < obj_target < high) :
-      ((low, high) -> low > obj_target > high)
-
   step_low, obj_low = 0.0, obj_cur
   factor = ls_alg.step_size_factor
-  factor_min, factor_max = 1.1, 5.0
+  factor_max = 5.0
   iter = 0
 
-  @. profiler_state.pars_cache = θ_cur + ls_dir * step_high
-  θ_high = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-  obj_high = evaluate_optf(opt_prob, θ_high)
+  @. profiler_cache.pars_cache = pars_cur + ls_dir * step_high
+  θ_high = clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+  obj_high = evaluate_obj(plprob, θ_high)
+  isfinite(obj_high) || return step_low, :NonFinite
   abs(obj_high - obj_target) < ls_alg.abstol && return step_high, :Success
 
-  while !bracketed(obj_low, obj_high)
-      iter += 1
-      iter > ls_alg.maxiters && return step_low, :MaxIters
+  while obj_high < obj_target
+    iter += 1
+    iter > ls_alg.maxiters && return step_low, :MaxIters
 
-      if undershoot(obj_high)
-          step_low, obj_low = step_high, obj_high
-          step_high = clamp(step_high * factor,
-                              ls_alg.min_step_size, ls_alg.max_step_size)
-          factor = min(factor * 1.25, factor_max)
-      else
-          step_high = clamp(step_high / factor,
-                            ls_alg.min_step_size, ls_alg.max_step_size)
-          factor = max(factor / 1.25, factor_min)
-      end
+    step_low, obj_low = step_high, obj_high
+    step_next = clamp(step_high * factor, ls_alg.min_step_size, ls_alg.max_step_size)
+    step_next == step_high && return step_high, :Success
+    step_high = step_next
+    factor = min(factor * 1.25, factor_max)
 
-      @. profiler_state.pars_cache = θ_cur + ls_dir * step_high
-      θ_high = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-      obj_high = evaluate_optf(opt_prob, θ_high)
+    @. profiler_cache.pars_cache = pars_cur + ls_dir * step_high
+    θ_high = clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+    obj_high = evaluate_obj(plprob, θ_high)
 
-      abs(obj_high - obj_target) < ls_alg.abstol && return step_high, :Success
+    isfinite(obj_high) || return step_low, :NonFinite
+    abs(obj_high - obj_target) < ls_alg.abstol && return step_high, :Success
   end
 
   step = interpolate_step_size(step_low, step_high, obj_low, obj_high, obj_target)
   return clamp(step, ls_alg.min_step_size, ls_alg.max_step_size), :Success
 end
-
-#=
-function compute_step_size(profiler_state::ProfilerState, ls_alg::InterpolationLineSearch, ls_dir)
-  θ_cur = get_curpars(profiler_state)
-  x_cur = get_curx(profiler_state)
-  x_prev = get_prevx(profiler_state)
-  θ_bounds = get_profile_range(profiler_state)
-  opt_prob = get_optprob(profiler_state)
-  obj_cur = get_curobj(profiler_state)
-  obj_prev = get_prevobj(profiler_state)
-  Δ_obj_prev = abs(obj_cur - obj_prev)
-
-  # try previous step_size (extrapolate_profile)
-  step_next = abs(x_cur - x_prev)
-  @. profiler_state.pars_cache = θ_cur + ls_dir*step_next
-  θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-  obj_next = evaluate_optf(opt_prob, profiler_state.pars_cache)
-
-  increasing_profile = obj_next > obj_cur
-  obj_target = increasing_profile ? obj_cur + ls_alg.objective_factor*Δ_obj_prev : obj_cur - ls_alg.objective_factor*Δ_obj_prev
-  #obj_target = increasing_profile ? obj_cur + ls_alg.objective_factor*obj_cur : obj_cur - ls_alg.objective_factor*obj_cur
-
-  # TODO add tolerance arg to the alg
-  (abs(obj_next - obj_target) < 1e-6) && return step_next, :Success
-  
-  undershoot = increasing_profile ? 
-    (obj_val -> obj_val < obj_target) : 
-    (obj_val -> obj_val > obj_target)
-
-  bracketing_cond = increasing_profile ?
-    ((obj_low, obj_high) -> obj_low < obj_target < obj_high) :
-    ((obj_low, obj_high) -> obj_low > obj_target > obj_high)
-
-  increase_step = undershoot(obj_next)
-  factor = increase_step ? ls_alg.step_size_factor : 1/ls_alg.step_size_factor
-
-  iter = 0
-  step_low, obj_low = step_next, obj_next
-  step_high, obj_high = step_next, obj_next
-  while !bracketing_cond(obj_low, obj_high)
-    iter += 1
-    if iter > ls_alg.maxiters
-      @show step_low, step_high, obj_low, obj_high, obj_target
-      return step_low, :MaxIters
-    end
-    
-    step_next *= factor
-    @. profiler_state.pars_cache = θ_cur + ls_dir * step_next
-    θ_next = clamp_within_bounds!(profiler_state.pars_cache, θ_bounds)
-    obj_next = evaluate_optf(opt_prob, θ_next)
-    @show step_next, obj_next, obj_target
-    # TODO add tolerance arg to the alg
-    (abs(obj_next - obj_target) < 1e-6) && return step_next, :Success
-
-    if undershoot(obj_next)
-      step_low, obj_low = step_next, obj_next
-    else
-      step_high, obj_high = step_next, obj_next
-    end
-    
-  end
-  return interpolate_step_size(step_low, step_high, obj_low, obj_high, obj_target), :Success
-end
-=#
 
 # Clamp a number within specified bounds, handling various cases for bounds
 clamp_within_bounds(x::Number, bounds::Tuple) = clamp_within_bounds(x, bounds[1], bounds[2])
@@ -330,6 +310,14 @@ clamp_within_bounds(x::Number, lb::Nothing, ub::Nothing) = x
 clamp_within_bounds(x::Number, lb::Number, ub::Number) = clamp(x, lb, ub)
 clamp_within_bounds(x::Number, lb::Nothing, ub::Number) = clamp(x, -Inf, ub)
 clamp_within_bounds(x::Number, lb::Number, ub::Nothing) = clamp(x, lb, Inf)
+
+function clamp_profile_proposal!(pars::AbstractVector, profiler_cache::ProfilerCache)
+  optprob = get_optprob(profiler_cache)
+  clamp_within_bounds!(pars, optprob.lb, optprob.ub)
+  idx = get_profile_idx(profiler_cache)
+  pars[idx] = clamp_within_bounds(pars[idx], profiler_cache.profile_range)
+  return pars
+end
 
 # In-place version for θ::Vector
 function clamp_within_bounds!(θ::AbstractVector, bounds::Tuple)
@@ -342,6 +330,15 @@ end
 function clamp_within_bounds!(θ::AbstractVector, bounds::AbstractVector)
     for i in eachindex(θ)
         θ[i] = clamp_within_bounds(θ[i], bounds[i])
+    end
+    return θ
+end
+
+function clamp_within_bounds!(θ::AbstractVector, lb, ub)
+    for i in eachindex(θ)
+        lb_i = isnothing(lb) ? nothing : lb[i]
+        ub_i = isnothing(ub) ? nothing : ub[i]
+        θ[i] = clamp_within_bounds(θ[i], lb_i, ub_i)
     end
     return θ
 end

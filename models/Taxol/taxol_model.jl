@@ -1,5 +1,7 @@
 
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_de.m
+using Distributions
+
 function ode_func(du, u, p, t, drug)
   let (a0, ka, r0, d0, kd) = (p[1], p[2], p[3], p[4], p[5])
 
@@ -59,10 +61,10 @@ Cerr040 = [0.005, 0.010, 0.010, 0.011, 0.010, 0.010]*1091.0   # thousands of cel
 Cell100 = [0.009, 0.025, 0.026, 0.028, 0.029, 0.031]*1091.0   # thousands of cells
 Cerr100 = [0.006, 0.010, 0.009, 0.008, 0.011, 0.011]*1091.0   # thousands of cells
 
-C005 = LikelihoodProfiler.mean(Cell005)
-C010 = LikelihoodProfiler.mean(Cell010)
-C040 = LikelihoodProfiler.mean(Cell040)
-C100 = LikelihoodProfiler.mean(Cell100)
+C005 = mean(Cell005)
+C010 = mean(Cell010)
+C040 = mean(Cell040)
+C100 = mean(Cell100)
 
 data = [Cell005/C005, Cell010/C010, Cell040/C040, Cell100/C100]
 datamean = [C005, C010, C040, C100]
@@ -70,7 +72,7 @@ datamean = [C005, C010, C040, C100]
 
 # solver algorithm and tolerances
 solver_opts = Dict(
-    :alg => AutoTsit5(Rosenbrock23()),
+    :alg => AutoTsit5(Rosenbrock23(autodiff=AutoFiniteDiff())),
     :reltol => 1e-6,
     :abstol => 1e-8
 )
@@ -100,6 +102,7 @@ function taxol_obj(
   times=times,
   solver_opts=solver_opts
 )
+
   loss = 0.
   for (i,d) in enumerate(dose)
      prob = ODEProblem((du,u,p,t)->ode_func(du,u,p,t,d), u0, tspan, x)
@@ -117,5 +120,5 @@ end
 
 # threshold is chosen according to
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L40-L41
-sigmasq = (LikelihoodProfiler.mean([(Cerr005/C005); (Cerr010/C010); (Cerr040/C040); (Cerr100/C100)]))^2
+sigmasq = (mean([(Cerr005/C005); (Cerr010/C010); (Cerr040/C040); (Cerr100/C100)]))^2
 
