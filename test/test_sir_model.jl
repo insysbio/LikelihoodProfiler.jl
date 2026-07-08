@@ -27,9 +27,9 @@ plprob = ProfileLikelihoodProblem(optprob, optpars; threshold = chi2_quantile(0.
 @testset "SIR model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
   
   idxs = 1:3
-  profile_step(p0, i) = p0[i] * 0.05
+  #profile_step(p0, i) = p0[i] * 0.05
   atol = [profile_step(optpars, i)/2 for i in idxs]
-  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = AdaptiveStep())
   sol = solve(plprob, method)
   for i in idxs
     test_sir(sol, i; rtol)
@@ -40,9 +40,9 @@ end
 @testset "SIR model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
 
   idxs = 1:3
-  profile_step(p0, i) = p0[i] * 0.05
+  profile_step(p0, i) = p0[i] * 0.02
   atol = [profile_step(optpars, i)/2 for i in idxs]
-  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep(; initial_step=profile_step))
   sol = solve(plprob, method)
   for i in idxs
     test_sir(sol, i; rtol)

@@ -43,12 +43,12 @@ FIXME
   idxs = 1:5
   profile_step(p0, i) = p0[i] * 0.1
   atol = [profile_step(p0, i)/2 for i in idxs]
-  method = OptimizationProfiler(; optimizer = LBFGSB(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(; optimizer = LBFGSB(), stepper = FixedStep())
   
   #=
   method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), 
-  stepper = LineSearchStep(; initial_step = profile_step, 
-  linesearch = InterpolationLineSearch(; objective_factor=1.25, step_size_factor=1.5)))
+  stepper = AdaptiveStep(; initial_step = profile_step,
+  controller = ObjectiveStepControl(; target_factor=1.25, step_factor=1.5)))
   =#
   sol = solve(plprob, method)
   for i in idxs

@@ -17,8 +17,8 @@ A profiler method that uses stepwise re-optimization to profile the likelihood f
 ### Fields
 
 - `stepper::S`: The algorithm used to compute the next profile point. Supported steppers include:
-    - `FixedStep`: Proposes a constant step size in the profiling direction (Default). 
-    - `LineSearchStep`: Uses a line search to adaptively determine the step size in the direction which is chosen by the `direction` keyword argument.
+    - `FixedStep`: Proposes steps from the configured step rule in the profiling direction (Default). 
+    - `AdaptiveStep`: Adapts the step size based on trial objective increases.
 - `optimizer::opType`: The optimizer used for the optimization process.
 - `optimizer_opts::optsType`: Options for the optimizer. Defaults to `NamedTuple()`.
 
@@ -27,9 +27,9 @@ A profiler method that uses stepwise re-optimization to profile the likelihood f
 The `stepper` argument controls how the next profile point is chosen. For example:
 
 - `stepper = FixedStep(initial_step=0.1)`: Use a constant step size of 0.1.
-- `stepper = LineSearchStep(direction=:Secant, linesearch=InterpolationLineSearch())`: Use a line search with secant direction.
+- `stepper = AdaptiveStep(predictor=LinearPredictor())`: Use adaptive stepping with a secant-like linear predictor.
 
-See the documentation for each stepper type (e.g., `?FixedStep`, `?LineSearchStep`) for more details and customization options.
+See the documentation for each stepper type (e.g., `?FixedStep`, `?AdaptiveStep`) for more details and customization options.
 
 ### Example
 

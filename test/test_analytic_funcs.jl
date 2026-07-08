@@ -122,9 +122,9 @@ end
 end
 
 #=
-@testset "Analytic funcs. Adaptive LineSearchStep OptimizationProfiler with gradient-based optimizer" begin
+@testset "Analytic funcs. AdaptiveStep OptimizationProfiler with gradient-based optimizer" begin
 
-  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = LineSearchStep(; initial_step=step, direction=:Secant, linesearch=InterpolationLineSearch()))
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep(; initial_step=step, predictor=LinearPredictor()))
   test_parameter_target(method, funcs_dict)
 
 end
