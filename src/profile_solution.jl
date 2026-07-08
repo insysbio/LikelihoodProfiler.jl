@@ -106,9 +106,9 @@ end
 function profiler_save_values!(sol::ProfileCurve, profiler_cache::ProfilerCache)
   @unpack iter, pars_cur, x_cur, obj_cur = profiler_cache
 
-  SciMLBase.copyat_or_push!(sol.pars, iter, pars_cur)
-  SciMLBase.copyat_or_push!(sol.x,    iter, x_cur)
-  SciMLBase.copyat_or_push!(sol.obj,  iter, obj_cur)
+  SciMLBase.RecursiveArrayTools.copyat_or_push!(sol.pars, iter, pars_cur)
+  SciMLBase.RecursiveArrayTools.copyat_or_push!(sol.x,    iter, x_cur)
+  SciMLBase.RecursiveArrayTools.copyat_or_push!(sol.obj,  iter, obj_cur)
   
   return nothing
 end
