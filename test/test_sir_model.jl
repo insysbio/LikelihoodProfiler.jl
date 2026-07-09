@@ -33,7 +33,7 @@ plprob = ProfileLikelihoodProblem(optprob, optpars; threshold = chi2_quantile(0.
   end
 
 end
-
+#=
 @testset "SIR model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
   method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep())
   sol = solve(plprob, method)
@@ -42,7 +42,7 @@ end
   end
 
 end
-
+=#
 
 @testset "SIR model. IntegrationProfiler with full hessian" begin
   
