@@ -1,0 +1,264 @@
+"""
+    LineSearchStep{S, L}
+
+Profiler stepper that uses a line search to adaptively determine the step size in the direction which is chosen by the `direction` keyword argument.
+
+### Constructors
+
+```julia
+LineSearchStep(;initial_step=DEFAULT_INIT_STEP, direction=:Secant, linesearch=InterpolationLineSearch())
+```
+
+### Keyword arguments
+- `initial_step=DEFAULT_INIT_STEP`: Initial guess for the step size. Can be a number (for a constant guess) or a function `(pars, idx) -> step` for custom logic depending on the current parameters and index. If a number is provided, it is automatically wrapped as a function.
+- `direction::Symbol=:Secant`: Strategy for choosing the direction of the next step. Options:
+    - `:SingleAxis`: Move along the current profiling parameter only.
+    - `:Secant`: Use the secant direction, i.e., the line connecting the last two points in parameter space (Default).
+    - `:Gradient`: Use the gradient of the objective function as the direction.
+  The choice affects how the next step is proposed in parameter space.
+- `linesearch::L=InterpolationLineSearch()`: Line search algorithm (e.g., `InterpolationLineSearch()`).
+"""
+struct LineSearchStep{S<:Function, L} <: AbstractProfilerStep{S}
+  initial_step::S
+  direction::Symbol
+  linesearch::L
+end
+
+function LineSearchStep(; initial_step=DEFAULT_INIT_STEP, direction=:Secant, linesearch=InterpolationLineSearch()) 
+  @assert direction in (:SingleAxis, :Secant, :Gradient) "Invalid direction: $direction. Must be one of (:SingleAxis, :Secant, :Gradient)."
+  LineSearchStep(prepare_initial_step(initial_step), direction, linesearch)
+end
+
+
+"""
+    InterpolationLineSearch(; objective_factor=1.25,
+                              step_size_factor=2.0,
+                              maxiters=10,
+                              abstol=1e-4,
+                              min_step_size=1e-8,
+                              max_step_size=1.0,
+                              min_obj_change=1e-3)
+
+Interpolation-based line search algorithm used in profile stepping.
+
+### Keyword arguments
+- `objective_factor::Float64 = 1.25`: Factor by which the change in the objective
+  from the last step is scaled to set the target for the next step.
+- `step_size_factor::Float64 = 2.0`: Initial multiplicative factor for scaling the step size.
+- `maxiters::Int = 10`: Maximum number of line search iterations allowed.
+- `abstol::Float64 = 1e-4`: Absolute tolerance on target objective value.
+- `min_step_size::Float64 = 1e-8`: Lower bound on the step size.
+- `max_step_size::Float64 = 1.0`: Upper bound on the step size.
+- `min_obj_change::Float64 = 1e-3`: Minimum objective change used when computing the target.
+"""
+struct InterpolationLineSearch
+  objective_factor::Float64
+  step_size_factor::Float64
+  maxiters::Int
+  abstol::Float64
+  min_step_size::Float64
+  max_step_size::Float64
+  min_obj_change::Float64
+end
+
+function InterpolationLineSearch(; objective_factor=1.25,
+                                 step_size_factor=2.0,
+                                 maxiters=15,
+                                 abstol=1e-4,
+                                 min_step_size=1e-6,
+                                 max_step_size=1.0,
+                                 min_obj_change=1e-3)
+  @assert objective_factor > 1  "Objective scaling factor must be greater than 1."
+  @assert step_size_factor > 0  "Step size factor must be positive."
+  @assert maxiters > 0          "Maximum iterations must be positive."
+  @assert abstol > 0            "abstol must be positive."
+  @assert min_step_size > 0     "Minimum step size must be positive."
+  @assert max_step_size > min_step_size "Max step size must exceed min step size."
+  @assert min_obj_change > 0    "Minimum objective change must be positive."
+
+  return InterpolationLineSearch(objective_factor, step_size_factor,
+                                   maxiters, abstol,
+                                   min_step_size, max_step_size,
+                                   min_obj_change)
+end
+
+#=
+# TODO 
+struct TrustRegionStep{S} <: AbstractProfilerStep{S}
+  initial_step::S
+  min_x_step::Float64
+  max_x_step::Float64
+  min_obj_step::Float64
+  max_obj_step::Float64
+end
+=#
+function prepare_initial_step(step::Number)
+  @assert step > 0 "Initial step size must be positive."
+  return (p0,i) -> float(step)
+end
+prepare_initial_step(step::Function) = step
+
+get_step(s::AbstractProfilerStep{S}, pars, i) where S <: Function = s.initial_step(pars, i)
+
+
+function propose_next_pars!(profiler_cache::ProfilerCache, s::FixedStep)
+  @unpack pars_cur, x_cur, profile_range = profiler_cache
+  idx = get_profile_idx(profiler_cache)
+  step_size = get_step(s, pars_cur, idx)
+  dir = get_profile_dir(profiler_cache)
+
+  profiler_cache.pars_cache .= pars_cur
+  profiler_cache.pars_cache[idx] = clamp_within_bounds(x_cur + dir * step_size, profile_range)
+  return profiler_cache.pars_cache
+end
+
+function propose_next_pars!(profiler_cache::ProfilerCache, s::LineSearchStep)
+  @unpack pars_cur, x_cur, profile_range = profiler_cache
+
+  isfirststep = profiler_cache.iter < 2
+
+  if isfirststep
+    # If this is the first step, we can use the previous pars to compute the direction
+    return propose_next_pars!(profiler_cache, FixedStep(; initial_step=s.initial_step))
+  else
+    ls_dir = compute_direction(profiler_cache, Val(s.direction))
+    step_size, ls_retcode = compute_step_size(profiler_cache, s.linesearch, ls_dir)
+    #@show step_size, ls_retcode
+    if ls_retcode == :Success
+      @. profiler_cache.pars_cache = pars_cur + ls_dir*step_size
+      clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+      return profiler_cache.pars_cache
+    else
+      @warn "Line search didn't find a suitable step size and returned $ls_retcode. Continuing with the previous successful step size (FixedStep)."
+      x_cur = profiler_cache.x_cur
+      x_prev = get_x_prev(profiler_cache)
+      step_prev = abs(x_cur - x_prev)
+      return propose_next_pars!(profiler_cache, FixedStep(; initial_step=step_prev))
+    end
+  end
+end
+
+function compute_direction(profiler_cache::ProfilerCache, direction::Val{:SingleAxis})
+  idx = get_profile_idx(profiler_cache)
+  x_dir = get_profile_dir(profiler_cache)
+
+  pars_cur = profiler_cache.pars_cur
+  ls_dir = zeros(eltype(pars_cur), length(pars_cur))
+  ls_dir[idx] = x_dir
+  return ls_dir
+end
+
+function compute_direction(profiler_cache::ProfilerCache, direction::Val{:Secant})
+  @unpack pars_cur, x_cur = profiler_cache
+  pars_prev = get_pars_prev(profiler_cache)
+  x_prev = get_x_prev(profiler_cache)
+  dx = abs(x_cur - x_prev)
+
+  dx <= eps(float(typeof(dx))) && return compute_direction(profiler_cache, Val(:SingleAxis))
+  return (pars_cur .- pars_prev) ./ dx
+end
+
+function compute_direction(profiler_cache::ProfilerCache, direction::Val{:Gradient})
+  optprob = get_optprob(profiler_cache)
+  idx = get_profile_idx(profiler_cache)
+  pars_cur = profiler_cache.pars_cur
+
+  grad = evaluate_gradf(optprob, pars_cur)
+  return grad ./ abs(grad[idx])
+end
+
+function compute_step_size(profiler_cache::ProfilerCache, ls_alg::InterpolationLineSearch, ls_dir)
+  @unpack pars_cur, x_cur, obj_cur = profiler_cache
+  x_prev = get_x_prev(profiler_cache)
+  plprob = get_plprob(profiler_cache)
+  obj_prev = get_obj_prev(profiler_cache)
+
+  Δ_obj_prev = max(abs(obj_cur - obj_prev), ls_alg.min_obj_change)
+  obj_target = obj_cur + ls_alg.objective_factor * Δ_obj_prev
+
+  step_high = abs(x_cur - x_prev)
+  step_high = clamp(step_high, ls_alg.min_step_size, ls_alg.max_step_size)
+  step_low, obj_low = 0.0, obj_cur
+  factor = ls_alg.step_size_factor
+  factor_max = 5.0
+  iter = 0
+
+  @. profiler_cache.pars_cache = pars_cur + ls_dir * step_high
+  θ_high = clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+  obj_high = evaluate_obj(plprob, θ_high)
+  isfinite(obj_high) || return step_low, :NonFinite
+  abs(obj_high - obj_target) < ls_alg.abstol && return step_high, :Success
+
+  while obj_high < obj_target
+    iter += 1
+    iter > ls_alg.maxiters && return step_low, :MaxIters
+
+    step_low, obj_low = step_high, obj_high
+    step_next = clamp(step_high * factor, ls_alg.min_step_size, ls_alg.max_step_size)
+    step_next == step_high && return step_high, :Success
+    step_high = step_next
+    factor = min(factor * 1.25, factor_max)
+
+    @. profiler_cache.pars_cache = pars_cur + ls_dir * step_high
+    θ_high = clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+    obj_high = evaluate_obj(plprob, θ_high)
+
+    isfinite(obj_high) || return step_low, :NonFinite
+    abs(obj_high - obj_target) < ls_alg.abstol && return step_high, :Success
+  end
+
+  step = interpolate_step_size(step_low, step_high, obj_low, obj_high, obj_target)
+  return clamp(step, ls_alg.min_step_size, ls_alg.max_step_size), :Success
+end
+
+# Clamp a number within specified bounds, handling various cases for bounds
+clamp_within_bounds(x::Number, bounds::Tuple) = clamp_within_bounds(x, bounds[1], bounds[2])
+clamp_within_bounds(x::Number, bounds::Nothing) = x
+clamp_within_bounds(x::Number, lb::Nothing, ub::Nothing) = x
+clamp_within_bounds(x::Number, lb::Number, ub::Number) = clamp(x, lb, ub)
+clamp_within_bounds(x::Number, lb::Nothing, ub::Number) = clamp(x, -Inf, ub)
+clamp_within_bounds(x::Number, lb::Number, ub::Nothing) = clamp(x, lb, Inf)
+
+function clamp_profile_proposal!(pars::AbstractVector, profiler_cache::ProfilerCache)
+  optprob = get_optprob(profiler_cache)
+  clamp_within_bounds!(pars, optprob.lb, optprob.ub)
+  idx = get_profile_idx(profiler_cache)
+  pars[idx] = clamp_within_bounds(pars[idx], profiler_cache.profile_range)
+  return pars
+end
+
+# In-place version for θ::Vector
+function clamp_within_bounds!(θ::AbstractVector, bounds::Tuple)
+    for i in eachindex(θ)
+        θ[i] = clamp_within_bounds(θ[i], bounds)
+    end
+    return θ
+end
+
+function clamp_within_bounds!(θ::AbstractVector, bounds::AbstractVector)
+    for i in eachindex(θ)
+        θ[i] = clamp_within_bounds(θ[i], bounds[i])
+    end
+    return θ
+end
+
+function clamp_within_bounds!(θ::AbstractVector, lb, ub)
+    for i in eachindex(θ)
+        lb_i = isnothing(lb) ? nothing : lb[i]
+        ub_i = isnothing(ub) ? nothing : ub[i]
+        θ[i] = clamp_within_bounds(θ[i], lb_i, ub_i)
+    end
+    return θ
+end
+
+# Non-inplace versions for backward compatibility
+clamp_within_bounds(θ::AbstractVector, bounds::Tuple) = clamp_within_bounds!(copy(θ), bounds)
+clamp_within_bounds(θ::AbstractVector, bounds::AbstractVector) = clamp_within_bounds!(copy(θ), bounds)
+
+function interpolate_step_size(step_low, step_high, obj_low, obj_high, obj_target)
+  if abs(obj_high - obj_low) < eps()
+    return (step_low + step_high) / 2
+  end
+  step_interp = step_low + (obj_target - obj_low) / (obj_high - obj_low) * (step_high - step_low)
+  return clamp(step_interp, step_low, step_high)
+end

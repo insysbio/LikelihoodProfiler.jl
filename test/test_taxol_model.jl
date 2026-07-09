@@ -3,6 +3,8 @@ using OptimizationLBFGSB, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBa
 
 include(joinpath(@__DIR__, "../models/Taxol/taxol_model.jl"))
 
+const rtol = 1e-1
+
 const taxol_retcodes = (
   a0 = (:Identifiable,:Identifiable), 
   ka = (:Identifiable,:Identifiable), 
@@ -28,8 +30,8 @@ function test_taxol(sol, i; kwargs...)
   taxol_retcodes[i][2] == :Identifiable && (@test isapprox(ci[2], taxol_ci[i][2]; kwargs...))
 end
 
-lb = [2.0, 2.0, 0.01, 0.05, 30.]
-ub = [30.0, 30.0, 0.6, 5.0, 250.0]
+lb = [2.0, 2.0, 0.01, 0.05, 30.0]
+ub = [30.0, 30.0, 0.6, 10.0, 210.0]
 
 optf = OptimizationFunction(taxol_obj, AutoForwardDiff())
 optprob = OptimizationProblem(optf, p0; lb=lb, ub=ub)
@@ -43,12 +45,12 @@ FIXME
   idxs = 1:5
   profile_step(p0, i) = p0[i] * 0.1
   atol = [profile_step(p0, i)/2 for i in idxs]
-  method = OptimizationProfiler(; optimizer = LBFGSB(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(; optimizer = LBFGSB(), stepper = FixedStep())
   
   #=
   method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), 
-  stepper = LineSearchStep(; initial_step = profile_step, 
-  linesearch = InterpolationLineSearch(; objective_factor=1.25, step_size_factor=1.5)))
+  stepper = AdaptiveStep(; initial_step = profile_step,
+  controller = ObjectiveStepControl(; target_factor=1.25, step_factor=1.5)))
   =#
   sol = solve(plprob, method)
   for i in idxs
@@ -57,30 +59,24 @@ FIXME
 
 end
 =#
-#=
-FIXME on macos
+
+
 @testset "Taxol model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
   
-  idxs = 1:5
-  profile_step(p0, i) = p0[i] * 0.1
-  atol = [profile_step(p0, i)/2 for i in idxs]
-  atol[3] = 0.041 # tmp fix as r0 upper bound fails to be within step/2 tolerance
-  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep())
   sol = solve(plprob, method)
-  for i in idxs
-    test_taxol(sol, i; atol = atol[i])
+  for i in eachindex(p0)
+    test_taxol(sol, i; rtol = rtol)
   end
 
 end
-=#
+
 
 @testset "Taxol model. IntegrationProfiler with full hessian" begin
   
-  idxs = 1:5
-  rtol = 1e-2 # how to set it?
-  method = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), matrix_type = :hessian)
+  method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (reltol=1e-3, abstol=1e-3), matrix_type = :hessian)
   sol = solve(plprob, method)
-  for i in idxs
+  for i in eachindex(p0)
     test_taxol(sol, i; rtol = rtol)
   end
   

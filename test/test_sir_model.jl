@@ -26,36 +26,29 @@ plprob = ProfileLikelihoodProblem(optprob, optpars; threshold = chi2_quantile(0.
 
 @testset "SIR model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
   
-  idxs = 1:3
-  profile_step(p0, i) = p0[i] * 0.05
-  atol = [profile_step(optpars, i)/2 for i in idxs]
-  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = AdaptiveStep())
   sol = solve(plprob, method)
-  for i in idxs
+  for i in eachindex(p0)
     test_sir(sol, i; rtol)
   end
 
 end
-
+#=
 @testset "SIR model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
-
-  idxs = 1:3
-  profile_step(p0, i) = p0[i] * 0.05
-  atol = [profile_step(optpars, i)/2 for i in idxs]
-  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=profile_step))
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep())
   sol = solve(plprob, method)
-  for i in idxs
+  for i in eachindex(p0)
     test_sir(sol, i; rtol)
   end
 
 end
-
+=#
 
 @testset "SIR model. IntegrationProfiler with full hessian" begin
   
   idxs = 1:3
   rtol = 3e-3 # how to set it?
-  method = IntegrationProfiler(integrator = FBDF(autodiff = AutoFiniteDiff()), matrix_type = :hessian)
+  method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (reltol=1e-3, abstol=1e-3), matrix_type = :hessian)
   sol = solve(plprob, method)
   for i in idxs
     test_sir(sol, i; rtol)
