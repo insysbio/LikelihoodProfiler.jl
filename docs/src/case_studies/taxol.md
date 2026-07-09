@@ -132,8 +132,8 @@ threshold = sigmasq*chi2_quantile(0.95, 5)
 Next, we construct the profile likelihood problem `ProfileLikelihoodProblem` for the five unknown parameters:
 
 ```@example taxol-1
-lb = [2.0, 2.0, 0.01, 0.05, 30.]
-ub = [30.0, 30.0, 0.6, 5.0, 250.0]
+lb = [2.0, 2.0, 0.01, 0.05, 30.0]
+ub = [30.0, 30.0, 0.6, 10.0, 210.0]
 
 optf = OptimizationFunction(taxol_obj, AutoForwardDiff())
 optprob = OptimizationProblem(optf, p0; lb=lb, ub=ub)
