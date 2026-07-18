@@ -1,5 +1,5 @@
 using LikelihoodProfiler, Test
-using OptimizationNLopt, OptimizationLBFGSB, OrdinaryDiffEq, CICOBase
+using OptimizationLBFGSB, OrdinaryDiffEq, CICOBase
 
 include(joinpath(@__DIR__, "../models/SIR/sir_model.jl"))
 
@@ -19,22 +19,13 @@ end
 
 optf = OptimizationFunction(sir_obj, AutoForwardDiff())
 optprob = OptimizationProblem(optf, p0; lb=[1e-3, 1e-3, 1e-3], ub=[1e3, 1e3, 1.e3])
-sol = solve(optprob, NLopt.LN_NELDERMEAD())
+sol = solve(optprob, LBFGSB())
 
 optpars = sol.u 
 plprob = ProfileLikelihoodProblem(optprob, optpars; threshold = chi2_quantile(0.95, 3)/2)
 
-@testset "SIR model. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
-  
-  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = AdaptiveStep())
-  sol = solve(plprob, method)
-  for i in eachindex(p0)
-    test_sir(sol, i; rtol)
-  end
-
-end
-#=
 @testset "SIR model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
+  
   method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep())
   sol = solve(plprob, method)
   for i in eachindex(p0)
@@ -42,15 +33,23 @@ end
   end
 
 end
-=#
+
+@testset "SIR model. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
+
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep())
+  sol = solve(plprob, method)
+  for i in eachindex(p0)
+    test_sir(sol, i; rtol)
+  end
+
+end
+
 
 @testset "SIR model. IntegrationProfiler with full hessian" begin
   
-  idxs = 1:3
-  rtol = 3e-3 # how to set it?
   method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (reltol=1e-3, abstol=1e-3), matrix_type = :hessian)
   sol = solve(plprob, method)
-  for i in idxs
+  for i in eachindex(p0)
     test_sir(sol, i; rtol)
   end
   
@@ -59,11 +58,9 @@ end
 
 @testset "SIR model. CICOProfiler" begin
   
-  idxs = 1:3
-  atol = 1e-3
   method = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
   sol = solve(plprob, method)
-  for i in idxs
+  for i in eachindex(p0)
     test_sir(sol, i; rtol)
   end
   

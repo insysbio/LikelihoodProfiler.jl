@@ -7,10 +7,19 @@ function profiler_step!(profiler_cache::ProfilerCache, target::ParameterTarget, 
 
   pars_guess = propose_next_pars!(profiler_cache, stepper)
 
-  fill_x_reduced!(opt_cache.reinit_cache.u0, pars_guess, idx)
-  set_x_fixed!(opt_cache.reinit_cache.p, pars_guess[idx])
+  sol = solve_profile_proposal!(opt_cache, pars_guess, idx)
 
-  sol = solve_opt_cache(opt_cache)
+  if !SciMLBase.successful_retcode(sol.retcode) && stepper isa AdaptiveStep
+    pars_cur = profiler_cache.pars_cur
+    failed_x = pars_guess[idx]
+    @. profiler_cache.pars_cache = pars_cur + (pars_guess - pars_cur) / 2
+    pars_guess = clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+
+    if pars_guess[idx] != pars_cur[idx]
+      @warn "Optimization failed at profile point x = $failed_x. Retrying once with half the profile step."
+      sol = solve_profile_proposal!(opt_cache, pars_guess, idx)
+    end
+  end
 
   if SciMLBase.successful_retcode(sol.retcode)
     fill_x_full!(profiler_cache.pars_cur, sol.u, idx, pars_guess[idx])
@@ -18,10 +27,16 @@ function profiler_step!(profiler_cache::ProfilerCache, target::ParameterTarget, 
     profiler_cache.obj_cur = sol.objective
     profiler_cache.iter += 1
   else
-    @warn "Solver returned $(sol.retcode) retcode at profile point x = $(profiler_cache.x_cur). Profiling is interrupted."
+    @warn "Solver returned $(sol.retcode) retcode at proposed profile point x = $(pars_guess[idx]). Profiling is interrupted."
   end
   solver_cache.retcode_original = sol.retcode
   return nothing
+end
+
+function solve_profile_proposal!(opt_cache::OptimizationCache, pars_guess, idx)
+  fill_x_reduced!(opt_cache.reinit_cache.u0, pars_guess, idx)
+  set_x_fixed!(opt_cache.reinit_cache.p, pars_guess[idx])
+  return solve_opt_cache(opt_cache)
 end
 
 function solve_opt_cache(opt_cache::OptimizationCache)
@@ -68,7 +83,7 @@ end
 ################################################## OPTIMIZATION PROFILER STEPPERS ##################################################
 
 """
-    AdaptiveInitialStep(; rel_step=0.005, abs_step=1e-4, min_step=1e-5, max_step=Inf)
+    AdaptiveInitialStep(; rel_step=0.01, abs_step=1e-3, min_step=1e-4, max_step=Inf)
 
 Initial profile step rule that adapts to the current profiled parameter value.
 
@@ -86,8 +101,8 @@ struct AdaptiveInitialStep{T}
     max_step::T
 end
 
-function AdaptiveInitialStep(; rel_step=0.005, abs_step=1e-4,
-                             min_step=1e-5, max_step=Inf)
+function AdaptiveInitialStep(; rel_step=0.01, abs_step=1e-3,
+                             min_step=1e-4, max_step=Inf)
     rel_step > 0 || throw(ArgumentError("rel_step must be positive."))
     abs_step > 0 || throw(ArgumentError("abs_step must be positive."))
     min_step > 0 || throw(ArgumentError("min_step must be positive."))
@@ -112,7 +127,7 @@ FixedStep(;initial_step=AdaptiveInitialStep())
 ```
 
 ### Keyword arguments
-- `initial_step=AdaptiveInitialStep()`: The step rule to use for each profile step. This can be a number (for a constant absolute step size), an `AdaptiveInitialStep`, or a function `ctx -> step` for custom logic depending on the current profiler cache.
+- `initial_step=AdaptiveInitialStep()`: The step rule to use for each profile step. This can be a number (for a constant absolute step size), an `AdaptiveInitialStep`, or a callable `ctx -> step` for custom logic depending on the current profiler cache.
   If a number is provided, it is automatically wrapped as a function.
 """
 struct FixedStep{S} <: AbstractProfilerStep
@@ -141,9 +156,9 @@ end
 
 """
     ObjectiveStepControl(; threshold_fraction=0.1,
-               target_factor=1.25,
+                           target_factor=1.5,
                            lower_factor=0.25,
-                           min_obj_step=1e-3,
+                           min_obj_step=1e-2,
                            max_obj_step=Inf,
                            min_x_step=1e-4,
                            max_x_step=Inf,
@@ -182,10 +197,10 @@ end
 
 function ObjectiveStepControl(;
   threshold_fraction = 0.1,
-    target_factor = 1.25,
+    target_factor = 1.5,
     lower_factor = 0.25,
 
-    min_obj_step = 1e-3,
+    min_obj_step = 1e-2,
     max_obj_step = Inf,
 
     min_x_step = 1e-4,
@@ -196,7 +211,7 @@ function ObjectiveStepControl(;
     maxiters = 15,
 )
 
-  threshold_fraction > 0 || throw(ArgumentError("Threshold fraction must be positive."))
+  0 < threshold_fraction <= 1 || throw(ArgumentError("Threshold fraction must be between 0 and 1."))
   target_factor > 0 || throw(ArgumentError("Target factor must be positive."))
   0 <= lower_factor <= 1 || throw(ArgumentError("Lower factor must be between 0 and 1."))
   min_obj_step >= 0 || throw(ArgumentError("Minimum objective step must be non-negative."))
@@ -207,17 +222,23 @@ function ObjectiveStepControl(;
   max_x_step_growth >= 1 || throw(ArgumentError("Maximum step growth must be greater than or equal to 1."))
   maxiters > 0 || throw(ArgumentError("Maximum iterations must be positive."))
 
+  T = float(promote_type(
+    typeof(threshold_fraction), typeof(target_factor), typeof(lower_factor),
+    typeof(min_obj_step), typeof(max_obj_step),
+    typeof(min_x_step), typeof(max_x_step),
+    typeof(step_factor), typeof(max_x_step_growth),
+  ))
 
   return ObjectiveStepControl(
-    float(threshold_fraction),
-    float(target_factor),
-    float(lower_factor),
-    float(min_obj_step),
-    float(max_obj_step),
-    float(min_x_step),
-    float(max_x_step),
-    float(step_factor),
-    float(max_x_step_growth),
+    T(threshold_fraction),
+    T(target_factor),
+    T(lower_factor),
+    T(min_obj_step),
+    T(max_obj_step),
+    T(min_x_step),
+    T(max_x_step),
+    T(step_factor),
+    T(max_x_step_growth),
     Int(maxiters),
   )
 end
@@ -238,13 +259,24 @@ AdaptiveStep(; initial_step=AdaptiveInitialStep(), predictor=LinearPredictor(), 
   AdaptiveStep(prepare_initial_step(initial_step), predictor, controller)
 
 function prepare_initial_step(step::Number)
-  @assert step > 0 "Initial step size must be positive."
-  return ctx -> float(step)
+  step isa Real || throw(ArgumentError("Initial step size must be real."))
+  isfinite(step) && step > 0 || throw(ArgumentError("Initial step size must be finite and positive."))
+  value = float(step)
+  return _ -> value
 end
 prepare_initial_step(step::Function) = step
 prepare_initial_step(step::AdaptiveInitialStep) = step
+prepare_initial_step(step) = ctx -> begin
+  applicable(step, ctx) || throw(ArgumentError("Initial step rule must be callable with the profiler cache."))
+  step(ctx)
+end
 
-get_initial_step(step::AbstractProfilerStep, ctx) = get_initial_step(step.initial_step, ctx)
+function get_initial_step(step::AbstractProfilerStep, ctx)
+  value = get_initial_step(step.initial_step, ctx)
+  value isa Real || throw(ArgumentError("Initial step rule must return a real number."))
+  isfinite(value) && value > 0 || throw(ArgumentError("Initial step rule must return a finite, positive step size."))
+  return float(value)
+end
 
 function get_initial_step(s::AdaptiveInitialStep, profiler_cache::ProfilerCache)
   x = profiler_cache.x_cur
@@ -278,11 +310,16 @@ function propose_next_pars!(profiler_cache::ProfilerCache, s::AdaptiveStep)
     step_size, retcode = adapt_step_size(profiler_cache, s.controller, step_dir)
     if retcode == :Success
       return apply_step!(profiler_cache, pars_cur, step_dir, step_size)
-    elseif retcode in (:Failure, :MaxIters) && !(s.predictor isa SingleAxisPredictor)
+    elseif retcode in (:Failure, :MaxIters, :MinStep) && !(s.predictor isa SingleAxisPredictor)
       @warn "Adaptive stepping returned $retcode with $(typeof(s.predictor)). Retrying with SingleAxisPredictor."
       step_dir = get_step_dir(profiler_cache, SingleAxisPredictor())
       step_size, retcode = adapt_step_size(profiler_cache, s.controller, step_dir)
       retcode == :Success && return apply_step!(profiler_cache, pars_cur, step_dir, step_size)
+    end
+
+    if retcode == :MinStep
+      @warn "Adaptive stepping reached the minimum profile step. Continuing with that step."
+      return apply_step!(profiler_cache, pars_cur, step_dir, step_size)
     end
 
     @warn "Adaptive stepping did not find a suitable step size and returned $retcode. Continuing with the previous successful step size."
@@ -338,7 +375,10 @@ function adapt_step_size(profiler_cache::ProfilerCache, step_control::ObjectiveS
 
   for _ in 1:step_control.maxiters
     step_next = clamp_x_step(profiler_cache, step_control, step_prev * step_factor)
-    step_next == step_prev && return step_prev, :Success
+    if step_next == step_prev
+      retcode = step_factor > 1 ? :Success : :MinStep
+      return step_prev, retcode
+    end
 
     obj_next = trial_step_obj!(profiler_cache, step_dir, step_next)
 
@@ -365,14 +405,14 @@ end
 function initial_adaptive_step_size(profiler_cache::ProfilerCache, step_control::ObjectiveStepControl, obj_low, obj_high)
   step = get_step_prev(profiler_cache)
   obj_cur = profiler_cache.obj_cur
-  obj_step_prev = abs(obj_cur - get_obj_prev(profiler_cache))
+  obj_step_prev = obj_cur - get_obj_prev(profiler_cache)
   lower = obj_low - obj_cur
   upper = obj_high - obj_cur
 
-  if obj_step_prev < lower
-    step *= step_control.step_factor
-  elseif obj_step_prev > upper
+  if obj_step_prev > upper
     step /= step_control.step_factor
+  elseif -lower <= obj_step_prev < lower
+    step *= step_control.step_factor
   end
 
   return clamp_x_step(profiler_cache, step_control, step)

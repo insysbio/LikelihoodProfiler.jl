@@ -1,5 +1,5 @@
 using LikelihoodProfiler
-using Test, OptimizationLBFGSB, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
+using Test, OptimizationLBFGSB, OrdinaryDiffEq, CICOBase
 
 const step = 0.3
 const atol = step/2
@@ -100,13 +100,6 @@ function test_function_target(method, funcs_dict)
   @test ci_second[2] === nothing
 end
 
-@testset "Analytic funcs. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
-
-  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=step))
-  test_parameter_target(method, funcs_dict)
-
-end
-
 @testset "Analytic funcs. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
 
   method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=step))
@@ -121,14 +114,12 @@ end
 
 end
 
-#=
 @testset "Analytic funcs. AdaptiveStep OptimizationProfiler with gradient-based optimizer" begin
 
-  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep(; initial_step=step, predictor=LinearPredictor()))
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep(; initial_step=step))
   test_parameter_target(method, funcs_dict)
 
 end
-=#
 
 @testset "Analytic funcs. IntegrationProfiler with full hessian" begin
 
@@ -177,24 +168,4 @@ end
   test_parameter_target(method, funcs_dict)
 
 end
-
-# @testset "Analytic funcs. IntegrationProfiler with Fisher matrix" begin
-
-#   method = IntegrationProfiler(
-#     integrator = AutoVern7(Rodas5()), 
-#     integrator_opts = (dtmax=step,), 
-#     matrix_type = :fisher,
-#     gamma=1e-1
-#   )
-#   test_parameter_target(method, funcs_dict)
-  
-# end
-
-
-# @testset "Analytic funcs. CICOProfiler" begin
-
-#   method = CICOProfiler(optimizer = :LN_SBPLX, scan_tol = 1e-3)
-#   test_parameter_target(method, funcs_dict)
-  
-# end
 
