@@ -51,7 +51,19 @@ end
 
 @testset "Taxol model. IntegrationProfiler with full hessian" begin
   
-  method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (reltol=1e-3, abstol=1e-3), matrix_type = :hessian)
+  method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (reltol=1e-4, abstol=1e-6), matrix_type = :hessian)
+  sol = solve(plprob, method)
+  for i in eachindex(p0)
+    test_taxol(sol, i; rtol)
+  end
+  
+end
+
+
+@testset "Taxol model. IntegrationProfiler with identity and reoptimization" begin
+  
+  method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (reltol=1e-3, abstol=1e-3), matrix_type = :identity, 
+    reoptimize=true, optimizer=LBFGSB())
   sol = solve(plprob, method)
   for i in eachindex(p0)
     test_taxol(sol, i; rtol)

@@ -30,6 +30,17 @@ function evaluate_gradf(f::OptimizationFunction, u, p = SciMLBase.NullParameters
   end
 end
 
+function update_lagrange_multiplier!(z, optprob::OptimizationProblem, profile_f::OptimizationFunction)
+  objective_grad = evaluate_gradf(optprob, z.theta)
+  target_grad = evaluate_gradf(profile_f, z.theta, optprob.p)
+  target_grad_norm_sq = dot(target_grad, target_grad)
+  iszero(target_grad_norm_sq) &&
+    throw(ArgumentError("Cannot compute the profile Lagrange multiplier because the target gradient is zero."))
+
+  z.lambda = -dot(target_grad, objective_grad) / target_grad_norm_sq
+  return z.lambda
+end
+
 evaluate_hessf(prob::OptimizationProblem, u, p=prob.p) = evaluate_hessf(prob.f, u, p)
 function evaluate_hessf(f::OptimizationFunction, u, p = SciMLBase.NullParameters())
   if !isnothing(f.hess)

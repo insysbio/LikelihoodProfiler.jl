@@ -46,12 +46,20 @@ function solver_cache_init(plprob::ProfileLikelihoodProblem, target::ParameterTa
     condition(u, t, integrator) = true
     function affect!(integrator)
       set_x_fixed!(opt_solver_cache.opt_cache.reinit_cache.p, integrator.u[idx])
-      opt_solver_cache.opt_cache.reinit_cache.u0 = integrator.u[1:end-1][1:end .!= idx]
+      fill_x_reduced!(opt_solver_cache.opt_cache.reinit_cache.u0, integrator.u.theta, idx)
       sol = solve_opt_cache(opt_solver_cache.opt_cache)
+
+      if !SciMLBase.successful_retcode(sol.retcode)
+        @warn "Reoptimization returned $(sol.retcode) at profile point x = $(integrator.t). Profiling is interrupted."
+        SciMLBase.terminate!(integrator, sol.retcode)
+        return nothing
+      end
+
       for i in 1:length(integrator.u)-1
         i == idx && continue
-        integrator.u[i] = sol[i - (i>idx)]
+        integrator.u[i] = sol[i - (i > idx)]
       end
+      return nothing
     end
     callback = DiscreteCallback(condition, affect!)
   else
@@ -77,11 +85,22 @@ function solver_cache_init(plprob::ProfileLikelihoodProblem, target::FunctionTar
     function affect!(integrator)
       opt_solver_cache.opt_cache.lcons[1] = integrator.t
       opt_solver_cache.opt_cache.ucons[1] = integrator.t
-      opt_solver_cache.opt_cache.reinit_cache.u0 .= integrator.u[1:end-1]
+      copyto!(opt_solver_cache.opt_cache.reinit_cache.u0, integrator.u.theta)
       sol = solve_opt_cache(opt_solver_cache.opt_cache)
+
+      if !SciMLBase.successful_retcode(sol.retcode)
+        @warn "Reoptimization returned $(sol.retcode) at profile point x = $(integrator.t). Profiling is interrupted."
+        SciMLBase.terminate!(integrator, sol.retcode)
+        return nothing
+      end
+
       for i in 1:length(integrator.u)-1
         integrator.u[i] = sol[i]
       end
+      if get_matrix_type(method) == :hessian
+        update_lagrange_multiplier!(integrator.u, plprob.optprob, plprob.target.fs[idx])
+      end
+      return nothing
     end
     callback = DiscreteCallback(condition, affect!)
   else

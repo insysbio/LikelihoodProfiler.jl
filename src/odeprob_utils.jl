@@ -32,6 +32,20 @@ function build_odeprob_full(plprob::ProfileLikelihoodProblem, method::Integratio
   return ODEProblem(odef, u0, xspan, p)
 end
 
+function _ldiv_with_pinv_fallback!(x, A, b, Awork)
+  copyto!(Awork, A)
+  factorization = lu!(Awork; check=false)
+
+  if LinearAlgebra.issuccess(factorization)
+    copyto!(x, b)
+    ldiv!(factorization, x)
+    all(isfinite, x) && return false
+  end
+
+  mul!(x, pinv(A), b)
+  return true
+end
+
 function build_odefunc_reduced(optprob::OptimizationProblem, u0, ::Val{:identity})
   rhs_vec = similar(u0.theta)
 
@@ -42,11 +56,13 @@ function build_odefunc_reduced(optprob::OptimizationProblem, u0, ::Val{:identity
     gamma = get_gamma(p)
 
     grad! = optf.grad
-    #grad!(rhs_vec, view(z, 1:lp), p.p)
     grad!(rhs_vec, z.theta, p.p)
-    dz.theta .= .- gamma .* rhs_vec
-    dz[idx] = one(dz[idx])
-    dz[end] = rhs_vec[idx] + dz[idx]
+    @inbounds for i in eachindex(rhs_vec)
+      dz.theta[i] = -gamma * rhs_vec[i]
+    end
+    dz.theta[idx] = one(eltype(dz.theta))
+    dz.lambda = -gamma * rhs_vec[idx] - dz.theta[idx]
+    return nothing
   end
 end
 
@@ -106,46 +122,54 @@ end
 function build_odefunc_reduced(optprob::OptimizationProblem, u0, ::Val{:hessian})
   lp = length(u0.theta)
   T = eltype(u0.theta)
-  lhs_mat = zeros(T, lp, lp)
-  rhs_vec = similar(u0.theta)
+  free_indices = zeros(Int, lp-1)
+  hess_mat = zeros(T, lp, lp)
+  free_hess_mat = zeros(T, lp-1, lp-1)
+  factor_mat = similar(free_hess_mat)
+  cross_hess_vec = zeros(T, lp-1)
+  free_derivative = similar(cross_hess_vec)
 
   optf = OptimizationBase.instantiate_function(optprob.f, u0.theta, optprob.f.adtype, optprob.p; g=false, h=true)
 
- function ode_func(dz, z, p, x)
-    #=
-    Assume Θ2 is fixed. Solve the following linear system
-
-    ∂^2 L / ∂^2 Θ1      ∂^2 L / ∂ Θ1 ∂ Θ2   0           dΘ1/dC        0
-    ∂^2 L / ∂ Θ1 ∂ Θ2   ∂^2 L / ∂^2 Θ2      1     *     dΘ2/dC   =    0
-    0                   1                   0           dλ/dC         1
-
-    We note that dΘ2/dC = 1 and eliminate it from the system.
-    =#
-    
+  function ode_func(dz, z, p, x)
     idx = get_idx(p)
 
     hess! = optf.hess
-    #hess!(lhs_mat, view(z, 1:lp), p.p)
-    #hess!(lhs_mat, view(z, 1:lp))
-    hess!(lhs_mat, z.theta, p.p)
+    hess!(hess_mat, z.theta, p.p)
 
-    # move idx column to the right side
-    for i in 1:lp
-      rhs_vec[i] = -lhs_mat[i, idx]
+    if lp == 1
+      dz.theta[1] = one(T)
+      dz.lambda = -hess_mat[1, 1]
+      return nothing
     end
 
-    # shift idx:end columns and put lambda column the end
-    for i in idx:lp-1
-      for j in 1:lp
-        lhs_mat[j, i] = lhs_mat[j, i+1]
+    free_position = 1
+    @inbounds for i in 1:lp
+      i == idx && continue
+      free_indices[free_position] = i
+      free_position += 1
+    end
+
+    @inbounds for col in eachindex(free_indices)
+      source_col = free_indices[col]
+      cross_hess_vec[col] = hess_mat[source_col, idx]
+      for row in eachindex(free_indices)
+        source_row = free_indices[row]
+        free_hess_mat[row, col] = hess_mat[source_row, source_col]
       end
     end
-    for i in 1:lp
-      lhs_mat[i, end] = zero(T)
-    end
-    lhs_mat[idx, end] = one(T)
 
-    fill_x_full!(dz, pinv(lhs_mat)*rhs_vec, idx, 1.0)
+    _ldiv_with_pinv_fallback!(free_derivative, free_hess_mat, cross_hess_vec, factor_mat)
+    free_derivative .*= -one(T)
+
+    fill_x_full!(dz.theta, free_derivative, idx, one(T))
+
+    lambda_derivative = -hess_mat[idx, idx]
+    @inbounds for i in eachindex(free_indices)
+      lambda_derivative -= hess_mat[idx, free_indices[i]] * free_derivative[i]
+    end
+    dz.lambda = lambda_derivative
+    return nothing
   end
 end
 
@@ -155,8 +179,10 @@ function build_odefunc_full(plprob::ProfileLikelihoodProblem, u0, idx, ::Val{:he
   T = eltype(u0.theta)
   
   lhs_mat = zeros(T, lp+1, lp+1)
+  factor_mat = similar(lhs_mat)
   rhs_vec = zeros(T, lp+1)
-  rhs_vec[end] = 1.0
+  rhs_vec[end] = one(T)
+  solution_vec = similar(rhs_vec)
 
   L_hess_mat = zeros(T, lp, lp)
   g_hess_mat = zeros(T, lp, lp)
@@ -173,25 +199,22 @@ function build_odefunc_full(plprob::ProfileLikelihoodProblem, u0, idx, ::Val{:he
   function ode_func(dz, z, p, x)
 
     L_hess!(L_hess_mat, z.theta, p.p)
-    #@show L_hess_mat
     g_hess!(g_hess_mat, z.theta, p.p)
     g_grad!(g_grad_vec, z.theta, p.p)
 
-    # Top-left block: L_hess_mat .+ z[end] * g_hess_mat
-    lhs_mat[1:lp, 1:lp] .= L_hess_mat .+ z.lambda * g_hess_mat
-
-    # Top-right block: g_grad_vec (as a column)
-    lhs_mat[1:lp, lp+1] .= g_grad_vec
- 
-    # Bottom-left block: g_grad_vec' (as a row)
-    for i in 1:lp
-      lhs_mat[lp+1, i] = g_grad_vec[i]
+    @inbounds for col in 1:lp
+      for row in 1:lp
+        lhs_mat[row, col] = muladd(z.lambda, g_hess_mat[row, col], L_hess_mat[row, col])
+      end
+      lhs_mat[col, lp+1] = g_grad_vec[col]
+      lhs_mat[lp+1, col] = g_grad_vec[col]
     end
 
-    # Bottom-right element: 0
-    lhs_mat[lp+1, lp+1] = 0
+    lhs_mat[lp+1, lp+1] = zero(T)
 
-    dz .= pinv(lhs_mat) * rhs_vec
+    _ldiv_with_pinv_fallback!(solution_vec, lhs_mat, rhs_vec, factor_mat)
+    copyto!(dz, solution_vec)
+    return nothing
   end
 end
 
@@ -202,11 +225,6 @@ function build_odefunc_full(plprob::ProfileLikelihoodProblem, u0, idx, ::Val{:id
 
   L_grad_vec = zeros(T, lp)
   g_grad_vec = zeros(T, lp)
-  
-  lhs_mat = zeros(T, lp+1, lp+1)
-  rhs_vec = zeros(T, lp+1)
-  rhs_vec[end] = 1.0
-
 
   profile_f = plprob.target.fs[idx]
   L_optf = OptimizationBase.instantiate_function(optprob.f, u0.theta, optprob.f.adtype, optprob.p; g=true, h=false)
@@ -215,29 +233,21 @@ function build_odefunc_full(plprob::ProfileLikelihoodProblem, u0, idx, ::Val{:id
   L_grad! = L_optf.grad
   g_grad! = g_optf.grad
 
-  for i in 1:lp
-    lhs_mat[i,i] = -1.0
-  end
-
   function ode_func(dz, z, p, x)
 
     L_grad!(L_grad_vec, z.theta, p.p)
     g_grad!(g_grad_vec, z.theta, p.p)
 
     gamma = get_gamma(p)
-    # Top-right block: g_grad_vec (as a column)
-    lhs_mat[1:lp, lp+1] .= g_grad_vec
- 
-    # Bottom-left block: g_grad_vec' (as a row)
-    for i in 1:lp
-      lhs_mat[lp+1, i] = g_grad_vec[i]
+    target_grad_norm_sq = dot(g_grad_vec, g_grad_vec)
+    iszero(target_grad_norm_sq) && throw(ArgumentError("the profile target gradient must be nonzero"))
+
+    alpha = (one(T) + gamma * dot(g_grad_vec, L_grad_vec)) / target_grad_norm_sq
+    @inbounds for i in 1:lp
+      dz.theta[i] = muladd(alpha, g_grad_vec[i], -gamma * L_grad_vec[i])
     end
-
-    # Bottom-right element: 0
-    lhs_mat[lp+1, lp+1] = 0
-
-    rhs_vec[1:lp] .= -gamma * L_grad_vec
-    dz .= pinv(lhs_mat) * rhs_vec
+    dz.lambda = -alpha
+    return nothing
   end
 end
 
