@@ -25,7 +25,7 @@ ode_prob = ODEProblem(ode_func, u0_func, tspan, p0);
 
 # solver algorithm, tolerances
 solver_opts = Dict(
-    :alg => Rodas5P(),
+    :alg => Tsit5(),
     :reltol => 1e-8,
     :abstol => 1e-8
 )

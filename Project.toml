@@ -50,9 +50,9 @@ julia = "1.10"
 CICOBase = "33444335-3134-4342-4659-594331344435"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 OptimizationLBFGSB = "22f7324a-a79d-40f2-bebe-3af60c77bd15"
-OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "CICOBase", "Plots", "ForwardDiff", "OptimizationLBFGSB", "OrdinaryDiffEq"]
+test = ["Test", "CICOBase", "Plots", "ForwardDiff", "OptimizationLBFGSB", "OrdinaryDiffEqTsit5"]

@@ -18,7 +18,7 @@ First we define the `OptimizationProblem` and solve it with the preferred optimi
 We begin by defining the objective function and solving the optimization problem to obtain the optimal values of the parameters:
 
 ```@example rosenbrock-1
-using LikelihoodProfiler, OptimizationLBFGSB, OrdinaryDiffEq, CICOBase
+using LikelihoodProfiler, OptimizationLBFGSB, OrdinaryDiffEqTsit5, CICOBase
 using Plots
 
 # objective function
@@ -53,10 +53,10 @@ For a more detailed description of each method, see the [Profile Likelihood Meth
 
 #### OptimizationProfiler
 
-The most direct profiling method is [`OptimizationProfiler`](@ref optimization_based_profiles). It computes the profile by taking a sequence of fixed steps in the profiled parameter and performing a re-optimization of all remaining parameters at each step. This produces a discrete set of points that approximate the profile curve.
+The most direct profiling method is [`OptimizationProfiler`](@ref optimization_based_profiles). It computes the profile by taking a sequence of fixed or adaptive steps in the profiled parameter and performing a re-optimization of all remaining parameters (nuisance parameters) at each step. This produces a discrete set of points that approximate the profile curve.
 
 ```@example rosenbrock-1
-meth_opt = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=0.15))
+meth_opt = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep())
 sol1 = solve(plprob, meth_opt)
 plot(sol1, size=(800,300), margins=5Plots.mm)
 ```

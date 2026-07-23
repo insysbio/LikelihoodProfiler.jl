@@ -1,52 +1,119 @@
 # Taxol model
 
-As an example of practical identifiability analysis, we use the **Cancer Taxol Treatment Model**. It is an ODE model with 3 state variables and 5 parameters. The identifiability of this model was studied in [Marisa C.Eisenberg, Harsh V.Jain. A confidence building exercise in data and identifiability](https://www.sciencedirect.com/science/article/pii/S0022519317303454). We have translated [author's MATLAB code](https://github.com/marisae/cancer-chemo-identifiability) into Julia. The model is defined by the following system of differential equations:
+As an example of practical identifiability analysis, we use the **Cancer Taxol Treatment Model**. This model was proposed as a case-study for identifiability by [Marisa C.Eisenberg, Harsh V.Jain](https://doi.org/10.1016/j.jtbi.2017.07.018). We have translated the model from [cancer-chemo-identifiability repo](https://github.com/marisae/cancer-chemo-identifiability) into the Julia language.
+
+The model has three states:
+
+  - P(t) - the number of cells in G2/M phase of the cell cycle
+  - Ap(t) - the number of cells in G1/S phase of the cell cycle
+  - Ar(t) - the number of cells arrested in G2/M due to drug action
+
+And five unknown parameters:
+
+  - a0 - the maximum rate of arrest of cells in G2/M
+  - ka - the sensitivity of proliferating cells to taxol
+  - r0 - the rate of arrested cell recovery to the proliferating pool
+  - d0 - the maximum rate of arrested cell death
+  - kd - the arrested cell death rate half-saturation constant
+
+We start with loading the necessary packages:
 
 ```@example taxol-1
-using LikelihoodProfiler, OptimizationLBFGSB, OrdinaryDiffEq, Distributions, Plots
+#=
+using Pkg;
+Pkg.add([
+  "LikelihoodProfiler", 
+  "OptimizationLBFGSB", 
+  "OrdinaryDiffEqTsit5", 
+  "Distributions", 
+  "ComponentArrays", 
+  "Plots"
+])
+=#
+using LikelihoodProfiler
+using OptimizationLBFGSB
+using OrdinaryDiffEqTsit5
+using Distributions
+using ComponentArrays
+using Plots
+```
 
+We define the constants (fixed parameters):
+
+  - Vt - total available volume / carrying capacity
+  - V0 - half-saturation free volume; crowding threshold
+  - lam - the tumor cell division rate
+  - aRP - transition rate from G1/S to G2/M
+  - arstexp - Hill function coefficients for drug effects on the cells
+  - adthexp - Hill function coefficients for drug effects on the cells
+  - theta - Hill coefficient for crowding
+
+```@example taxol-1
+  const Vt      = 10.515*100
+  const V0      = 1.3907*Vt
+  const lam     = 9.5722
+  const aRP     = 20
+  const arstexp = 3
+  const adthexp = 4
+  const theta   = 10
+```
+
+The model is defined as a system of ordinary differential equations (ODEs) with the following structure:
+
+```@example taxol-1
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_de.m
-function ode_func(du, u, p, t, drug)
-  let (a0, ka, r0, d0, kd) = (p[1], p[2], p[3], p[4], p[5])
+function taxol_ode(du, u, p, t)
+  a0, ka, r0, d0, kd = p.params
+  drug = p.drug
 
-      K   = 10.515*100
-      V0  = 1.3907*K
-      lam = 9.5722
+  Ncel = u[:P] + u[:Ap] + u[:Ar]
+  Lfac = ((Vt-Ncel)^theta)/((V0^theta) + ((Vt-Ncel)^theta))
 
-      theta = 10.
+  arst = a0*(drug^arstexp)/(ka^arstexp + (drug^arstexp))
+  adth = d0*(drug^adthexp)/(kd^adthexp + (drug^adthexp))
+  arcv = r0
 
-      # Values taken from 
-      aRP  = 20.     # per day from Kim_PrlifQuies
-
-      Ncel = u[1] + u[2] + u[3]
-      Lfac = ((K-Ncel)^theta)/((V0^theta) + ((K-Ncel)^theta))
-
-      arstexp = 3.
-      adthexp = 4.
-
-      arst = a0*(drug^arstexp)/(ka^arstexp + (drug^arstexp))
-      adth = d0*(drug^adthexp)/(kd^adthexp + (drug^adthexp))
-      arcv = r0
-
-      # The differntial equations
-      du[1] = -lam*u[1] + aRP*u[2]*Lfac - arst*u[1] + arcv*u[3]
-      du[2] = 2*lam*u[1] - aRP*u[2]*Lfac
-      du[3] = arst*u[1] - adth*u[3] - arcv*u[3]
-  end
+  du[:P] = -lam*u[:P] + aRP*u[:Ap]*Lfac - arst*u[:P] + arcv*u[:Ar]
+  du[:Ap] = 2*lam*u[:P] - aRP*u[:Ap]*Lfac
+  du[:Ar] = arst*u[:P] - adth*u[:Ar] - arcv*u[:Ar]
+  
+  return nothing
 end
 ```
 
-Experimental datasets are also provided in the cancer-chemo-identifiability repo for four drug doses (5, 10, 40, 100)
+We define the initial conditions for the ODE system, and optimal parameters for the model, which were obtained from Marisa's Matlab code. Finally, we define the time span for the simulation and create an `ODEProblem` instance.
+
+```julia
+u0 = ComponentArray(
+  P = 7.2700, 
+  Ap = 2.5490, 
+  Ar = 0.0
+)
+
+function taxol_params(x, d)
+  return ComponentArray(
+    params = ComponentArray(
+      a0 = x[1],
+      ka = x[2],
+      r0 = x[3],
+      d0 = x[4],
+      kd = x[5]),
+    drug = d
+  )
+end
+
+p0 = taxol_params([8.3170, 8.0959, 0.0582, 1.3307, 119.1363], 5.0)
+
+tspan = (0.,15.)
+ode_prob = ODEProblem(taxol_ode, u0, tspan, p0)
+```
+
+Next, we define the experimental data for the model. The data consists of measurements of the number of cells at different time points and for doses of Taxol (5, 10, 40, 100) ng/ml.
 
 ```@example taxol-1
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m
 
-# Data from Terzis et al. Brit J Cancer 1997;75:1744.
-# From Bowman et al. Glia 1999;27:22, glioma cell volume is 0.916
-# picoliters, 1 mm^3 = 1e6 pl or ~1.091 million cells
-
 times = [0., 3., 6., 9., 12., 15.]   # days
-
 dose = [5., 10., 40., 100.];    # dose in ng/ml
 
 # Control data
@@ -78,74 +145,76 @@ data = [Cell005/C005, Cell010/C010, Cell040/C040, Cell100/C100]
 datamean = [C005, C010, C040, C100]
 ```
 
-Next we define solver options, initial values, optimal parameter values, and tspan
+We define the solver setup and the objective function for the optimization problem.
 
 ```@example taxol-1
-# solver algorithm and tolerances
-solver_opts = Dict(
-    :alg => AutoTsit5(Rosenbrock23()),
-    :reltol => 1e-6,
-    :abstol => 1e-8
+solver_opts = (
+    alg = Tsit5(),
+    reltol = 1e-6,
+    abstol = 1e-8,
 )
 
-# initial values and parameters
-# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_soln.m#L3-L6
-# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L4
+function taxol_obj(x, hp)
 
-u0 = [7.2700, 2.5490, 0.]
-p0 = [8.3170, 8.0959, 0.0582, 1.3307, 119.1363] 
-
-tspan = (0.,15.)
-```
- 
- We define an objective function (OLS) as in the original publication. The profile likelihood evaluates how this objective changes when one parameter is varied and all other parameters are re-optimized.
-
- ```@example taxol-1
-# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L92
-# https://www.mathworks.com/help/optim/ug/lsqcurvefit.html
-function taxol_obj(x, _p)
   loss = 0.
   for (i,d) in enumerate(dose)
-     prob = ODEProblem((du,u,p,t)->ode_func(du,u,p,t,d), u0, tspan, x)
-     sol = solve(prob, 
-                 solver_opts[:alg], 
-                 reltol=solver_opts[:reltol],
-                 abstol=solver_opts[:abstol],
-                 saveat=times)
+    prob = remake(ode_prob; p = taxol_params(x, d))
+    sol = solve(
+      prob, 
+      solver_opts.alg, 
+      reltol=solver_opts.reltol,
+      abstol=solver_opts.abstol,
+      saveat=times)
+    if !SciMLBase.successful_retcode(sol)
+     return Inf
+    end
       
-     sim = (sol[1,:] + sol[2,:] + sol[3,:])/datamean[i]
-     loss += sum((sim-data[i]).^2)
+    for time_idx in eachindex(data[i])
+      sim = (sol[1, time_idx] + sol[2, time_idx] + sol[3, time_idx]) / datamean[i]
+      loss += abs2(sim - data[i][time_idx])
+    end
   end
   return loss
 end
 ```
-
-We define the threshold as in the original publication. The threshold line represents the value of the objective function (or negative log-likelihood) that corresponds to the chosen confidence level. Where the profile curve intersects this threshold gives the lower and upper CI bounds.
+ 
+Confidence-level for the profile likelihood threshold is also chosen according to the original paper. The threshold line represents the value of the objective function (or negative log-likelihood) that corresponds to the chosen confidence level. Where the profile curve intersects this threshold gives the lower and upper CI bounds.
 
 ```@example taxol-1
-# threshold is chosen according to
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L40-L41
-sigmasq = (mean([(Cerr005/C005); (Cerr010/C010); (Cerr040/C040); (Cerr100/C100)]))^2
-threshold = sigmasq*chi2_quantile(0.95, 5)
+
+taxol_relative_errors = vcat(
+    Cerr005 / C005,
+    Cerr010 / C010,
+    Cerr040 / C040,
+    Cerr100 / C100,
+)
+sigmasq = mean(taxol_relative_errors)^2
 ```
 
-Next, we construct the profile likelihood problem `ProfileLikelihoodProblem` for the five unknown parameters:
+We define parameters bounds and wrap the objective function into an `OptimizationProblem` instance.
 
-```@example taxol-1
+```julia
+opt_params0 = copy(p0.params)
 lb = [2.0, 2.0, 0.01, 0.05, 30.0]
 ub = [30.0, 30.0, 0.6, 10.0, 210.0]
 
 optf = OptimizationFunction(taxol_obj, AutoForwardDiff())
-optprob = OptimizationProblem(optf, p0; lb=lb, ub=ub)
-
-plprob = ProfileLikelihoodProblem(optprob, p0; threshold)
+optprob = OptimizationProblem(optf, opt_params0; lb, ub)
 ```
 
-Here we select one of the profiling methods: `OptimizationProfiler` with the `AdaptiveStep` stepping algorithm (see [Profile Likelihood Methods](@ref profile_likelihood_methods) for details). For each profiled parameter, this algorithm takes adaptive steps to the left and right of the optimal parameter value and reoptimizes all remaining parameters using the chosen `optimizer` to obtain the next point on the profile curve.
-```@example taxol-1
+To define the profile likelihood problem, we use the `OptimizationProblem` and optimal (best fit) values of the parameters. We can also specify the threshold for the profile likelihood, define the profile bounds and other options for the `ProfileLikelihoodProblem`.
 
-method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep())
-sol = solve(plprob, method)
+Next we choose the profile likelihood algorithm and solve the problem. Here we use an `OptimizationProfiler` which steps through the parameter of interest and re-optimizes the nuisance parameters at each step. This stepping is done adaptively. The direction of the step is chosen on the basis of previous successful steps and the step size is adjusted based on linesearch.
+
+We can also set `reoptimize_init=true` to re-optimize the initial starting point to reassure we start profiling from the optimum.
+
+```@example taxol-1
+plprob = ProfileLikelihoodProblem(optprob, opt_params0; threshold = sigmasq*chi2_quantile(0.95, 5))
+
+alg_opt = OptimizationProfiler(optimizer = LBFGSB(),  stepper = AdaptiveStep())
+
+sol_param = solve(plprob, alg_opt; reoptimize_init=true)
 ```
 
 `ProfileLikelihoodSolution` stores the computed profile curves together with confidence interval endpoints and identification retcodes, which indicate whether each parameter is practically identifiable. These values can be accessed directly:
@@ -156,5 +225,5 @@ endpoints(sol)
 
 Finally, we plot the resulting profiles. Each point on the curve corresponds to a profiler step, i.e., a constrained optimization performed at a fixed value of the profiled parameter. The horizontal line indicates the likelihood threshold for the chosen confidence level; its intersections with the curve define the confidence interval bounds. Steeper profiles indicate better identifiability, whereas flat curves or curves that never intersect the threshold indicate parameters that are not practically identifiable.
 ```@example taxol-1
-plot(sol, size=(800,300), margins=5Plots.mm)
+plot(sol, layout=(2,3), size=(1100, 600), legend=false, margins=5Plots.mm)
 ```

@@ -1,5 +1,5 @@
 using LikelihoodProfiler, Test
-using OptimizationLBFGSB, ForwardDiff, OrdinaryDiffEq, CICOBase
+using OptimizationLBFGSB, OrdinaryDiffEqTsit5, CICOBase
 
 include(joinpath(@__DIR__, "../models/Taxol/taxol_model.jl"))
 

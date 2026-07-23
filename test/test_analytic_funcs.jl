@@ -1,9 +1,8 @@
 using LikelihoodProfiler
-using Test, ForwardDiff, OptimizationLBFGSB, OrdinaryDiffEq, CICOBase
+using Test, ForwardDiff, OptimizationLBFGSB, OrdinaryDiffEqTsit5, CICOBase
 
 const step = 0.3
 const atol = step/2
-const rtol = 1e-1
 
 include(joinpath(@__DIR__, "../models/AnalyticFuncs/analytic_funcs.jl"))
 
@@ -104,69 +103,69 @@ end
 @testset "Analytic funcs. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
 
   method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=step))
-  test_parameter_target(method, funcs_dict; atol=atol)
+  test_parameter_target(method, funcs_dict; atol)
 
 end
 
 @testset "Analytic funcs. FunctionTarget with CICOProfiler" begin
 
   method = CICOProfiler(optimizer=:LN_NELDERMEAD)
-  test_function_target(method, funcs_dict)
+  test_function_target(method, funcs_dict; atol)
 
 end
 
 @testset "Analytic funcs. AdaptiveStep OptimizationProfiler with gradient-based optimizer" begin
 
   method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep(; initial_step=step))
-  test_parameter_target(method, funcs_dict; atol=atol)
+  test_parameter_target(method, funcs_dict; atol)
 
 end
 
 @testset "Analytic funcs. IntegrationProfiler with full hessian" begin
 
   method = IntegrationProfiler(
-    integrator = FBDF(autodiff = AutoFiniteDiff()), 
-    integrator_opts = (dtmax=step,), 
+    integrator = Tsit5(),
+    integrator_opts = (dtmax=step,),
     matrix_type = :hessian
   )
-  test_parameter_target(method, funcs_dict; atol=atol)
+  test_parameter_target(method, funcs_dict; atol)
   
 end
 
 @testset "Analytic funcs. FunctionTarget with IntegrationProfiler" begin
 
   method = IntegrationProfiler(
-    integrator = FBDF(autodiff = AutoFiniteDiff()),
+    integrator = Tsit5(),
     integrator_opts = (dtmax=step,),
     matrix_type = :hessian
   )
-  test_function_target(method, funcs_dict; atol=atol)
+  test_function_target(method, funcs_dict; atol)
 
 end
 
 @testset "Analytic funcs. IntegrationProfiler with identity matrix" begin
 
   method = IntegrationProfiler(
-    integrator = FBDF(autodiff = AutoFiniteDiff()), 
+    integrator = Tsit5(), 
     integrator_opts = (dtmax=step,), 
     matrix_type = :identity,
     gamma=1.0
   )
-  test_parameter_target(method, funcs_dict)
+  test_parameter_target(method, funcs_dict; atol)
   
 end
 
 @testset "Analytic funcs. IntegrationProfiler with identity matrix + reoptimize" begin
 
   method = IntegrationProfiler(
-    integrator = Rosenbrock23(autodiff = AutoFiniteDiff()),
-    integrator_opts = (dtmax=0.3,),
+    integrator = Tsit5(),
+    integrator_opts = (dtmax=step,),
     matrix_type = :identity,
-    gamma=0.2,            # (!!!) select "bad" gamma
+    gamma=0,            # (!!!) select "bad" gamma
     reoptimize=true,
     optimizer = LBFGSB()
   )
-  test_parameter_target(method, funcs_dict)
+  test_parameter_target(method, funcs_dict; atol)
 
 end
 

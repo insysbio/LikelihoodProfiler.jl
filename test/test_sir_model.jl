@@ -1,5 +1,5 @@
 using LikelihoodProfiler, Test
-using OptimizationLBFGSB, OrdinaryDiffEq, CICOBase
+using OptimizationLBFGSB, OrdinaryDiffEqTsit5, CICOBase
 
 include(joinpath(@__DIR__, "../models/SIR/sir_model.jl"))
 
@@ -43,7 +43,6 @@ end
   end
 
 end
-
 
 @testset "SIR model. IntegrationProfiler with full hessian" begin
   
