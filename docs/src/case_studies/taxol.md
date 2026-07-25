@@ -25,6 +25,7 @@ Pkg.add([
   "LikelihoodProfiler", 
   "OptimizationLBFGSB", 
   "OrdinaryDiffEqTsit5", 
+  "OrdinaryDiffEqRosenbrock",
   "Distributions", 
   "ComponentArrays", 
   "Plots"
@@ -33,6 +34,7 @@ Pkg.add([
 using LikelihoodProfiler
 using OptimizationLBFGSB
 using OrdinaryDiffEqTsit5
+using OrdinaryDiffEqRosenbrock: Rodas5P
 using Distributions
 using ComponentArrays
 using Plots
@@ -149,7 +151,7 @@ We define the solver setup and the objective function for the optimization probl
 
 ```@example taxol-1
 solver_opts = (
-    alg = Tsit5(),
+    alg = AutoTsit5(Rodas5P()),
     reltol = 1e-6,
     abstol = 1e-8,
 )
