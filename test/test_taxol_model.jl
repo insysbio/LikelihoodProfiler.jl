@@ -1,5 +1,10 @@
-using LikelihoodProfiler, Test
-using OptimizationLBFGSB, OrdinaryDiffEqTsit5, CICOBase, ComponentArrays
+
+using LikelihoodProfiler
+using Test
+using OptimizationLBFGSB
+using OrdinaryDiffEqTsit5
+using OrdinaryDiffEqRosenbrock: Rodas5P
+using ComponentArrays
 
 include(joinpath(@__DIR__, "../models/Taxol/taxol_model.jl"))
 
@@ -40,7 +45,7 @@ plprob = ProfileLikelihoodProblem(optprob, p0; threshold = sigmasq*chi2_quantile
 
 @testset "Taxol model. Adaptive-step OptimizationProfiler with gradient-based optimizer" begin
   
-  method = OptimizationProfiler(optimizer = LBFGSB(), optimizer_opts = (reltol=1e-8,),  stepper = AdaptiveStep())
+  method = OptimizationProfiler(optimizer = LBFGSB(),  stepper = AdaptiveStep())
   sol = solve(plprob, method; reoptimize_init=true)
   for i in eachindex(p0)
     test_taxol(sol, i; rtol)
