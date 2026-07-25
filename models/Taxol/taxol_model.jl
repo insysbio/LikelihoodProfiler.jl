@@ -72,7 +72,7 @@ datamean = [C005, C010, C040, C100]
 
 # solver algorithm and tolerances
 solver_opts = Dict(
-    :alg => AutoTsit5(Rosenbrock23(autodiff=AutoFiniteDiff())),
+    :alg => Tsit5(),
     :reltol => 1e-6,
     :abstol => 1e-8
 )
