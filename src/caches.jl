@@ -53,7 +53,7 @@ function solver_cache_init(plprob::ProfileLikelihoodProblem, target::ParameterTa
         integrator.u[i] = sol[i - (i>idx)]
       end
     end
-    callback = DiscreteCallback(condition, affect!)
+    callback = SciMLBase.DiscreteCallback(condition, affect!)
   else
     callback = nothing
     opt_solver_cache = nothing
@@ -83,7 +83,7 @@ function solver_cache_init(plprob::ProfileLikelihoodProblem, target::FunctionTar
         integrator.u[i] = sol[i]
       end
     end
-    callback = DiscreteCallback(condition, affect!)
+    callback = SciMLBase.DiscreteCallback(condition, affect!)
   else
     callback = nothing
     opt_solver_cache = nothing

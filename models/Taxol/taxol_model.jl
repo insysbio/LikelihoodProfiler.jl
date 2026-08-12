@@ -89,7 +89,7 @@ p0 = [8.3170, 8.0959, 0.0582, 1.3307, 119.1363]
 
 tspan = (0.,15.)
 
-prob = ODEProblem((du,u,p,t)->ode_func(du,u,p,t,5.0), u0, tspan, p0)
+prob = SciMLBase.ODEProblem((du,u,p,t)->ode_func(du,u,p,t,5.0), u0, tspan, p0)
  
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L92
 # https://www.mathworks.com/help/optim/ug/lsqcurvefit.html
@@ -105,7 +105,7 @@ function taxol_obj(
 
   loss = 0.
   for (i,d) in enumerate(dose)
-     prob = ODEProblem((du,u,p,t)->ode_func(du,u,p,t,d), u0, tspan, x)
+     prob = SciMLBase.ODEProblem((du,u,p,t)->ode_func(du,u,p,t,d), u0, tspan, x)
      sol = solve(prob, 
                  solver_opts[:alg], 
                  reltol=solver_opts[:reltol],

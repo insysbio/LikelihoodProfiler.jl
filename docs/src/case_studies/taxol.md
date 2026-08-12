@@ -106,7 +106,7 @@ tspan = (0.,15.)
 function taxol_obj(x, _p)
   loss = 0.
   for (i,d) in enumerate(dose)
-     prob = ODEProblem((du,u,p,t)->ode_func(du,u,p,t,d), u0, tspan, x)
+     prob = SciMLBase.ODEProblem((du,u,p,t)->ode_func(du,u,p,t,d), u0, tspan, x)
      sol = solve(prob, 
                  solver_opts[:alg], 
                  reltol=solver_opts[:reltol],

@@ -49,7 +49,7 @@ u0 = zeros(8)
 u0[1] = 207.6*ratio         # STAT5A
 u0[3] = 207.6 - 207.6*ratio # STAT5B
 
-ode_jakstat_prob(p) = ODEProblem(stat5_ode, eltype(p).(u0), tspan, p)
+ode_jakstat_prob(p) = SciMLBase.ODEProblem(stat5_ode, eltype(p).(u0), tspan, p)
 
 # solver algorithm, tolerances
 solver_opts = Dict(

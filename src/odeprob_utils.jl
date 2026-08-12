@@ -12,7 +12,7 @@ function build_odeprob_reduced(plprob::ProfileLikelihoodProblem, method::Integra
   xspan = (optpars[idx], xf)
   p = FixedParamCache(optprob.p, idx, 1.0, dir*gamma)
 
-  return ODEProblem(odef, u0, xspan, p)
+  return SciMLBase.ODEProblem(odef, u0, xspan, p)
 end
 
 function build_odeprob_full(plprob::ProfileLikelihoodProblem, method::IntegrationProfiler, idx, dir, profile_range)
@@ -29,7 +29,7 @@ function build_odeprob_full(plprob::ProfileLikelihoodProblem, method::Integratio
   xspan = (x0, xf)
   p = FixedParamCache(optprob.p, idx, 1.0, dir*gamma)
 
-  return ODEProblem(odef, u0, xspan, p)
+  return SciMLBase.ODEProblem(odef, u0, xspan, p)
 end
 
 function build_odefunc_reduced(optprob::OptimizationProblem, u0, ::Val{:identity})
