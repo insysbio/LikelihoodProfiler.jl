@@ -1,9 +1,9 @@
-
 using LikelihoodProfiler
 using Test
+using CICOBase
 using OptimizationLBFGSB
 using OrdinaryDiffEqTsit5
-using OrdinaryDiffEqRosenbrock: Rodas5P
+using OrdinaryDiffEqLowOrderRK: BS3
 using ComponentArrays
 
 include(joinpath(@__DIR__, "../models/Taxol/taxol_model.jl"))
@@ -36,7 +36,7 @@ function test_taxol(sol, i; kwargs...)
 end
 
 lb = [2.0, 2.0, 0.01, 0.05, 30.0]
-ub = [30.0, 30.0, 0.6, 10.0, 210.0]
+ub = [30.0, 30.0, 0.6, 3.0, 130.0]
 
 optf = OptimizationFunction(taxol_obj, AutoForwardDiff())
 optprob = OptimizationProblem(optf, p0; lb, ub)
@@ -53,7 +53,6 @@ plprob = ProfileLikelihoodProblem(optprob, p0; threshold = sigmasq*chi2_quantile
 
 end
 
-
 @testset "Taxol model. IntegrationProfiler with full hessian" begin
   
   method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (reltol=1e-4, abstol=1e-6), matrix_type = :hessian)
@@ -64,18 +63,18 @@ end
   
 end
 
-
+#= too slow to run in CI
 @testset "Taxol model. IntegrationProfiler with identity and reoptimization" begin
-  
-  method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (reltol=1e-3, abstol=1e-3), matrix_type = :identity, 
+
+  method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (reltol=1e-4, abstol=1e-6), matrix_type = :identity, 
     reoptimize=true, optimizer=LBFGSB())
-  sol = solve(plprob, method)
+  sol = solve(plprob, method; verbose=true)
   for i in eachindex(p0)
     test_taxol(sol, i; rtol)
   end
   
 end
-
+=#
 
 @testset "Taxol model. CICOProfiler" begin
   

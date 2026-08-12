@@ -49,7 +49,7 @@ end
 p0 = taxol_params([8.3170, 8.0959, 0.0582, 1.3307, 119.1363], 5.0)
 
 tspan = (0.,15.)
-ode_prob = ODEProblem(taxol_ode, u0, tspan, p0)
+ode_prob = SciMLBase.ODEProblem(taxol_ode, u0, tspan, p0)
 
 # initial values and parameters
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_soln.m#L3-L6
@@ -63,7 +63,7 @@ p0 = [8.3170, 8.0959, 0.0582, 1.3307, 119.1363]
 
 tspan = (0.,15.)
 
-prob = ODEProblem((du,u,p,t)->ode_func(du,u,p,t,5.0), u0, tspan, p0)
+prob = SciMLBase.ODEProblem((du,u,p,t)->ode_func(du,u,p,t,5.0), u0, tspan, p0)
  
 times = [0., 3., 6., 9., 12., 15.]   # days
 dose = [5., 10., 40., 100.];    # dose in ng/ml
@@ -97,7 +97,7 @@ data = [Cell005/C005, Cell010/C010, Cell040/C040, Cell100/C100]
 datamean = [C005, C010, C040, C100]
 
 solver_opts = (
-    alg = AutoTsit5(Rodas5P()),
+    alg = Tsit5(),
     reltol = 1e-6,
     abstol = 1e-8,
 )

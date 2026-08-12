@@ -21,7 +21,7 @@ p0 = [0.4, 0.25, 0.8]
 
 u0_func(p,t) = [1-(data[1]/(1e5*p[3])), data[1]/(1e5*p[3]), 0.]
 
-ode_prob = ODEProblem(ode_func, u0_func, tspan, p0);
+ode_prob = SciMLBase.ODEProblem(ode_func, u0_func, tspan, p0);
 
 # solver algorithm, tolerances
 solver_opts = Dict(

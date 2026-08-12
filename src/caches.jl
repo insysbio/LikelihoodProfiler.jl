@@ -61,7 +61,7 @@ function solver_cache_init(plprob::ProfileLikelihoodProblem, target::ParameterTa
       end
       return nothing
     end
-    callback = DiscreteCallback(condition, affect!)
+    callback = SciMLBase.DiscreteCallback(condition, affect!)
   else
     callback = nothing
     opt_solver_cache = nothing
@@ -102,7 +102,7 @@ function solver_cache_init(plprob::ProfileLikelihoodProblem, target::FunctionTar
       end
       return nothing
     end
-    callback = DiscreteCallback(condition, affect!)
+    callback = SciMLBase.DiscreteCallback(condition, affect!)
   else
     callback = nothing
     opt_solver_cache = nothing
