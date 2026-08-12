@@ -5,6 +5,7 @@ using ComponentArrays
 using SimpleUnPack: @unpack
 using Reexport
 using Optimization
+import SciMLBase
 @reexport import SciMLBase: OptimizationFunction, OptimizationProblem, remake, solve, solve!, init
 @reexport using ADTypes
 @reexport using DataFrames
