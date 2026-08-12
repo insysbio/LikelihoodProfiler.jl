@@ -28,15 +28,16 @@ const taxol_ci = (
 
 function test_taxol(sol, i; kwargs...)
   ret = retcodes(sol[i])
-  ci = endpoints(sol[i])
+  ci_log = endpoints(sol[i])
+  ci = exp10.(ci_log)
   @test taxol_retcodes[i][1] == ret[1] 
   @test taxol_retcodes[i][2] == ret[2] 
   taxol_retcodes[i][1] == :Identifiable && (@test isapprox(ci[1], taxol_ci[i][1]; kwargs...))
   taxol_retcodes[i][2] == :Identifiable && (@test isapprox(ci[2], taxol_ci[i][2]; kwargs...))
 end
 
-lb = [2.0, 2.0, 0.01, 0.05, 30.0]
-ub = [30.0, 30.0, 0.6, 3.0, 130.0]
+lb = log10.([2.0, 2.0, 0.01, 0.05, 30.0])
+ub = log10.([30.0, 30.0, 0.6, 3.0, 130.0])
 
 optf = OptimizationFunction(taxol_obj, AutoForwardDiff())
 optprob = OptimizationProblem(optf, p0; lb, ub)
@@ -63,10 +64,10 @@ end
   
 end
 
-#= too slow to run in CI
+#= to slow for CI
 @testset "Taxol model. IntegrationProfiler with identity and reoptimization" begin
 
-  method = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (reltol=1e-4, abstol=1e-6), matrix_type = :identity, 
+  method = IntegrationProfiler(integrator = BS3(), integrator_opts = (reltol=1e-4, abstol=1e-6), matrix_type = :identity, 
     reoptimize=true, optimizer=LBFGSB())
   sol = solve(plprob, method; verbose=true)
   for i in eachindex(p0)

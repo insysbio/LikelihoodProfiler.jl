@@ -59,7 +59,7 @@ ode_prob = SciMLBase.ODEProblem(taxol_ode, u0, tspan, p0)
 #R0 = 2.5490
 
 u0 = [7.2700, 2.5490, 0.]
-p0 = [8.3170, 8.0959, 0.0582, 1.3307, 119.1363] 
+p0 = log10.([8.3170, 8.0959, 0.0582, 1.3307, 119.1363])
 
 tspan = (0.,15.)
 
@@ -106,7 +106,7 @@ function taxol_obj(x, hp)
 
   loss = 0.
   for (i,d) in enumerate(dose)
-    prob = remake(ode_prob; p = taxol_params(x, d))
+    prob = remake(ode_prob; p = taxol_params(exp10.(x), d))
     sol = solve(
       prob, 
       solver_opts.alg, 
