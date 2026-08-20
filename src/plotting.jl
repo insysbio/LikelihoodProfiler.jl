@@ -8,7 +8,7 @@
 
   layout --> (nrows, ncols)
   size --> (360 * ncols, 300 * nrows)
-  legend --> (nprofiles == 1 ? :topright : false)
+
   for i in 1:nprofiles
     xlbl = isnothing(lbls) ? "x[$(i)]" : string(lbls[i])
     @series begin
