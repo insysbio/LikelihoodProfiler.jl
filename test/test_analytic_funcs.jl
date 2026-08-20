@@ -1,12 +1,12 @@
 using LikelihoodProfiler
-using Test, OptimizationLBFGSB, OptimizationNLopt, ForwardDiff, OrdinaryDiffEq, CICOBase
+using Test, ForwardDiff, OptimizationLBFGSB, OrdinaryDiffEqTsit5, CICOBase
 
 const step = 0.3
 const atol = step/2
 
 include(joinpath(@__DIR__, "../models/AnalyticFuncs/analytic_funcs.jl"))
 
-function test_parameter_target(method, funcs_dict)
+function test_parameter_target(method, funcs_dict; kwargs...)
   for (_fname,_f) in funcs_dict 
     @testset "$(_fname)" begin
       if !haskey(_f, :grad!) && !haskey(_f, :hess!)
@@ -29,14 +29,14 @@ function test_parameter_target(method, funcs_dict)
         ci = endpoints(sol[i])
         @test _f[:retcode][i][1] == ret[1] 
         @test _f[:retcode][i][2] == ret[2] 
-        _f[:retcode][i][1] == :Identifiable && (@test isapprox(ci[1], _f[:ci][i][1]; atol))
-        _f[:retcode][i][2] == :Identifiable && (@test isapprox(ci[2], _f[:ci][i][2]; atol))
+        _f[:retcode][i][1] == :Identifiable && (@test isapprox(ci[1], _f[:ci][i][1]; kwargs...))
+        _f[:retcode][i][2] == :Identifiable && (@test isapprox(ci[2], _f[:ci][i][2]; kwargs...))
       end
     end
   end
 end
 
-function test_function_target(method, funcs_dict)
+function test_function_target(method, funcs_dict; kwargs...)
   f = funcs_dict[:f_2p]
   optf = OptimizationFunction(f[:func], AutoForwardDiff())
   optprob = OptimizationProblem(optf, f[:optim])
@@ -64,8 +64,8 @@ function test_function_target(method, funcs_dict)
     ci = endpoints(sol[i])
     @test ret[1] == :Identifiable
     @test ret[2] == :Identifiable
-    @test isapprox(ci[1], expected_cis[i][1]; atol)
-    @test isapprox(ci[2], expected_cis[i][2]; atol)
+    @test isapprox(ci[1], expected_cis[i][1]; kwargs...)
+    @test isapprox(ci[2], expected_cis[i][2]; kwargs...)
   end
 
   f_im = funcs_dict[:f_2p_1im]
@@ -89,8 +89,8 @@ function test_function_target(method, funcs_dict)
   ci_first = endpoints(sol_im[1])
   @test ret_first[1] == :Identifiable
   @test ret_first[2] == :Identifiable
-  @test isapprox(ci_first[1], 1.0; atol)
-  @test isapprox(ci_first[2], 5.0; atol)
+  @test isapprox(ci_first[1], 1.0; kwargs...)
+  @test isapprox(ci_first[2], 5.0; kwargs...)
 
   ret_second = retcodes(sol_im[2])
   ci_second = endpoints(sol_im[2])
@@ -100,101 +100,72 @@ function test_function_target(method, funcs_dict)
   @test ci_second[2] === nothing
 end
 
-@testset "Analytic funcs. Fixed-step OptimizationProfiler with derivative-free optimizer" begin
-
-  method = OptimizationProfiler(optimizer = NLopt.LN_NELDERMEAD(), stepper = FixedStep(; initial_step=step))
-  test_parameter_target(method, funcs_dict)
-
-end
-
 @testset "Analytic funcs. Fixed-step OptimizationProfiler with gradient-based optimizer" begin
 
   method = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=step))
-  test_parameter_target(method, funcs_dict)
+  test_parameter_target(method, funcs_dict; atol)
 
 end
 
 @testset "Analytic funcs. FunctionTarget with CICOProfiler" begin
 
   method = CICOProfiler(optimizer=:LN_NELDERMEAD)
-  test_function_target(method, funcs_dict)
+  test_function_target(method, funcs_dict; atol)
 
 end
 
-#=
 @testset "Analytic funcs. AdaptiveStep OptimizationProfiler with gradient-based optimizer" begin
 
-  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep(; initial_step=step, predictor=LinearPredictor()))
-  test_parameter_target(method, funcs_dict)
+  method = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep(; initial_step=step))
+  test_parameter_target(method, funcs_dict; atol)
 
 end
-=#
 
 @testset "Analytic funcs. IntegrationProfiler with full hessian" begin
 
   method = IntegrationProfiler(
-    integrator = FBDF(autodiff = AutoFiniteDiff()), 
-    integrator_opts = (dtmax=step,), 
+    integrator = Tsit5(),
+    integrator_opts = (dtmax=step,),
     matrix_type = :hessian
   )
-  test_parameter_target(method, funcs_dict)
+  test_parameter_target(method, funcs_dict; atol)
   
 end
 
 @testset "Analytic funcs. FunctionTarget with IntegrationProfiler" begin
 
   method = IntegrationProfiler(
-    integrator = FBDF(autodiff = AutoFiniteDiff()),
+    integrator = Tsit5(),
     integrator_opts = (dtmax=step,),
     matrix_type = :hessian
   )
-  test_function_target(method, funcs_dict)
+  test_function_target(method, funcs_dict; atol)
 
 end
 
 @testset "Analytic funcs. IntegrationProfiler with identity matrix" begin
 
   method = IntegrationProfiler(
-    integrator = FBDF(autodiff = AutoFiniteDiff()), 
+    integrator = Tsit5(), 
     integrator_opts = (dtmax=step,), 
     matrix_type = :identity,
     gamma=1.0
   )
-  test_parameter_target(method, funcs_dict)
+  test_parameter_target(method, funcs_dict; atol)
   
 end
 
 @testset "Analytic funcs. IntegrationProfiler with identity matrix + reoptimize" begin
 
   method = IntegrationProfiler(
-    integrator = Rosenbrock23(autodiff = AutoFiniteDiff()),
-    integrator_opts = (dtmax=0.3,),
+    integrator = Tsit5(),
+    integrator_opts = (dtmax=step,),
     matrix_type = :identity,
-    gamma=0.2,            # (!!!) select "bad" gamma
+    gamma=0,            # (!!!) select "bad" gamma
     reoptimize=true,
     optimizer = LBFGSB()
   )
-  test_parameter_target(method, funcs_dict)
+  test_parameter_target(method, funcs_dict; atol)
 
 end
-
-# @testset "Analytic funcs. IntegrationProfiler with Fisher matrix" begin
-
-#   method = IntegrationProfiler(
-#     integrator = AutoVern7(Rodas5()), 
-#     integrator_opts = (dtmax=step,), 
-#     matrix_type = :fisher,
-#     gamma=1e-1
-#   )
-#   test_parameter_target(method, funcs_dict)
-  
-# end
-
-
-# @testset "Analytic funcs. CICOProfiler" begin
-
-#   method = CICOProfiler(optimizer = :LN_SBPLX, scan_tol = 1e-3)
-#   test_parameter_target(method, funcs_dict)
-  
-# end
 

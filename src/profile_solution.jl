@@ -68,7 +68,23 @@ get_x_prev(pc::ProfileCurve) = pc.x[end-1]
 get_obj_prev(pc::ProfileCurve) = pc.obj[end-1]
 
 retcodes(pc::ProfileCurve) = pc.retcodes
-endpoints(pc::ProfileCurve) = (left = pc.endpoints.left, right = pc.endpoints.right)
+
+"""
+    endpoints(pc::ProfileCurve; xtransform=identity)
+    endpoints(sol::ProfileLikelihoodSolution; xtransform=identity)
+
+Return the estimated left and right confidence-interval endpoints at the profile's
+likelihood threshold. Calling `endpoints` on a `ProfileLikelihoodSolution` returns
+the endpoints for every profile.
+
+The `xtransform` function is applied to each estimated endpoint before it is
+returned. It defaults to `identity`; for example, use `xtransform=exp10` to report
+endpoints on the original parameter scale when profiling was performed in base-10
+log space.
+"""
+endpoints(pc::ProfileCurve; xtransform=identity) =
+  (left  = isnothing(pc.endpoints.left) ? nothing : xtransform(pc.endpoints.left),
+   right = isnothing(pc.endpoints.right) ? nothing : xtransform(pc.endpoints.right))
 stats(pc::ProfileCurve) = (left = pc.stats.left, right = pc.stats.right)
 obj_level(pc::ProfileCurve) = pc.obj_level
 
@@ -227,7 +243,7 @@ Base.length(A::ProfileLikelihoodSolution) = length(A.profiles)
 
 profile_labels(sol::ProfileLikelihoodSolution) = profile_labels(sol.prob)
 
-endpoints(sol::ProfileLikelihoodSolution) = endpoints.(sol.profiles)
+endpoints(sol::ProfileLikelihoodSolution; kwargs...) = endpoints.(sol.profiles; kwargs...)
 retcodes(sol::ProfileLikelihoodSolution) = retcodes.(sol.profiles)
 
 function build_profile_solution(plprob::ProfileLikelihoodProblem,

@@ -2,43 +2,70 @@
 # https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_de.m
 using Distributions
 
-function ode_func(du, u, p, t, drug)
-  let (a0, ka, r0, d0, kd) = (p[1], p[2], p[3], p[4], p[5])
+const Vt      = 10.515*100
+const V0      = 1.3907*Vt
+const lam     = 9.5722
+const aRP     = 20
+const arstexp = 3
+const adthexp = 4
+const theta   = 10
 
-      K   = 10.515*100
-      V0  = 1.3907*K
-      lam = 9.5722
+function taxol_ode(du, u, p, t)
+  a0, ka, r0, d0, kd = p.params
+  drug = p.drug
 
-      theta = 10.
+  Ncel = u[:P] + u[:Ap] + u[:Ar]
+  Lfac = ((Vt-Ncel)^theta)/((V0^theta) + ((Vt-Ncel)^theta))
 
-      # Values taken from 
-      aRP  = 20.     # per day from Kim_PrlifQuies
+  arst = a0*(drug^arstexp)/(ka^arstexp + (drug^arstexp))
+  adth = d0*(drug^adthexp)/(kd^adthexp + (drug^adthexp))
+  arcv = r0
 
-      Ncel = u[1] + u[2] + u[3]
-      Lfac = ((K-Ncel)^theta)/((V0^theta) + ((K-Ncel)^theta))
-
-      arstexp = 3.
-      adthexp = 4.
-
-      arst = a0*(drug^arstexp)/(ka^arstexp + (drug^arstexp))
-      adth = d0*(drug^adthexp)/(kd^adthexp + (drug^adthexp))
-      arcv = r0
-
-      # The differntial equations
-      du[1] = -lam*u[1] + aRP*u[2]*Lfac - arst*u[1] + arcv*u[3]
-      du[2] = 2*lam*u[1] - aRP*u[2]*Lfac
-      du[3] = arst*u[1] - adth*u[3] - arcv*u[3]
-  end
+  du[:P] = -lam*u[:P] + aRP*u[:Ap]*Lfac - arst*u[:P] + arcv*u[:Ar]
+  du[:Ap] = 2*lam*u[:P] - aRP*u[:Ap]*Lfac
+  du[:Ar] = arst*u[:P] - adth*u[:Ar] - arcv*u[:Ar]
+  
+  return nothing
 end
 
-# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m
+u0 = ComponentArray(
+  P = 7.2700, 
+  Ap = 2.5490, 
+  Ar = 0.0
+)
 
-# Data from Terzis et al. Brit J Cancer 1997;75:1744.
-# From Bowman et al. Glia 1999;27:22, glioma cell volume is 0.916
-# picoliters, 1 mm^3 = 1e6 pl or ~1.091 million cells
+function taxol_params(x, d)
+  return ComponentArray(
+    params = ComponentArray(
+      a0 = x[1],
+      ka = x[2],
+      r0 = x[3],
+      d0 = x[4],
+      kd = x[5]),
+    drug = d
+  )
+end
 
+p0 = taxol_params([8.3170, 8.0959, 0.0582, 1.3307, 119.1363], 5.0)
+
+tspan = (0.,15.)
+ode_prob = SciMLBase.ODEProblem(taxol_ode, u0, tspan, p0)
+
+# initial values and parameters
+# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_soln.m#L3-L6
+# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L4
+
+#P0 = 7.2700
+#R0 = 2.5490
+
+u0 = [7.2700, 2.5490, 0.]
+p0 = log10.([8.3170, 8.0959, 0.0582, 1.3307, 119.1363])
+
+tspan = (0.,15.)
+
+prob = SciMLBase.ODEProblem((du,u,p,t)->ode_func(du,u,p,t,5.0), u0, tspan, p0)
+ 
 times = [0., 3., 6., 9., 12., 15.]   # days
-
 dose = [5., 10., 40., 100.];    # dose in ng/ml
 
 # Control data
@@ -69,56 +96,39 @@ C100 = mean(Cell100)
 data = [Cell005/C005, Cell010/C010, Cell040/C040, Cell100/C100]
 datamean = [C005, C010, C040, C100]
 
-
-# solver algorithm and tolerances
-solver_opts = Dict(
-    :alg => AutoTsit5(Rosenbrock23(autodiff=AutoFiniteDiff())),
-    :reltol => 1e-6,
-    :abstol => 1e-8
+solver_opts = (
+    alg = Tsit5(),
+    reltol = 1e-6,
+    abstol = 1e-8,
 )
 
-# initial values and parameters
-# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_soln.m#L3-L6
-# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L4
-
-#P0 = 7.2700
-#R0 = 2.5490
-
-u0 = [7.2700, 2.5490, 0.]
-p0 = [8.3170, 8.0959, 0.0582, 1.3307, 119.1363] 
-
-tspan = (0.,15.)
-
-prob = SciMLBase.ODEProblem((du,u,p,t)->ode_func(du,u,p,t,5.0), u0, tspan, p0)
- 
-# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L92
-# https://www.mathworks.com/help/optim/ug/lsqcurvefit.html
-function taxol_obj(
-  x, _p;
-  ode_func=ode_func,
-  dose=dose,
-  data=data,
-  datamean=datamean,
-  times=times,
-  solver_opts=solver_opts
-)
+function taxol_obj(x, hp)
 
   loss = 0.
   for (i,d) in enumerate(dose)
-     prob = SciMLBase.ODEProblem((du,u,p,t)->ode_func(du,u,p,t,d), u0, tspan, x)
-     sol = solve(prob, 
-                 solver_opts[:alg], 
-                 reltol=solver_opts[:reltol],
-                 abstol=solver_opts[:abstol],
-                 saveat=times)
+    prob = remake(ode_prob; p = taxol_params(exp10.(x), d))
+    sol = solve(
+      prob, 
+      solver_opts.alg, 
+      reltol=solver_opts.reltol,
+      abstol=solver_opts.abstol,
+      saveat=times)
+    if !SciMLBase.successful_retcode(sol)
+     return Inf
+    end
       
-     sim = (sol[1,:] + sol[2,:] + sol[3,:])/datamean[i]
-     loss += sum((sim-data[i]).^2)
+    for time_idx in eachindex(data[i])
+      sim = (sol[1, time_idx] + sol[2, time_idx] + sol[3, time_idx]) / datamean[i]
+      loss += abs2(sim - data[i][time_idx])
+    end
   end
   return loss
 end
 
-# threshold is chosen according to
-# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L40-L41
-sigmasq = (mean([(Cerr005/C005); (Cerr010/C010); (Cerr040/C040); (Cerr100/C100)]))^2
-
+taxol_relative_errors = vcat(
+    Cerr005 / C005,
+    Cerr010 / C010,
+    Cerr040 / C040,
+    Cerr100 / C100,
+)
+sigmasq = mean(taxol_relative_errors)^2

@@ -18,7 +18,7 @@ First we define the `OptimizationProblem` and solve it with the preferred optimi
 We begin by defining the objective function and solving the optimization problem to obtain the optimal values of the parameters:
 
 ```@example rosenbrock-1
-using LikelihoodProfiler, OptimizationLBFGSB, OrdinaryDiffEq, CICOBase
+using LikelihoodProfiler, OptimizationLBFGSB, OrdinaryDiffEqTsit5, CICOBase
 using Plots
 
 # objective function
@@ -53,12 +53,12 @@ For a more detailed description of each method, see the [Profile Likelihood Meth
 
 #### OptimizationProfiler
 
-The most direct profiling method is [`OptimizationProfiler`](@ref optimization_based_profiles). It computes the profile by taking a sequence of fixed steps in the profiled parameter and performing a re-optimization of all remaining parameters at each step. This produces a discrete set of points that approximate the profile curve.
+The most direct profiling method is [`OptimizationProfiler`](@ref optimization_based_profiles). It computes the profile by taking a sequence of fixed or adaptive steps in the profiled parameter and performing a re-optimization of all remaining parameters (nuisance parameters) at each step. This produces a discrete set of points that approximate the profile curve.
 
 ```@example rosenbrock-1
-meth_opt = OptimizationProfiler(optimizer = LBFGSB(), stepper = FixedStep(; initial_step=0.15))
+meth_opt = OptimizationProfiler(optimizer = LBFGSB(), stepper = AdaptiveStep())
 sol1 = solve(plprob, meth_opt)
-plot(sol1, size=(800,300), margins=5Plots.mm)
+plot(sol1, margins=5Plots.mm)
 ```
 
 #### IntegrationProfiler
@@ -68,7 +68,7 @@ A more advanced technique is implemented in [`IntegrationProfiler`](@ref integra
 ```@example rosenbrock-1
 meth_integ = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.3,), matrix_type = :hessian)
 sol2 = solve(plprob, meth_integ)
-plot(sol2, size=(800,300), margins=5Plots.mm)
+plot(sol2, margins=5Plots.mm)
 ```
 
 #### CICOProfiler
@@ -79,7 +79,7 @@ Often, the primary goal of likelihood profiling is to determine whether the prof
 ```@example rosenbrock-1
 meth_cico = CICOProfiler(optimizer = :LN_NELDERMEAD, scan_tol = 1e-4)
 sol3 = solve(plprob, meth_cico)
-plot(sol3, size=(800,300), margins=5Plots.mm)
+plot(sol3, margins=5Plots.mm)
 ```
 
 #### QuadraticApproxProfiler
@@ -99,7 +99,7 @@ Then solve using the quadratic-approximation method (FIM-based curvature):
 ```@example rosenbrock-1
 meth_fim = QuadraticApproxProfiler(resolution=50)
 sol4 = solve(plprob, meth_fim)
-plot(sol4, size=(800,300), margins=5Plots.mm)
+plot(sol4, margins=5Plots.mm)
 ```
 
 !!! note

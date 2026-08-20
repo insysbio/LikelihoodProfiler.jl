@@ -67,7 +67,7 @@ A profiler method that uses integration of differential equations system to prof
 ### Example
 
 ```julia
-using OrdinaryDiffEq
+using OrdinaryDiffEqTsit5
 profiler = IntegrationProfiler(integrator = Tsit5(), integrator_opts = (dtmax=0.3,), matrix_type = :hessian)
 ```
 """

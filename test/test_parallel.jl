@@ -5,7 +5,7 @@ using Test, Base.Threads, Distributed
 
 addprocs(2)
 
-@everywhere using LikelihoodProfiler, OptimizationLBFGSB, ForwardDiff, OrdinaryDiffEq, CICOBase
+@everywhere using LikelihoodProfiler, OptimizationLBFGSB, OrdinaryDiffEqTsit5, CICOBase
 
 @everywhere rosenbrock(x,p) = (1.0 - x[1])^2 + 100.0*(x[2] - x[1]^2)^2
 

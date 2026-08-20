@@ -29,7 +29,7 @@ CICOBase = "33444335-3134-4342-4659-594331344435"
 CICOBaseExt = "CICOBase"
 
 [compat]
-ADTypes = "1.21.0" 
+ADTypes = "1.21.0"
 CICOBase = "0.6.0"
 ComponentArrays = "0.15.33"
 DataFrames = "1.7.0"
@@ -38,8 +38,6 @@ Distributed = "1.10"
 Distributions = "0.25"
 ForwardDiff = "0.10.36, 1"
 Optimization = "5"
-OptimizationLBFGSB = "1.5.0"
-OptimizationNLopt = "0.3.1"
 PreallocationTools = "1"
 RecipesBase = "1.1"
 Reexport = "1.2.2"
@@ -51,10 +49,10 @@ julia = "1.10"
 CICOBase = "33444335-3134-4342-4659-594331344435"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 OptimizationLBFGSB = "22f7324a-a79d-40f2-bebe-3af60c77bd15"
-OptimizationNLopt = "4e6fcdb7-1186-4e1f-a706-475e75c168bb"
-OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+OrdinaryDiffEqTsit5 = "b1df2697-797e-41e3-8120-5422d3b24e4a"
+OrdinaryDiffEqLowOrderRK = "1344f307-1e59-4825-a18e-ace9aa3fa4c6"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "CICOBase", "Plots", "ForwardDiff", "OptimizationLBFGSB", "OptimizationNLopt", "OrdinaryDiffEq"]
+test = ["Test", "CICOBase", "Plots", "ForwardDiff", "OptimizationLBFGSB", "OrdinaryDiffEqTsit5", "OrdinaryDiffEqLowOrderRK"]
