@@ -83,7 +83,7 @@ end
 
 We define the initial conditions for the ODE system, and optimal parameters for the model, which were obtained from Marisa's Matlab code. Finally, we define the time span for the simulation and create an `ODEProblem` instance.
 
-```julia
+```@example taxol-1
 u0 = ComponentArray(
   P = 7.2700, 
   Ap = 2.5490, 
@@ -196,7 +196,7 @@ We optimize the logarithms of the parameters rather than their values on the ori
 
 We define the initial parameter values and bounds in log space and wrap the objective function into an `OptimizationProblem` instance.
 
-```julia
+```@example taxol-1
 opt_params0 = log10.([8.3170, 8.0959, 0.0582, 1.3307, 119.1363])
 lb = log10.([2.0, 2.0, 0.01, 0.05, 30.0])
 ub = log10.([30.0, 30.0, 0.6, 10.0, 210.0])
