@@ -55,7 +55,7 @@ We define the constants (fixed parameters):
   const aRP     = 20
   const arstexp = 3
   const adthexp = 4
-  const theta   = 10
+  const theta   = 10;
 ```
 
 The model is defined as a system of ordinary differential equations (ODEs) with the following structure:
@@ -78,7 +78,7 @@ function taxol_ode(du, u, p, t)
   du[:Ar] = arst*u[:P] - adth*u[:Ar] - arcv*u[:Ar]
   
   return nothing
-end
+end;
 ```
 
 We define the initial conditions for the ODE system, and optimal parameters for the model, which were obtained from Marisa's Matlab code. Finally, we define the time span for the simulation and create an `ODEProblem` instance.
@@ -91,18 +91,18 @@ u0 = ComponentArray(
 )
 
 function taxol_params(x, d)
-  return ComponentArray(
-    params = ComponentArray(
-      a0 = x[1],
-      ka = x[2],
-      r0 = x[3],
-      d0 = x[4],
-      kd = x[5]),
-    drug = d
-  )
+  return ComponentArray(params = x, drug = d)
 end
 
-p0 = taxol_params([8.3170, 8.0959, 0.0582, 1.3307, 119.1363], 5.0)
+taxol_params0 = ComponentArray(
+  a0 = 8.3170,
+  ka = 8.0959,
+  r0 = 0.0582,
+  d0 = 1.3307,
+  kd = 119.1363,
+  )
+
+p0 = taxol_params(taxol_params0, 5.0)
 
 tspan = (0.,15.)
 ode_prob = ODEProblem(taxol_ode, u0, tspan, p0)
@@ -142,7 +142,7 @@ C040 = mean(Cell040)
 C100 = mean(Cell100)
 
 data = [Cell005/C005, Cell010/C010, Cell040/C040, Cell100/C100]
-datamean = [C005, C010, C040, C100]
+datamean = [C005, C010, C040, C100];
 ```
 
 We define the solver setup and the objective function for the optimization problem.
@@ -194,12 +194,24 @@ sigmasq = mean(taxol_relative_errors)^2
 
 We optimize the logarithms of the parameters rather than their values on the original scale. Optimization in log space is often recommended because it puts parameters with different orders of magnitude on a more common scale, which can improve the numerical behavior of the optimizer. The objective function therefore converts `x` back to the original parameter scale with `exp10.(x)` before solving the ODE.
 
-We define the initial parameter values and bounds in log space and wrap the objective function into an `OptimizationProblem` instance.
+We define the initial parameter values and bounds in log space and wrap the objective function into an `OptimizationProblem` instance. The fitted parameters use a flat, named `ComponentArray`, separate from the nested ODE parameters that also contain the drug dose. This allows `ProfileLikelihoodProblem` to infer the parameter labels automatically.
 
 ```@example taxol-1
-opt_params0 = log10.([8.3170, 8.0959, 0.0582, 1.3307, 119.1363])
-lb = log10.([2.0, 2.0, 0.01, 0.05, 30.0])
-ub = log10.([30.0, 30.0, 0.6, 10.0, 210.0])
+opt_params0 = log10.(taxol_params0)
+lb = log10.(ComponentArray(
+  a0 = 2.0,
+  ka = 2.0,
+  r0 = 0.01,
+  d0 = 0.05,
+  kd = 30.0,
+))
+ub = log10.(ComponentArray(
+  a0 = 30.0,
+  ka = 30.0,
+  r0 = 0.6,
+  d0 = 10.0,
+  kd = 210.0,
+))
 
 optf = OptimizationFunction(taxol_obj, AutoForwardDiff())
 optprob = OptimizationProblem(optf, opt_params0; lb, ub)
@@ -227,5 +239,5 @@ endpoints(sol; xtransform=exp10)
 
 Finally, we plot the resulting profiles, using `xtransform=exp10` to display the parameter axes on their original scale. Each point on the curve corresponds to a profiler step, i.e., a constrained optimization performed at a fixed value of the profiled parameter. The horizontal line indicates the likelihood threshold for the chosen confidence level; its intersections with the curve define the confidence interval bounds. Steeper profiles indicate better identifiability, whereas flat curves or curves that never intersect the threshold indicate parameters that are not practically identifiable.
 ```@example taxol-1
-plot(sol, legend=false, margins=5Plots.mm, xtransform=exp10)
+plot(sol, xtransform=exp10)
 ```

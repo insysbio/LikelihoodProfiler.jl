@@ -35,13 +35,15 @@ function test_taxol(sol, i; kwargs...)
   taxol_retcodes[i][2] == :Identifiable && (@test isapprox(ci[2], taxol_ci[i][2]; kwargs...))
 end
 
-lb = log10.([2.0, 2.0, 0.01, 0.05, 30.0])
-ub = log10.([30.0, 30.0, 0.6, 5.0, 170.0])
+lb = log10.(ComponentArray(a0=2.0, ka=2.0, r0=0.01, d0=0.05, kd=30.0))
+ub = log10.(ComponentArray(a0=30.0, ka=30.0, r0=0.6, d0=5.0, kd=170.0))
 
 optf = OptimizationFunction(taxol_obj, AutoForwardDiff())
 optprob = OptimizationProblem(optf, p0; lb, ub)
 
 plprob = ProfileLikelihoodProblem(optprob, p0; threshold = sigmasq*chi2_quantile(0.95, 5))
+
+@test profile_labels(plprob) == [:a0, :ka, :r0, :d0, :kd]
 
 # @btime 34.145 s (802637815 allocations: 20.15 GiB)
 @testset "Taxol model. Adaptive-step OptimizationProfiler with gradient-based optimizer" begin

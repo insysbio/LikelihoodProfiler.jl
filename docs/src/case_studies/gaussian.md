@@ -59,7 +59,7 @@ method = OptimizationProfiler(optimizer = LBFGSB(),
     stepper = FixedStep(; initial_step = 0.01))
 
 sol = solve(plprob, method)
-plot(sol, margins=5Plots.mm)
+plot(sol)
 ```
 
 ## Interpreting the plot

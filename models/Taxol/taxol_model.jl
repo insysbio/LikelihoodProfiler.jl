@@ -35,35 +35,22 @@ u0 = ComponentArray(
 )
 
 function taxol_params(x, d)
-  return ComponentArray(
-    params = ComponentArray(
-      a0 = x[1],
-      ka = x[2],
-      r0 = x[3],
-      d0 = x[4],
-      kd = x[5]),
-    drug = d
-  )
+  return ComponentArray(params = x, drug = d)
 end
 
-p0 = taxol_params([8.3170, 8.0959, 0.0582, 1.3307, 119.1363], 5.0)
+taxol_params0 = ComponentArray(
+  a0 = 8.3170,
+  ka = 8.0959,
+  r0 = 0.0582,
+  d0 = 1.3307,
+  kd = 119.1363,
+)
+
+# The optimizer and profiler operate on the base-10 logarithms of the parameters.
+p0 = log10.(taxol_params0)
 
 tspan = (0.,15.)
-ode_prob = SciMLBase.ODEProblem(taxol_ode, u0, tspan, p0)
-
-# initial values and parameters
-# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_soln.m#L3-L6
-# https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L4
-
-#P0 = 7.2700
-#R0 = 2.5490
-
-u0 = [7.2700, 2.5490, 0.]
-p0 = log10.([8.3170, 8.0959, 0.0582, 1.3307, 119.1363])
-
-tspan = (0.,15.)
-
-prob = SciMLBase.ODEProblem((du,u,p,t)->ode_func(du,u,p,t,5.0), u0, tspan, p0)
+ode_prob = SciMLBase.ODEProblem(taxol_ode, u0, tspan, taxol_params(taxol_params0, 5.0))
  
 times = [0., 3., 6., 9., 12., 15.]   # days
 dose = [5., 10., 40., 100.];    # dose in ng/ml
