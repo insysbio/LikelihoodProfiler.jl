@@ -100,7 +100,7 @@ taxol_params0 = ComponentArray(
   r0 = 0.0582,
   d0 = 1.3307,
   kd = 119.1363,
-  )
+)
 
 p0 = taxol_params(taxol_params0, 5.0)
 

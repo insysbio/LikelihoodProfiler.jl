@@ -9,7 +9,7 @@
   layout --> (nrows, ncols)
   size --> (360 * ncols, 300 * nrows)
   legend --> (nprofiles == 1 ? :topright : false)
-  margins --> 3Plots.mm
+  margin --> (3, :mm)
 
   for i in 1:nprofiles
     xlbl = isnothing(lbls) ? "x[$(i)]" : string(lbls[i])
