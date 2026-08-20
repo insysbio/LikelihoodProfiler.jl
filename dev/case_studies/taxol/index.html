@@ -21,7 +21,7 @@ using Plots</code></pre><p>We define the constants (fixed parameters):</p><ul><l
   const aRP     = 20
   const arstexp = 3
   const adthexp = 4
-  const theta   = 10</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10</code></pre><p>The model is defined as a system of ordinary differential equations (ODEs) with the following structure:</p><pre><code class="language-julia hljs"># https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_de.m
+  const theta   = 10;</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10</code></pre><p>The model is defined as a system of ordinary differential equations (ODEs) with the following structure:</p><pre><code class="language-julia hljs"># https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_de.m
 function taxol_ode(du, u, p, t)
   a0, ka, r0, d0, kd = p.params
   drug = p.drug
@@ -38,25 +38,25 @@ function taxol_ode(du, u, p, t)
   du[:Ar] = arst*u[:P] - adth*u[:Ar] - arcv*u[:Ar]
 
   return nothing
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">taxol_ode (generic function with 1 method)</code></pre><p>We define the initial conditions for the ODE system, and optimal parameters for the model, which were obtained from Marisa&#39;s Matlab code. Finally, we define the time span for the simulation and create an <code>ODEProblem</code> instance.</p><pre><code class="language-julia hljs">u0 = ComponentArray(
+end;</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">taxol_ode (generic function with 1 method)</code></pre><p>We define the initial conditions for the ODE system, and optimal parameters for the model, which were obtained from Marisa&#39;s Matlab code. Finally, we define the time span for the simulation and create an <code>ODEProblem</code> instance.</p><pre><code class="language-julia hljs">u0 = ComponentArray(
   P = 7.2700,
   Ap = 2.5490,
   Ar = 0.0
 )
 
 function taxol_params(x, d)
-  return ComponentArray(
-    params = ComponentArray(
-      a0 = x[1],
-      ka = x[2],
-      r0 = x[3],
-      d0 = x[4],
-      kd = x[5]),
-    drug = d
-  )
+  return ComponentArray(params = x, drug = d)
 end
 
-p0 = taxol_params([8.3170, 8.0959, 0.0582, 1.3307, 119.1363], 5.0)
+taxol_params0 = ComponentArray(
+  a0 = 8.3170,
+  ka = 8.0959,
+  r0 = 0.0582,
+  d0 = 1.3307,
+  kd = 119.1363,
+  )
+
+p0 = taxol_params(taxol_params0, 5.0)
 
 tspan = (0.,15.)
 ode_prob = ODEProblem(taxol_ode, u0, tspan, p0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr38_2" style="color:#56b6c2">ODEProblem</span> with uType <span class="sgr38_2" style="color:#56b6c2">ComponentArrays.ComponentVector{Float64, Vector{Float64}, Tuple{ComponentArrays.Axis{(P = 1, Ap = 2, Ar = 3)}}}</span> and tType <span class="sgr38_2" style="color:#56b6c2">Float64</span>. In-place: <span class="sgr38_2" style="color:#56b6c2">true</span>
@@ -93,7 +93,7 @@ C040 = mean(Cell040)
 C100 = mean(Cell100)
 
 data = [Cell005/C005, Cell010/C010, Cell040/C040, Cell100/C100]
-datamean = [C005, C010, C040, C100]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{Float64}:
+datamean = [C005, C010, C040, C100];</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{Float64}:
  129.2835
   83.4615
   53.82266666666667
@@ -132,18 +132,25 @@ taxol_relative_errors = vcat(
     Cerr040 / C040,
     Cerr100 / C100,
 )
-sigmasq = mean(taxol_relative_errors)^2</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.03997452437090424</code></pre><p>We optimize the logarithms of the parameters rather than their values on the original scale. Optimization in log space is often recommended because it puts parameters with different orders of magnitude on a more common scale, which can improve the numerical behavior of the optimizer. The objective function therefore converts <code>x</code> back to the original parameter scale with <code>exp10.(x)</code> before solving the ODE.</p><p>We define the initial parameter values and bounds in log space and wrap the objective function into an <code>OptimizationProblem</code> instance.</p><pre><code class="language-julia hljs">opt_params0 = log10.([8.3170, 8.0959, 0.0582, 1.3307, 119.1363])
-lb = log10.([2.0, 2.0, 0.01, 0.05, 30.0])
-ub = log10.([30.0, 30.0, 0.6, 10.0, 210.0])
+sigmasq = mean(taxol_relative_errors)^2</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.03997452437090424</code></pre><p>We optimize the logarithms of the parameters rather than their values on the original scale. Optimization in log space is often recommended because it puts parameters with different orders of magnitude on a more common scale, which can improve the numerical behavior of the optimizer. The objective function therefore converts <code>x</code> back to the original parameter scale with <code>exp10.(x)</code> before solving the ODE.</p><p>We define the initial parameter values and bounds in log space and wrap the objective function into an <code>OptimizationProblem</code> instance. The fitted parameters use a flat, named <code>ComponentArray</code>, separate from the nested ODE parameters that also contain the drug dose. This allows <code>ProfileLikelihoodProblem</code> to infer the parameter labels automatically.</p><pre><code class="language-julia hljs">opt_params0 = log10.(taxol_params0)
+lb = log10.(ComponentArray(
+  a0 = 2.0,
+  ka = 2.0,
+  r0 = 0.01,
+  d0 = 0.05,
+  kd = 30.0,
+))
+ub = log10.(ComponentArray(
+  a0 = 30.0,
+  ka = 30.0,
+  r0 = 0.6,
+  d0 = 10.0,
+  kd = 210.0,
+))
 
 optf = OptimizationFunction(taxol_obj, AutoForwardDiff())
 optprob = OptimizationProblem(optf, opt_params0; lb, ub)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr38_2" style="color:#56b6c2">OptimizationProblem</span>. In-place: <span class="sgr38_2" style="color:#56b6c2">true</span>
-u0: 5-element Vector{Float64}:
-  0.9199667014833871
-  0.9082651351532822
- -1.2350770153501116
-  0.12408015687969996
-  2.0760441081471197</code></pre><p>To define the profile likelihood problem, we use the <code>OptimizationProblem</code> and optimal (best fit) values of the parameters. Because the optimization variables are logarithms, the profile likelihood is also computed in log space. We can also specify the threshold for the profile likelihood, define the profile bounds and other options for the <code>ProfileLikelihoodProblem</code>.</p><p>Next we choose the profile likelihood algorithm and solve the problem. Here we use an <code>OptimizationProfiler</code> which steps through the parameter of interest and re-optimizes the nuisance parameters at each step. This stepping is done adaptively. The direction of the step is chosen on the basis of previous successful steps and the step size is adjusted based on linesearch.</p><p>We can also set <code>reoptimize_init=true</code> to re-optimize the initial starting point to reassure we start profiling from the optimum.</p><pre><code class="language-julia hljs">plprob = ProfileLikelihoodProblem(optprob, opt_params0; threshold = sigmasq*chi2_quantile(0.95, 5))
+u0: ComponentVector{Float64}(a0 = 0.9199667014833871, ka = 0.9082651351532822, r0 = -1.2350770153501116, d0 = 0.12408015687969996, kd = 2.0760441081471197)</code></pre><p>To define the profile likelihood problem, we use the <code>OptimizationProblem</code> and optimal (best fit) values of the parameters. Because the optimization variables are logarithms, the profile likelihood is also computed in log space. We can also specify the threshold for the profile likelihood, define the profile bounds and other options for the <code>ProfileLikelihoodProblem</code>.</p><p>Next we choose the profile likelihood algorithm and solve the problem. Here we use an <code>OptimizationProfiler</code> which steps through the parameter of interest and re-optimizes the nuisance parameters at each step. This stepping is done adaptively. The direction of the step is chosen on the basis of previous successful steps and the step size is adjusted based on linesearch.</p><p>We can also set <code>reoptimize_init=true</code> to re-optimize the initial starting point to reassure we start profiling from the optimum.</p><pre><code class="language-julia hljs">plprob = ProfileLikelihoodProblem(optprob, opt_params0; threshold = sigmasq*chi2_quantile(0.95, 5))
 
 alg_opt = OptimizationProfiler(optimizer = LBFGSB(),  stepper = AdaptiveStep())
 
@@ -154,4 +161,4 @@ endpoints(sol; xtransform=exp10)</code></pre><pre class="documenter-example-outp
  (left = 4.983728866146825, right = 10.728019095768573)
  (left = nothing, right = 0.3879294710826125)
  (left = 0.19084304331795104, right = nothing)
- (left = 49.69063579012813, right = nothing)</code></pre><p>Finally, we plot the resulting profiles, using <code>xtransform=exp10</code> to display the parameter axes on their original scale. Each point on the curve corresponds to a profiler step, i.e., a constrained optimization performed at a fixed value of the profiled parameter. The horizontal line indicates the likelihood threshold for the chosen confidence level; its intersections with the curve define the confidence interval bounds. Steeper profiles indicate better identifiability, whereas flat curves or curves that never intersect the threshold indicate parameters that are not practically identifiable.</p><pre><code class="language-julia hljs">plot(sol, legend=false, margins=5Plots.mm, xtransform=exp10)</code></pre><img src="464b3b82.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../rosenbrock/">« Getting Started</a><a class="docs-footer-nextpage" href="../gaussian/">Mean of a Gaussian Distribution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 20 August 2026 12:40">Thursday 20 August 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ (left = 49.69063579012813, right = nothing)</code></pre><p>Finally, we plot the resulting profiles, using <code>xtransform=exp10</code> to display the parameter axes on their original scale. Each point on the curve corresponds to a profiler step, i.e., a constrained optimization performed at a fixed value of the profiled parameter. The horizontal line indicates the likelihood threshold for the chosen confidence level; its intersections with the curve define the confidence interval bounds. Steeper profiles indicate better identifiability, whereas flat curves or curves that never intersect the threshold indicate parameters that are not practically identifiable.</p><pre><code class="language-julia hljs">plot(sol, xtransform=exp10)</code></pre><img src="9e41e80f.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../rosenbrock/">« Getting Started</a><a class="docs-footer-nextpage" href="../gaussian/">Mean of a Gaussian Distribution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 20 August 2026 13:37">Thursday 20 August 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
