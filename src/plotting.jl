@@ -1,10 +1,15 @@
 
 @recipe function f(sol::ProfileLikelihoodSolution; xtransform=identity)
-  ls = length(sol)
+  nprofiles = length(sol)
   lbls = profile_labels(sol)
 
-  layout --> ls
-  for i in 1:ls
+  ncols = min(nprofiles, 3)
+  nrows = cld(nprofiles, ncols)
+
+  layout --> (nrows, ncols)
+  size --> (360 * ncols, 300 * nrows)
+  legend --> (nprofiles == 1 ? :topright : false)
+  for i in 1:nprofiles
     xlbl = isnothing(lbls) ? "x[$(i)]" : string(lbls[i])
     @series begin
       subplot := i

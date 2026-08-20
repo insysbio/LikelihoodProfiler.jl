@@ -18,7 +18,7 @@ function test_sir(sol, i; kwargs...)
 end
 
 optf = OptimizationFunction(sir_obj, AutoForwardDiff())
-optprob = OptimizationProblem(optf, p0; lb=[1e-3, 1e-3, 1e-3], ub=[1e3, 1e3, 1.e3])
+optprob = OptimizationProblem(optf, p0; lb=[1e-3, 1e-3, 1e-3], ub=[1e3, 1e3, 1e3])
 sol = solve(optprob, LBFGSB())
 
 optpars = sol.u 

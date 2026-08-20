@@ -25,7 +25,6 @@ Pkg.add([
   "LikelihoodProfiler", 
   "OptimizationLBFGSB", 
   "OrdinaryDiffEqTsit5", 
-  "OrdinaryDiffEqRosenbrock",
   "Distributions", 
   "ComponentArrays", 
   "Plots"
@@ -34,7 +33,6 @@ Pkg.add([
 using LikelihoodProfiler
 using OptimizationLBFGSB
 using OrdinaryDiffEqTsit5
-using OrdinaryDiffEqRosenbrock: Rodas5P
 using Distributions
 using ComponentArrays
 using Plots
@@ -151,7 +149,7 @@ We define the solver setup and the objective function for the optimization probl
 
 ```@example taxol-1
 solver_opts = (
-    alg = AutoTsit5(Rodas5P()),
+    alg = Tsit5(),
     reltol = 1e-6,
     abstol = 1e-8,
 )
@@ -160,7 +158,7 @@ function taxol_obj(x, hp)
 
   loss = 0.
   for (i,d) in enumerate(dose)
-    prob = remake(ode_prob; p = taxol_params(x, d))
+    prob = remake(ode_prob; p = taxol_params(exp10.(x), d))
     sol = solve(
       prob, 
       solver_opts.alg, 
@@ -194,18 +192,20 @@ taxol_relative_errors = vcat(
 sigmasq = mean(taxol_relative_errors)^2
 ```
 
-We define parameters bounds and wrap the objective function into an `OptimizationProblem` instance.
+We optimize the logarithms of the parameters rather than their values on the original scale. Optimization in log space is often recommended because it puts parameters with different orders of magnitude on a more common scale, which can improve the numerical behavior of the optimizer. The objective function therefore converts `x` back to the original parameter scale with `exp10.(x)` before solving the ODE.
+
+We define the initial parameter values and bounds in log space and wrap the objective function into an `OptimizationProblem` instance.
 
 ```julia
-opt_params0 = copy(p0.params)
-lb = [2.0, 2.0, 0.01, 0.05, 30.0]
-ub = [30.0, 30.0, 0.6, 10.0, 210.0]
+opt_params0 = log10.([8.3170, 8.0959, 0.0582, 1.3307, 119.1363])
+lb = log10.([2.0, 2.0, 0.01, 0.05, 30.0])
+ub = log10.([30.0, 30.0, 0.6, 10.0, 210.0])
 
 optf = OptimizationFunction(taxol_obj, AutoForwardDiff())
 optprob = OptimizationProblem(optf, opt_params0; lb, ub)
 ```
 
-To define the profile likelihood problem, we use the `OptimizationProblem` and optimal (best fit) values of the parameters. We can also specify the threshold for the profile likelihood, define the profile bounds and other options for the `ProfileLikelihoodProblem`.
+To define the profile likelihood problem, we use the `OptimizationProblem` and optimal (best fit) values of the parameters. Because the optimization variables are logarithms, the profile likelihood is also computed in log space. We can also specify the threshold for the profile likelihood, define the profile bounds and other options for the `ProfileLikelihoodProblem`.
 
 Next we choose the profile likelihood algorithm and solve the problem. Here we use an `OptimizationProfiler` which steps through the parameter of interest and re-optimizes the nuisance parameters at each step. This stepping is done adaptively. The direction of the step is chosen on the basis of previous successful steps and the step size is adjusted based on linesearch.
 
@@ -216,16 +216,16 @@ plprob = ProfileLikelihoodProblem(optprob, opt_params0; threshold = sigmasq*chi2
 
 alg_opt = OptimizationProfiler(optimizer = LBFGSB(),  stepper = AdaptiveStep())
 
-sol_param = solve(plprob, alg_opt; reoptimize_init=true)
+sol = solve(plprob, alg_opt; reoptimize_init=true)
 ```
 
 `ProfileLikelihoodSolution` stores the computed profile curves together with confidence interval endpoints and identification retcodes, which indicate whether each parameter is practically identifiable. These values can be accessed directly:
  ```@example taxol-1
 retcodes(sol)
-endpoints(sol)
+endpoints(sol; xtransform=exp10)
 ```
 
-Finally, we plot the resulting profiles. Each point on the curve corresponds to a profiler step, i.e., a constrained optimization performed at a fixed value of the profiled parameter. The horizontal line indicates the likelihood threshold for the chosen confidence level; its intersections with the curve define the confidence interval bounds. Steeper profiles indicate better identifiability, whereas flat curves or curves that never intersect the threshold indicate parameters that are not practically identifiable.
+Finally, we plot the resulting profiles, using `xtransform=exp10` to display the parameter axes on their original scale. Each point on the curve corresponds to a profiler step, i.e., a constrained optimization performed at a fixed value of the profiled parameter. The horizontal line indicates the likelihood threshold for the chosen confidence level; its intersections with the curve define the confidence interval bounds. Steeper profiles indicate better identifiability, whereas flat curves or curves that never intersect the threshold indicate parameters that are not practically identifiable.
 ```@example taxol-1
-plot(sol, layout=(2,3), size=(1100, 600), legend=false, margins=5Plots.mm)
+plot(sol, legend=false, margins=5Plots.mm, xtransform=exp10)
 ```
