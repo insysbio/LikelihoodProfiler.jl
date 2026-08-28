@@ -24,6 +24,7 @@ using Pkg;
 Pkg.add([
   "LikelihoodProfiler", 
   "OptimizationLBFGSB", 
+  "ForwardDiff",
   "OrdinaryDiffEqTsit5", 
   "Distributions", 
   "ComponentArrays", 
@@ -32,6 +33,7 @@ Pkg.add([
 =#
 using LikelihoodProfiler
 using OptimizationLBFGSB
+using ForwardDiff
 using OrdinaryDiffEqTsit5
 using Distributions
 using ComponentArrays
