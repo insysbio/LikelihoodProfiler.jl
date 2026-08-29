@@ -13,7 +13,7 @@ $$X_1, \ldots, X_n \sim \mathcal{N}(\mu, 1)$$
 and want to construct a confidence interval for the mean parameter μ. 
 
 ```@example gaussian-1
-using LikelihoodProfiler, OptimizationLBFGSB, Distributions, Random
+using LikelihoodProfiler, OptimizationLBFGSB, ForwardDiff, Distributions, Random
 using Plots
 
 Random.seed!(73612768)

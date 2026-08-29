@@ -9,7 +9,7 @@ import SciMLBase
 @reexport import SciMLBase: OptimizationFunction, OptimizationProblem, remake, solve, solve!, init
 @reexport using ADTypes
 @reexport using DataFrames
-using LinearAlgebra, DataInterpolations
+using LinearAlgebra
 using Distributions: quantile, Chisq
 using RecipesBase
 using Distributed

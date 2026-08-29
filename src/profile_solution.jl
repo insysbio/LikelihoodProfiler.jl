@@ -139,8 +139,9 @@ end
 function interpolate_endpoint(sol::ProfileCurve)
   # future check if dense
   ol = obj_level(sol)
-  interp = LinearInterpolation(sol.x[end-1:end], sol.obj[end-1:end])
-  return interp(ol)
+  x1, x2 = sol.x[end-1], sol.x[end]
+  obj1, obj2 = sol.obj[end-1], sol.obj[end]
+  return x1 + (ol - obj1) * (x2 - x1) / (obj2 - obj1)
 end
 
 function profiler_finalize_solution!(profiler_cache::ProfilerCache, sol::ProfileCurve)

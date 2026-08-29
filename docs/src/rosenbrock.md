@@ -18,7 +18,7 @@ First we define the `OptimizationProblem` and solve it with the preferred optimi
 We begin by defining the objective function and solving the optimization problem to obtain the optimal values of the parameters:
 
 ```@example rosenbrock-1
-using LikelihoodProfiler, OptimizationLBFGSB, OrdinaryDiffEqTsit5, CICOBase
+using LikelihoodProfiler, OptimizationLBFGSB, ForwardDiff, OrdinaryDiffEqTsit5, CICOBase
 using Plots
 
 # objective function
