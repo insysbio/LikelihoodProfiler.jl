@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Taxol model · LikelihoodProfiler.jl</title><meta name="title" content="Taxol model · LikelihoodProfiler.jl"/><meta property="og:title" content="Taxol model · LikelihoodProfiler.jl"/><meta property="twitter:title" content="Taxol model · LikelihoodProfiler.jl"/><meta name="description" content="Documentation for LikelihoodProfiler.jl."/><meta property="og:description" content="Documentation for LikelihoodProfiler.jl."/><meta property="twitter:description" content="Documentation for LikelihoodProfiler.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">LikelihoodProfiler.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">LikelihoodProfiler.jl: Unified Interface to Profile Likelihood Methods</a></li><li><a class="tocitem" href="../../rosenbrock/">Getting Started</a></li><li><span class="tocitem">Tutorials</span><ul><li class="is-active"><a class="tocitem" href>Taxol model</a></li><li><a class="tocitem" href="../gaussian/">Mean of a Gaussian Distribution</a></li></ul></li><li><span class="tocitem">Basics</span><ul><li><a class="tocitem" href="../../problem_interface/">Problem interface</a></li><li><a class="tocitem" href="../../profile_methods/">Profile likelihood methods</a></li><li><a class="tocitem" href="../../solution_interface/">Solution interface</a></li><li><a class="tocitem" href="../../parallel_modes/">Parallel execution</a></li></ul></li><li><a class="tocitem" href="../../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Taxol model</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Taxol model</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/insysbio/LikelihoodProfiler.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/insysbio/LikelihoodProfiler.jl/blob/master/docs/src/case_studies/taxol.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Taxol-model"><a class="docs-heading-anchor" href="#Taxol-model">Taxol model</a><a id="Taxol-model-1"></a><a class="docs-heading-anchor-permalink" href="#Taxol-model" title="Permalink"></a></h1><p>As an example of practical identifiability analysis, we use the <strong>Cancer Taxol Treatment Model</strong>. This model was proposed as a case-study for identifiability by <a href="https://doi.org/10.1016/j.jtbi.2017.07.018">Marisa C.Eisenberg, Harsh V.Jain</a>. We have translated the model from <a href="https://github.com/marisae/cancer-chemo-identifiability">cancer-chemo-identifiability repo</a> into the Julia language.</p><p>The model has three states:</p><ul><li>P(t) - the number of cells in G2/M phase of the cell cycle</li><li>Ap(t) - the number of cells in G1/S phase of the cell cycle</li><li>Ar(t) - the number of cells arrested in G2/M due to drug action</li></ul><p>And five unknown parameters:</p><ul><li>a0 - the maximum rate of arrest of cells in G2/M</li><li>ka - the sensitivity of proliferating cells to taxol</li><li>r0 - the rate of arrested cell recovery to the proliferating pool</li><li>d0 - the maximum rate of arrested cell death</li><li>kd - the arrested cell death rate half-saturation constant</li></ul><p>We start with loading the necessary packages:</p><pre><code class="language-julia hljs">#=
+using Pkg;
+Pkg.add([
+  &quot;LikelihoodProfiler&quot;,
+  &quot;OptimizationLBFGSB&quot;,
+  &quot;ForwardDiff&quot;,
+  &quot;OrdinaryDiffEqTsit5&quot;,
+  &quot;Distributions&quot;,
+  &quot;ComponentArrays&quot;,
+  &quot;Plots&quot;
+])
+=#
+using LikelihoodProfiler
+using OptimizationLBFGSB
+using ForwardDiff
+using OrdinaryDiffEqTsit5
+using Distributions
+using ComponentArrays
+using Plots</code></pre><p>We define the constants (fixed parameters):</p><ul><li>Vt - total available volume / carrying capacity</li><li>V0 - half-saturation free volume; crowding threshold</li><li>lam - the tumor cell division rate</li><li>aRP - transition rate from G1/S to G2/M</li><li>arstexp - Hill function coefficients for drug effects on the cells</li><li>adthexp - Hill function coefficients for drug effects on the cells</li><li>theta - Hill coefficient for crowding</li></ul><pre><code class="language-julia hljs">  const Vt      = 10.515*100
+  const V0      = 1.3907*Vt
+  const lam     = 9.5722
+  const aRP     = 20
+  const arstexp = 3
+  const adthexp = 4
+  const theta   = 10;</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10</code></pre><p>The model is defined as a system of ordinary differential equations (ODEs) with the following structure:</p><pre><code class="language-julia hljs"># https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_de.m
+function taxol_ode(du, u, p, t)
+  a0, ka, r0, d0, kd = p.params
+  drug = p.drug
+
+  Ncel = u[:P] + u[:Ap] + u[:Ar]
+  Lfac = ((Vt-Ncel)^theta)/((V0^theta) + ((Vt-Ncel)^theta))
+
+  arst = a0*(drug^arstexp)/(ka^arstexp + (drug^arstexp))
+  adth = d0*(drug^adthexp)/(kd^adthexp + (drug^adthexp))
+  arcv = r0
+
+  du[:P] = -lam*u[:P] + aRP*u[:Ap]*Lfac - arst*u[:P] + arcv*u[:Ar]
+  du[:Ap] = 2*lam*u[:P] - aRP*u[:Ap]*Lfac
+  du[:Ar] = arst*u[:P] - adth*u[:Ar] - arcv*u[:Ar]
+
+  return nothing
+end;</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">taxol_ode (generic function with 1 method)</code></pre><p>We define the initial conditions for the ODE system, and optimal parameters for the model, which were obtained from Marisa&#39;s Matlab code. Finally, we define the time span for the simulation and create an <code>ODEProblem</code> instance.</p><pre><code class="language-julia hljs">u0 = ComponentArray(
+  P = 7.2700,
+  Ap = 2.5490,
+  Ar = 0.0
+)
+
+function taxol_params(x, d)
+  return ComponentArray(params = x, drug = d)
+end
+
+taxol_params0 = ComponentArray(
+  a0 = 8.3170,
+  ka = 8.0959,
+  r0 = 0.0582,
+  d0 = 1.3307,
+  kd = 119.1363,
+)
+
+p0 = taxol_params(taxol_params0, 5.0)
+
+tspan = (0.,15.)
+ode_prob = ODEProblem(taxol_ode, u0, tspan, p0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr38_2" style="color:#56b6c2">ODEProblem</span> with uType <span class="sgr38_2" style="color:#56b6c2">ComponentArrays.ComponentVector{Float64, Vector{Float64}, Tuple{ComponentArrays.Axis{(P = 1, Ap = 2, Ar = 3)}}}</span> and tType <span class="sgr38_2" style="color:#56b6c2">Float64</span>. In-place: <span class="sgr38_2" style="color:#56b6c2">true</span>
+Non-trivial mass matrix: <span class="sgr38_2" style="color:#56b6c2">false</span>
+timespan: (0.0, 15.0)
+u0: ComponentVector{Float64}(P = 7.27, Ap = 2.549, Ar = 0.0)</code></pre><p>Next, we define the experimental data for the model. The data consists of measurements of the number of cells at different time points and for doses of Taxol (5, 10, 40, 100) ng/ml.</p><pre><code class="language-julia hljs"># https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m
+
+times = [0., 3., 6., 9., 12., 15.]   # days
+dose = [5., 10., 40., 100.];    # dose in ng/ml
+
+# Control data
+Cell = [0.009, 0.050, 0.120, 0.189, 0.230, 0.260]*1091.0   # thousands of cells
+Cerr = [0.006, 0.012, 0.010, 0.011, 0.011, 0.011]*1091.0   # thousands of cells
+
+# 0.005 ug/ml Taxol
+Cell005 = [0.009, 0.047, 0.089, 0.149, 0.198, 0.219]*1091.0   # thousands of cells
+Cerr005 = [0.006, 0.013, 0.010, 0.011, 0.013, 0.010]*1091.0   # thousands of cells
+
+# 0.010 ug/ml Taxol
+Cell010 = [0.009, 0.043, 0.077, 0.093, 0.109, 0.128]*1091.0   # thousands of cells
+Cerr010 = [0.006, 0.012, 0.013, 0.012, 0.014, 0.012]*1091.0   # thousands of cells
+
+# 0.040 ug/ml Taxol
+Cell040 = [0.009, 0.025, 0.047, 0.054, 0.076, 0.085]*1091.0   # thousands of cells
+Cerr040 = [0.005, 0.010, 0.010, 0.011, 0.010, 0.010]*1091.0   # thousands of cells
+
+# 0.100 ug/ml Taxol
+Cell100 = [0.009, 0.025, 0.026, 0.028, 0.029, 0.031]*1091.0   # thousands of cells
+Cerr100 = [0.006, 0.010, 0.009, 0.008, 0.011, 0.011]*1091.0   # thousands of cells
+
+C005 = mean(Cell005)
+C010 = mean(Cell010)
+C040 = mean(Cell040)
+C100 = mean(Cell100)
+
+data = [Cell005/C005, Cell010/C010, Cell040/C040, Cell100/C100]
+datamean = [C005, C010, C040, C100];</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4-element Vector{Float64}:
+ 129.2835
+  83.4615
+  53.82266666666667
+  26.911333333333335</code></pre><p>We define the solver setup and the objective function for the optimization problem.</p><pre><code class="language-julia hljs">solver_opts = (
+    alg = Tsit5(),
+    reltol = 1e-6,
+    abstol = 1e-8,
+)
+
+function taxol_obj(x, hp)
+
+  loss = 0.
+  for (i,d) in enumerate(dose)
+    prob = remake(ode_prob; p = taxol_params(exp10.(x), d))
+    sol = solve(
+      prob,
+      solver_opts.alg,
+      reltol=solver_opts.reltol,
+      abstol=solver_opts.abstol,
+      saveat=times)
+    if !SciMLBase.successful_retcode(sol)
+     return Inf
+    end
+
+    for time_idx in eachindex(data[i])
+      sim = (sol[1, time_idx] + sol[2, time_idx] + sol[3, time_idx]) / datamean[i]
+      loss += abs2(sim - data[i][time_idx])
+    end
+  end
+  return loss
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">taxol_obj (generic function with 1 method)</code></pre><p>Confidence-level for the profile likelihood threshold is also chosen according to the original paper. The threshold line represents the value of the objective function (or negative log-likelihood) that corresponds to the chosen confidence level. Where the profile curve intersects this threshold gives the lower and upper CI bounds.</p><pre><code class="language-julia hljs"># https://github.com/marisae/cancer-chemo-identifiability/blob/master/Profile%20Likelihood/testa0_fit.m#L40-L41
+
+taxol_relative_errors = vcat(
+    Cerr005 / C005,
+    Cerr010 / C010,
+    Cerr040 / C040,
+    Cerr100 / C100,
+)
+sigmasq = mean(taxol_relative_errors)^2</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.03997452437090424</code></pre><p>We optimize the logarithms of the parameters rather than their values on the original scale. Optimization in log space is often recommended because it puts parameters with different orders of magnitude on a more common scale, which can improve the numerical behavior of the optimizer. The objective function therefore converts <code>x</code> back to the original parameter scale with <code>exp10.(x)</code> before solving the ODE.</p><p>We define the initial parameter values and bounds in log space and wrap the objective function into an <code>OptimizationProblem</code> instance. The fitted parameters use a flat, named <code>ComponentArray</code>, separate from the nested ODE parameters that also contain the drug dose. This allows <code>ProfileLikelihoodProblem</code> to infer the parameter labels automatically.</p><pre><code class="language-julia hljs">opt_params0 = log10.(taxol_params0)
+lb = log10.(ComponentArray(
+  a0 = 2.0,
+  ka = 2.0,
+  r0 = 0.01,
+  d0 = 0.05,
+  kd = 30.0,
+))
+ub = log10.(ComponentArray(
+  a0 = 30.0,
+  ka = 30.0,
+  r0 = 0.6,
+  d0 = 10.0,
+  kd = 210.0,
+))
+
+optf = OptimizationFunction(taxol_obj, AutoForwardDiff())
+optprob = OptimizationProblem(optf, opt_params0; lb, ub)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr38_2" style="color:#56b6c2">OptimizationProblem</span>. In-place: <span class="sgr38_2" style="color:#56b6c2">true</span>
+u0: ComponentVector{Float64}(a0 = 0.9199667014833871, ka = 0.9082651351532822, r0 = -1.2350770153501116, d0 = 0.12408015687969996, kd = 2.0760441081471197)</code></pre><p>To define the profile likelihood problem, we use the <code>OptimizationProblem</code> and optimal (best fit) values of the parameters. Because the optimization variables are logarithms, the profile likelihood is also computed in log space. We can also specify the threshold for the profile likelihood, define the profile bounds and other options for the <code>ProfileLikelihoodProblem</code>.</p><p>Next we choose the profile likelihood algorithm and solve the problem. Here we use an <code>OptimizationProfiler</code> which steps through the parameter of interest and re-optimizes the nuisance parameters at each step. This stepping is done adaptively. The direction of the step is chosen on the basis of previous successful steps and the step size is adjusted based on linesearch.</p><p>We can also set <code>reoptimize_init=true</code> to re-optimize the initial starting point to reassure we start profiling from the optimum.</p><pre><code class="language-julia hljs">plprob = ProfileLikelihoodProblem(optprob, opt_params0; threshold = sigmasq*chi2_quantile(0.95, 5))
+
+alg_opt = OptimizationProfiler(optimizer = LBFGSB(),  stepper = AdaptiveStep())
+
+sol = solve(plprob, alg_opt; reoptimize_init=true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Profile Likelihood solution. Use `sol[i]` to index the computed profiles.
+</code></pre><p><code>ProfileLikelihoodSolution</code> stores the computed profile curves together with confidence interval endpoints and identification retcodes, which indicate whether each parameter is practically identifiable. These values can be accessed directly:</p><pre><code class="language-julia hljs">retcodes(sol)
+endpoints(sol; xtransform=exp10)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5-element Vector{NamedTuple{(:left, :right)}}:
+ (left = 6.644723156323117, right = 16.911002667929797)
+ (left = 4.983728866146825, right = 10.728019095768573)
+ (left = nothing, right = 0.3879294710826125)
+ (left = 0.19084304331795104, right = nothing)
+ (left = 49.69063579012813, right = nothing)</code></pre><p>Finally, we plot the resulting profiles, using <code>xtransform=exp10</code> to display the parameter axes on their original scale. Each point on the curve corresponds to a profiler step, i.e., a constrained optimization performed at a fixed value of the profiled parameter. The horizontal line indicates the likelihood threshold for the chosen confidence level; its intersections with the curve define the confidence interval bounds. Steeper profiles indicate better identifiability, whereas flat curves or curves that never intersect the threshold indicate parameters that are not practically identifiable.</p><pre><code class="language-julia hljs">plot(sol, xtransform=exp10)</code></pre><img src="f34a2ec8.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../rosenbrock/">« Getting Started</a><a class="docs-footer-nextpage" href="../gaussian/">Mean of a Gaussian Distribution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 29 August 2026 12:07">Saturday 29 August 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
