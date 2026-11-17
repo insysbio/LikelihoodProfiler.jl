@@ -122,13 +122,12 @@ end
 
 ###################################### PROFILE STATE/CACHE ##################################
 
-# currently we use the same cache for all targets (parameters and functions), 
-# but it may change to ParameterProfilerCache and FunctionProfilerCache in the future.
+# Branch caches use the same structure for parameter and function targets.
 SciMLBase.init(plprob::ProfileLikelihoodProblem, method, idx, dir; kwargs...) = 
   SciMLBase.init(plprob, plprob.target, method, idx, dir; kwargs...)
 
 function SciMLBase.init(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, method::AbstractProfilerMethod, idx, dir::Int; 
-  obj0 = nothing, solver_cache = nothing, maxiters = Int(1e4), verbose = false)
+  obj0 = nothing, method_cache = nothing, maxiters = Int(1e4), verbose = false)
 
   (dir == -1 || dir == +1) ||
         throw(ArgumentError("Profile direction `dir` must be -1 or +1"))
@@ -151,37 +150,37 @@ function SciMLBase.init(plprob::ProfileLikelihoodProblem, target::AbstractProfil
   profile_range = (T(lb), T(ub))
   sol = solution_init(plprob, idx, dir, θ0_typed, T(x0), T(_obj0), T(obj_level))
 
-  if isnothing(solver_cache)
-    _solver_cache = solver_cache_init(plprob, method, idx, dir, profile_range)
+  if isnothing(method_cache)
+    _method_cache = init_method_cache(plprob, method, idx, dir, profile_range)
   else
     # reinit_cache
-    throw(ArgumentError("Providing `solver_cache` is not supported yet."))
+    throw(ArgumentError("Providing `method_cache` is not supported yet."))
   end
 
-  return profiler_init(sol, _solver_cache, θ0_typed, T(x0), T(_obj0), profile_range, Int(maxiters), verbose)
+  return profiler_init(sol, _method_cache, θ0_typed, T(x0), T(_obj0), profile_range, Int(maxiters), verbose)
 end
 
 
-function SciMLBase.solve!(profiler_cache::ProfilerCache)
+function SciMLBase.solve!(branch_cache::ProfileBranchCache)
 
-  verbose = profiler_cache.verbose
-  verbose && init_msg(profiler_cache)
-  while !profiler_terminated(profiler_cache) 
+  verbose = branch_cache.verbose
+  verbose && init_msg(branch_cache)
+  while !profiler_terminated(branch_cache)
 
-    verbose && progress_msg(profiler_cache)
-    profiler_step!(profiler_cache)
+    verbose && progress_msg(branch_cache)
+    profiler_step!(branch_cache)
 
-    profiler_update_cache!(profiler_cache)
+    profiler_update_cache!(branch_cache)
   end
   
-  profiler_finalize_solution!(profiler_cache)
+  profiler_finalize_solution!(branch_cache)
   
-  return profiler_cache.sol
+  return branch_cache.sol
 end
 
-solver_cache_init(plprob, method, idx, dir, profile_range) = solver_cache_init(plprob, plprob.target, method, idx, dir, profile_range)
-profiler_step!(profiler_cache::ProfilerCache) = profiler_step!(profiler_cache, get_profile_target(profiler_cache), profiler_cache.solver_cache)
-profiler_finalize_solution!(profiler_cache::ProfilerCache) = profiler_finalize_solution!(profiler_cache::ProfilerCache, profiler_cache.sol)
+init_method_cache(plprob, method, idx, dir, profile_range) = init_method_cache(plprob, plprob.target, method, idx, dir, profile_range)
+profiler_step!(branch_cache::ProfileBranchCache) = profiler_step!(branch_cache, get_profile_target(branch_cache), branch_cache.method_cache)
+profiler_finalize_solution!(branch_cache::ProfileBranchCache) = profiler_finalize_solution!(branch_cache::ProfileBranchCache, branch_cache.sol)
 
 
 ################################### CHECK PROB ALG ##################################

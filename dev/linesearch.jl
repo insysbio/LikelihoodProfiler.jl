@@ -101,77 +101,77 @@ prepare_initial_step(step::Function) = step
 get_step(s::AbstractProfilerStep{S}, pars, i) where S <: Function = s.initial_step(pars, i)
 
 
-function propose_next_pars!(profiler_cache::ProfilerCache, s::FixedStep)
-  @unpack pars_cur, x_cur, profile_range = profiler_cache
-  idx = get_profile_idx(profiler_cache)
+function propose_next_pars!(branch_cache::ProfileBranchCache, s::FixedStep)
+  @unpack pars_cur, x_cur, profile_range = branch_cache
+  idx = get_profile_idx(branch_cache)
   step_size = get_step(s, pars_cur, idx)
-  dir = get_profile_dir(profiler_cache)
+  dir = get_profile_dir(branch_cache)
 
-  profiler_cache.pars_cache .= pars_cur
-  profiler_cache.pars_cache[idx] = clamp_within_bounds(x_cur + dir * step_size, profile_range)
-  return profiler_cache.pars_cache
+  branch_cache.pars_cache .= pars_cur
+  branch_cache.pars_cache[idx] = clamp_within_bounds(x_cur + dir * step_size, profile_range)
+  return branch_cache.pars_cache
 end
 
-function propose_next_pars!(profiler_cache::ProfilerCache, s::LineSearchStep)
-  @unpack pars_cur, x_cur, profile_range = profiler_cache
+function propose_next_pars!(branch_cache::ProfileBranchCache, s::LineSearchStep)
+  @unpack pars_cur, x_cur, profile_range = branch_cache
 
-  isfirststep = profiler_cache.iter < 2
+  isfirststep = branch_cache.iter < 2
 
   if isfirststep
     # If this is the first step, we can use the previous pars to compute the direction
-    return propose_next_pars!(profiler_cache, FixedStep(; initial_step=s.initial_step))
+    return propose_next_pars!(branch_cache, FixedStep(; initial_step=s.initial_step))
   else
-    ls_dir = compute_direction(profiler_cache, Val(s.direction))
-    step_size, ls_retcode = compute_step_size(profiler_cache, s.linesearch, ls_dir)
+    ls_dir = compute_direction(branch_cache, Val(s.direction))
+    step_size, ls_retcode = compute_step_size(branch_cache, s.linesearch, ls_dir)
     #@show step_size, ls_retcode
     if ls_retcode == :Success
-      @. profiler_cache.pars_cache = pars_cur + ls_dir*step_size
-      clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
-      return profiler_cache.pars_cache
+      @. branch_cache.pars_cache = pars_cur + ls_dir*step_size
+      clamp_profile_proposal!(branch_cache.pars_cache, branch_cache)
+      return branch_cache.pars_cache
     else
       @warn "Line search didn't find a suitable step size and returned $ls_retcode. Continuing with the previous successful step size (FixedStep)."
-      x_cur = profiler_cache.x_cur
-      x_prev = get_x_prev(profiler_cache)
+      x_cur = branch_cache.x_cur
+      x_prev = get_x_prev(branch_cache)
       step_prev = abs(x_cur - x_prev)
-      return propose_next_pars!(profiler_cache, FixedStep(; initial_step=step_prev))
+      return propose_next_pars!(branch_cache, FixedStep(; initial_step=step_prev))
     end
   end
 end
 
-function compute_direction(profiler_cache::ProfilerCache, direction::Val{:SingleAxis})
-  idx = get_profile_idx(profiler_cache)
-  x_dir = get_profile_dir(profiler_cache)
+function compute_direction(branch_cache::ProfileBranchCache, direction::Val{:SingleAxis})
+  idx = get_profile_idx(branch_cache)
+  x_dir = get_profile_dir(branch_cache)
 
-  pars_cur = profiler_cache.pars_cur
+  pars_cur = branch_cache.pars_cur
   ls_dir = zeros(eltype(pars_cur), length(pars_cur))
   ls_dir[idx] = x_dir
   return ls_dir
 end
 
-function compute_direction(profiler_cache::ProfilerCache, direction::Val{:Secant})
-  @unpack pars_cur, x_cur = profiler_cache
-  pars_prev = get_pars_prev(profiler_cache)
-  x_prev = get_x_prev(profiler_cache)
+function compute_direction(branch_cache::ProfileBranchCache, direction::Val{:Secant})
+  @unpack pars_cur, x_cur = branch_cache
+  pars_prev = get_pars_prev(branch_cache)
+  x_prev = get_x_prev(branch_cache)
   dx = abs(x_cur - x_prev)
 
-  dx <= eps(float(typeof(dx))) && return compute_direction(profiler_cache, Val(:SingleAxis))
+  dx <= eps(float(typeof(dx))) && return compute_direction(branch_cache, Val(:SingleAxis))
   return (pars_cur .- pars_prev) ./ dx
 end
 
-function compute_direction(profiler_cache::ProfilerCache, direction::Val{:Gradient})
-  optprob = get_optprob(profiler_cache)
-  idx = get_profile_idx(profiler_cache)
-  pars_cur = profiler_cache.pars_cur
+function compute_direction(branch_cache::ProfileBranchCache, direction::Val{:Gradient})
+  optprob = get_optprob(branch_cache)
+  idx = get_profile_idx(branch_cache)
+  pars_cur = branch_cache.pars_cur
 
   grad = evaluate_gradf(optprob, pars_cur)
   return grad ./ abs(grad[idx])
 end
 
-function compute_step_size(profiler_cache::ProfilerCache, ls_alg::InterpolationLineSearch, ls_dir)
-  @unpack pars_cur, x_cur, obj_cur = profiler_cache
-  x_prev = get_x_prev(profiler_cache)
-  plprob = get_plprob(profiler_cache)
-  obj_prev = get_obj_prev(profiler_cache)
+function compute_step_size(branch_cache::ProfileBranchCache, ls_alg::InterpolationLineSearch, ls_dir)
+  @unpack pars_cur, x_cur, obj_cur = branch_cache
+  x_prev = get_x_prev(branch_cache)
+  plprob = get_plprob(branch_cache)
+  obj_prev = get_obj_prev(branch_cache)
 
   Δ_obj_prev = max(abs(obj_cur - obj_prev), ls_alg.min_obj_change)
   obj_target = obj_cur + ls_alg.objective_factor * Δ_obj_prev
@@ -183,8 +183,8 @@ function compute_step_size(profiler_cache::ProfilerCache, ls_alg::InterpolationL
   factor_max = 5.0
   iter = 0
 
-  @. profiler_cache.pars_cache = pars_cur + ls_dir * step_high
-  θ_high = clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+  @. branch_cache.pars_cache = pars_cur + ls_dir * step_high
+  θ_high = clamp_profile_proposal!(branch_cache.pars_cache, branch_cache)
   obj_high = evaluate_obj(plprob, θ_high)
   isfinite(obj_high) || return step_low, :NonFinite
   abs(obj_high - obj_target) < ls_alg.abstol && return step_high, :Success
@@ -199,8 +199,8 @@ function compute_step_size(profiler_cache::ProfilerCache, ls_alg::InterpolationL
     step_high = step_next
     factor = min(factor * 1.25, factor_max)
 
-    @. profiler_cache.pars_cache = pars_cur + ls_dir * step_high
-    θ_high = clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+    @. branch_cache.pars_cache = pars_cur + ls_dir * step_high
+    θ_high = clamp_profile_proposal!(branch_cache.pars_cache, branch_cache)
     obj_high = evaluate_obj(plprob, θ_high)
 
     isfinite(obj_high) || return step_low, :NonFinite
@@ -219,11 +219,11 @@ clamp_within_bounds(x::Number, lb::Number, ub::Number) = clamp(x, lb, ub)
 clamp_within_bounds(x::Number, lb::Nothing, ub::Number) = clamp(x, -Inf, ub)
 clamp_within_bounds(x::Number, lb::Number, ub::Nothing) = clamp(x, lb, Inf)
 
-function clamp_profile_proposal!(pars::AbstractVector, profiler_cache::ProfilerCache)
-  optprob = get_optprob(profiler_cache)
+function clamp_profile_proposal!(pars::AbstractVector, branch_cache::ProfileBranchCache)
+  optprob = get_optprob(branch_cache)
   clamp_within_bounds!(pars, optprob.lb, optprob.ub)
-  idx = get_profile_idx(profiler_cache)
-  pars[idx] = clamp_within_bounds(pars[idx], profiler_cache.profile_range)
+  idx = get_profile_idx(branch_cache)
+  pars[idx] = clamp_within_bounds(pars[idx], branch_cache.profile_range)
   return pars
 end
 

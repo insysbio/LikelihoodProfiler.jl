@@ -45,7 +45,7 @@ solution_init(plprob::ProfileLikelihoodProblem, idx, dir::Int, θ0, x0, obj0, ob
   ProfileCurve{typeof(plprob), typeof(idx), typeof(θ0), T, SciMLBase.OptimizationStats}(false, plprob, idx, dir, 
     [θ0], [x0], [obj0], obj_level, (left=:NotStarted, right=:NotStarted), (left=nothing, right=nothing), (left=nothing, right=nothing))
 
-function profiler_init(sol::ProfileCurve, solver_cache::AbstractSolverCache, 
+function profiler_init(sol::ProfileCurve, method_cache::AbstractProfilerMethodCache,
   θ0, x0, obj0, profile_range, maxiters::Int, verbose::Bool)
   
   dir = sol.dir
@@ -55,9 +55,9 @@ function profiler_init(sol::ProfileCurve, solver_cache::AbstractSolverCache,
   else
     retcode = :Default
   end
-  stats = solver_cache.stats
-  return ProfilerCache{typeof(sol), typeof(θ0), typeof(solver_cache), typeof(x0), typeof(stats)}(
-    sol, solver_cache, similar(θ0), copy(θ0), x0, obj0, profile_range, 1, maxiters, verbose, stats, retcode)
+  stats = method_cache.stats
+  return ProfileBranchCache{typeof(sol), typeof(θ0), typeof(method_cache), typeof(x0), typeof(stats)}(
+    sol, method_cache, similar(θ0), copy(θ0), x0, obj0, profile_range, 1, maxiters, verbose, stats, retcode)
 end
 
 isdense(pc::ProfileCurve) = pc.dense
@@ -119,8 +119,8 @@ function DataFrames.DataFrame(pc::ProfileCurve)
   return df
 end
 
-function profiler_save_values!(sol::ProfileCurve, profiler_cache::ProfilerCache)
-  @unpack iter, pars_cur, x_cur, obj_cur = profiler_cache
+function profiler_save_values!(sol::ProfileCurve, branch_cache::ProfileBranchCache)
+  @unpack iter, pars_cur, x_cur, obj_cur = branch_cache
 
   SciMLBase.RecursiveArrayTools.copyat_or_push!(sol.pars, iter, pars_cur)
   SciMLBase.RecursiveArrayTools.copyat_or_push!(sol.x,    iter, x_cur)
@@ -144,13 +144,13 @@ function interpolate_endpoint(sol::ProfileCurve)
   return x1 + (ol - obj1) * (x2 - x1) / (obj2 - obj1)
 end
 
-function profiler_finalize_solution!(profiler_cache::ProfilerCache, sol::ProfileCurve)
+function profiler_finalize_solution!(branch_cache::ProfileBranchCache, sol::ProfileCurve)
 
-  ep = (isidentifiable(profiler_cache) && length(sol.x) ≥ 2) ? float(interpolate_endpoint(sol)) : nothing
-  retcode = profiler_cache.retcode
-  stats = profiler_cache.stats    
+  ep = (isidentifiable(branch_cache) && length(sol.x) ≥ 2) ? float(interpolate_endpoint(sol)) : nothing
+  retcode = branch_cache.retcode
+  stats = branch_cache.stats
 
-  left_branch = isleft(profiler_cache) 
+  left_branch = isleft(branch_cache)
   left_branch && reverse_profile!(sol)
 
   new_retcodes = (
@@ -165,7 +165,7 @@ function profiler_finalize_solution!(profiler_cache::ProfilerCache, sol::Profile
     left  = left_branch ? stats : nothing,
     right = left_branch ? nothing : stats,
   )
-  profiler_cache.sol = remake(sol; retcodes = new_retcodes, endpoints = new_endpoints, stats = new_stats)
+  branch_cache.sol = remake(sol; retcodes = new_retcodes, endpoints = new_endpoints, stats = new_stats)
   return nothing
 end
 

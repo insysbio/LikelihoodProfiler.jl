@@ -16,7 +16,7 @@ using Distributed
 
 abstract type AbstractProfileLikelihoodProblem end
 abstract type AbstractProfileTarget end
-abstract type AbstractSolverCache end
+abstract type AbstractProfilerMethodCache end
 abstract type AbstractProfilerMethod end
 abstract type AbstractProfilerStep end
 abstract type AbstractStepPredictor end

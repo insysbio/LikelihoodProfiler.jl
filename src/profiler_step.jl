@@ -1,19 +1,19 @@
 
 ################################################## OPTIMIZATION PROFILER STEP ##################################################
 
-function profiler_step!(profiler_cache::ProfilerCache, target::ParameterTarget, solver_cache::OptimizationSolverCache)
-  @unpack opt_cache, stepper = solver_cache
-  idx = get_profile_idx(profiler_cache)
+function profiler_step!(branch_cache::ProfileBranchCache, target::ParameterTarget, method_cache::OptimizationProfilerCache)
+  @unpack opt_cache, stepper = method_cache
+  idx = get_profile_idx(branch_cache)
 
-  pars_guess = propose_next_pars!(profiler_cache, stepper)
+  pars_guess = propose_next_pars!(branch_cache, stepper)
 
   sol = solve_profile_proposal!(opt_cache, pars_guess, idx)
 
   if !SciMLBase.successful_retcode(sol.retcode) && stepper isa AdaptiveStep
-    pars_cur = profiler_cache.pars_cur
+    pars_cur = branch_cache.pars_cur
     failed_x = pars_guess[idx]
-    @. profiler_cache.pars_cache = pars_cur + (pars_guess - pars_cur) / 2
-    pars_guess = clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+    @. branch_cache.pars_cache = pars_cur + (pars_guess - pars_cur) / 2
+    pars_guess = clamp_profile_proposal!(branch_cache.pars_cache, branch_cache)
 
     if pars_guess[idx] != pars_cur[idx]
       @warn "Optimization failed at profile point x = $failed_x. Retrying once with half the profile step."
@@ -22,14 +22,14 @@ function profiler_step!(profiler_cache::ProfilerCache, target::ParameterTarget, 
   end
 
   if SciMLBase.successful_retcode(sol.retcode)
-    fill_x_full!(profiler_cache.pars_cur, sol.u, idx, pars_guess[idx])
-    profiler_cache.x_cur = pars_guess[idx]
-    profiler_cache.obj_cur = sol.objective
-    profiler_cache.iter += 1
+    fill_x_full!(branch_cache.pars_cur, sol.u, idx, pars_guess[idx])
+    branch_cache.x_cur = pars_guess[idx]
+    branch_cache.obj_cur = sol.objective
+    branch_cache.iter += 1
   else
     @warn "Solver returned $(sol.retcode) retcode at proposed profile point x = $(pars_guess[idx]). Profiling is interrupted."
   end
-  solver_cache.retcode_original = sol.retcode
+  method_cache.retcode_original = sol.retcode
   return nothing
 end
 
@@ -61,22 +61,22 @@ end
 
 ################################################## INTEGRATION PROFILER STEP ##################################################
 
-function profiler_step!(profiler_cache::ProfilerCache, target::AbstractProfileTarget, solver_cache::IntegrationSolverCache)
-  @unpack ode_cache, opt_cache = solver_cache
+function profiler_step!(branch_cache::ProfileBranchCache, target::AbstractProfileTarget, method_cache::IntegrationProfilerCache)
+  @unpack ode_cache, opt_cache = method_cache
 
   integrator = ode_cache
   SciMLBase.step!(integrator)
 
   if SciMLBase.successful_retcode(integrator.sol.retcode)
-    profiler_cache.pars_cur .= view(integrator.u, 1:length(integrator.u)-1)
-    profiler_cache.x_cur = integrator.t
-    profiler_cache.obj_cur = evaluate_obj(get_plprob(profiler_cache), profiler_cache.pars_cur)
-    profiler_cache.iter += 1
+    branch_cache.pars_cur .= view(integrator.u, 1:length(integrator.u)-1)
+    branch_cache.x_cur = integrator.t
+    branch_cache.obj_cur = evaluate_obj(get_plprob(branch_cache), branch_cache.pars_cur)
+    branch_cache.iter += 1
   else
-    @warn "Solver returned $(integrator.sol.retcode) retcode at profile point x = $(profiler_cache.x_cur). Profiling is interrupted."
+    @warn "Solver returned $(integrator.sol.retcode) retcode at profile point x = $(branch_cache.x_cur). Profiling is interrupted."
 
   end
-  solver_cache.retcode_original = integrator.sol.retcode
+  method_cache.retcode_original = integrator.sol.retcode
   return nothing
 end
 
@@ -278,95 +278,95 @@ function get_initial_step(step::AbstractProfilerStep, ctx)
   return float(value)
 end
 
-function get_initial_step(s::AdaptiveInitialStep, profiler_cache::ProfilerCache)
-  x = profiler_cache.x_cur
+function get_initial_step(s::AdaptiveInitialStep, branch_cache::ProfileBranchCache)
+  x = branch_cache.x_cur
   step = max(s.rel_step * abs(x), s.abs_step)
   return clamp(step, s.min_step, s.max_step)
 end
 
-get_initial_step(f::Function, profiler_cache::ProfilerCache) = f(profiler_cache)
+get_initial_step(f::Function, branch_cache::ProfileBranchCache) = f(branch_cache)
 
-function propose_next_pars!(profiler_cache::ProfilerCache, s::FixedStep)
-  @unpack pars_cur, x_cur, profile_range = profiler_cache
-  idx = get_profile_idx(profiler_cache)
-  step_size = get_initial_step(s, profiler_cache)
-  dir = get_profile_dir(profiler_cache)
+function propose_next_pars!(branch_cache::ProfileBranchCache, s::FixedStep)
+  @unpack pars_cur, x_cur, profile_range = branch_cache
+  idx = get_profile_idx(branch_cache)
+  step_size = get_initial_step(s, branch_cache)
+  dir = get_profile_dir(branch_cache)
 
-  profiler_cache.pars_cache .= pars_cur
-  profiler_cache.pars_cache[idx] = clamp_within_bounds(x_cur + dir * step_size, profile_range)
-  return profiler_cache.pars_cache
+  branch_cache.pars_cache .= pars_cur
+  branch_cache.pars_cache[idx] = clamp_within_bounds(x_cur + dir * step_size, profile_range)
+  return branch_cache.pars_cache
 end
 
-function propose_next_pars!(profiler_cache::ProfilerCache, s::AdaptiveStep)
-  @unpack pars_cur = profiler_cache
+function propose_next_pars!(branch_cache::ProfileBranchCache, s::AdaptiveStep)
+  @unpack pars_cur = branch_cache
 
-  isfirststep = profiler_cache.iter < 2
+  isfirststep = branch_cache.iter < 2
 
   if isfirststep
     # If this is the first step, we can use the previous pars to compute the direction
-    return propose_next_pars!(profiler_cache, FixedStep(; initial_step=s.initial_step))
+    return propose_next_pars!(branch_cache, FixedStep(; initial_step=s.initial_step))
   else
-    step_dir = get_step_dir(profiler_cache, s.predictor)
-    step_size, retcode = adapt_step_size(profiler_cache, s.controller, step_dir)
+    step_dir = get_step_dir(branch_cache, s.predictor)
+    step_size, retcode = adapt_step_size(branch_cache, s.controller, step_dir)
     if retcode == :Success
-      return apply_step!(profiler_cache, pars_cur, step_dir, step_size)
+      return apply_step!(branch_cache, pars_cur, step_dir, step_size)
     elseif retcode in (:Failure, :MaxIters, :MinStep) && !(s.predictor isa SingleAxisPredictor)
       @warn "Adaptive stepping returned $retcode with $(typeof(s.predictor)). Retrying with SingleAxisPredictor."
-      step_dir = get_step_dir(profiler_cache, SingleAxisPredictor())
-      step_size, retcode = adapt_step_size(profiler_cache, s.controller, step_dir)
-      retcode == :Success && return apply_step!(profiler_cache, pars_cur, step_dir, step_size)
+      step_dir = get_step_dir(branch_cache, SingleAxisPredictor())
+      step_size, retcode = adapt_step_size(branch_cache, s.controller, step_dir)
+      retcode == :Success && return apply_step!(branch_cache, pars_cur, step_dir, step_size)
     end
 
     if retcode == :MinStep
       @warn "Adaptive stepping reached the minimum profile step. Continuing with that step."
-      return apply_step!(profiler_cache, pars_cur, step_dir, step_size)
+      return apply_step!(branch_cache, pars_cur, step_dir, step_size)
     end
 
     @warn "Adaptive stepping did not find a suitable step size and returned $retcode. Continuing with the previous successful step size."
-    x_cur = profiler_cache.x_cur
-    x_prev = get_x_prev(profiler_cache)
+    x_cur = branch_cache.x_cur
+    x_prev = get_x_prev(branch_cache)
     step_prev = abs(x_cur - x_prev)
-    return propose_next_pars!(profiler_cache, FixedStep(; initial_step=step_prev))
+    return propose_next_pars!(branch_cache, FixedStep(; initial_step=step_prev))
   end
 end
 
-function apply_step!(profiler_cache::ProfilerCache, pars_cur, step_dir, step_size)
-  @. profiler_cache.pars_cache = pars_cur + step_dir * step_size
-  clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
-  return profiler_cache.pars_cache
+function apply_step!(branch_cache::ProfileBranchCache, pars_cur, step_dir, step_size)
+  @. branch_cache.pars_cache = pars_cur + step_dir * step_size
+  clamp_profile_proposal!(branch_cache.pars_cache, branch_cache)
+  return branch_cache.pars_cache
 end
 
-function get_step_dir(profiler_cache::ProfilerCache, ::SingleAxisPredictor)
-  idx = get_profile_idx(profiler_cache)
-  x_dir = get_profile_dir(profiler_cache)
+function get_step_dir(branch_cache::ProfileBranchCache, ::SingleAxisPredictor)
+  idx = get_profile_idx(branch_cache)
+  x_dir = get_profile_dir(branch_cache)
 
-  pars_cur = profiler_cache.pars_cur
+  pars_cur = branch_cache.pars_cur
   step_dir = zeros(eltype(pars_cur), length(pars_cur))
   step_dir[idx] = x_dir
   return step_dir
 end
 
-function get_step_dir(profiler_cache::ProfilerCache, ::LinearPredictor)
-  @unpack pars_cur, x_cur = profiler_cache
-  pars_prev = get_pars_prev(profiler_cache)
-  x_prev = get_x_prev(profiler_cache)
+function get_step_dir(branch_cache::ProfileBranchCache, ::LinearPredictor)
+  @unpack pars_cur, x_cur = branch_cache
+  pars_prev = get_pars_prev(branch_cache)
+  x_prev = get_x_prev(branch_cache)
   dx = abs(x_cur - x_prev)
 
   if dx <= eps(max(abs(x_cur), abs(x_prev)))
     @warn "The last two profile points are too close to each other (dx = $dx). Using SingleAxisPredictor instead of LinearPredictor."
-    return get_step_dir(profiler_cache, SingleAxisPredictor())
+    return get_step_dir(branch_cache, SingleAxisPredictor())
   end
   return (pars_cur .- pars_prev) ./ dx
 end
 
-function adapt_step_size(profiler_cache::ProfilerCache, step_control::ObjectiveStepControl, step_dir)
-  obj_low, obj_high = objective_step_bounds(step_control, profiler_cache)
-  step_prev = initial_adaptive_step_size(profiler_cache, step_control, obj_low, obj_high)
+function adapt_step_size(branch_cache::ProfileBranchCache, step_control::ObjectiveStepControl, step_dir)
+  obj_low, obj_high = objective_step_bounds(step_control, branch_cache)
+  step_prev = initial_adaptive_step_size(branch_cache, step_control, obj_low, obj_high)
 
-  obj = trial_step_obj!(profiler_cache, step_dir, step_prev)
+  obj = trial_step_obj!(branch_cache, step_dir, step_prev)
 
   if !isfinite_objective(obj)
-    @warn "Objective function returned $obj at profile point x = $(profiler_cache.x_cur)."
+    @warn "Objective function returned $obj at profile point x = $(branch_cache.x_cur)."
     return step_prev, :Failure
   end
 
@@ -374,16 +374,16 @@ function adapt_step_size(profiler_cache::ProfilerCache, step_control::ObjectiveS
   obj_prev = obj
 
   for _ in 1:step_control.maxiters
-    step_next = clamp_x_step(profiler_cache, step_control, step_prev * step_factor)
+    step_next = clamp_x_step(branch_cache, step_control, step_prev * step_factor)
     if step_next == step_prev
       retcode = step_factor > 1 ? :Success : :MinStep
       return step_prev, retcode
     end
 
-    obj_next = trial_step_obj!(profiler_cache, step_dir, step_next)
+    obj_next = trial_step_obj!(branch_cache, step_dir, step_next)
 
     if !isfinite_objective(obj_next)
-      @warn "Objective function returned $obj_next at profile point x = $(profiler_cache.x_cur)."
+      @warn "Objective function returned $obj_next at profile point x = $(branch_cache.x_cur)."
       return step_next, :Failure
     elseif step_factor > 1 && obj_next >= obj_high
       return interpolate_step_size(step_prev, step_next, obj_prev, obj_next, obj_high), :Success
@@ -402,10 +402,10 @@ function adapt_step_size(profiler_cache::ProfilerCache, step_control::ObjectiveS
   end
 end
 
-function initial_adaptive_step_size(profiler_cache::ProfilerCache, step_control::ObjectiveStepControl, obj_low, obj_high)
-  step = get_step_prev(profiler_cache)
-  obj_cur = profiler_cache.obj_cur
-  obj_step_prev = obj_cur - get_obj_prev(profiler_cache)
+function initial_adaptive_step_size(branch_cache::ProfileBranchCache, step_control::ObjectiveStepControl, obj_low, obj_high)
+  step = get_step_prev(branch_cache)
+  obj_cur = branch_cache.obj_cur
+  obj_step_prev = obj_cur - get_obj_prev(branch_cache)
   lower = obj_low - obj_cur
   upper = obj_high - obj_cur
 
@@ -415,33 +415,33 @@ function initial_adaptive_step_size(profiler_cache::ProfilerCache, step_control:
     step *= step_control.step_factor
   end
 
-  return clamp_x_step(profiler_cache, step_control, step)
+  return clamp_x_step(branch_cache, step_control, step)
 end
 
-function clamp_x_step(profiler_cache::ProfilerCache, step_control::ObjectiveStepControl, step)
-  max_x_step = get_max_x_step(profiler_cache, step_control)
+function clamp_x_step(branch_cache::ProfileBranchCache, step_control::ObjectiveStepControl, step)
+  max_x_step = get_max_x_step(branch_cache, step_control)
   min_x_step = min(step_control.min_x_step, max_x_step)
   return clamp(step, min_x_step, max_x_step)
 end
 
-function trial_step_obj!(profiler_cache::ProfilerCache, step_dir, step)
-  plprob = get_plprob(profiler_cache)
-  pars_cur = profiler_cache.pars_cur
-  @. profiler_cache.pars_cache = pars_cur + step_dir * step
-  pars = clamp_profile_proposal!(profiler_cache.pars_cache, profiler_cache)
+function trial_step_obj!(branch_cache::ProfileBranchCache, step_dir, step)
+  plprob = get_plprob(branch_cache)
+  pars_cur = branch_cache.pars_cur
+  @. branch_cache.pars_cache = pars_cur + step_dir * step
+  pars = clamp_profile_proposal!(branch_cache.pars_cache, branch_cache)
   return evaluate_obj(plprob, pars)
 end
 
 isfinite_objective(obj) = obj isa Real && isfinite(obj)
 
-function objective_step_bounds(step_control::ObjectiveStepControl, profiler_cache::ProfilerCache)
-    threshold = get_threshold(profiler_cache)
-    obj_cur = profiler_cache.obj_cur
+function objective_step_bounds(step_control::ObjectiveStepControl, branch_cache::ProfileBranchCache)
+    threshold = get_threshold(branch_cache)
+    obj_cur = branch_cache.obj_cur
 
     if isfinite(threshold)
       upper = clamp(step_control.threshold_fraction * threshold, step_control.min_obj_step, step_control.max_obj_step)
     else
-      obj_prev = get_obj_prev(profiler_cache)
+      obj_prev = get_obj_prev(branch_cache)
       upper = step_control.target_factor * abs(obj_cur - obj_prev)
       upper = clamp(upper, step_control.min_obj_step, step_control.max_obj_step)
     end
@@ -451,19 +451,19 @@ function objective_step_bounds(step_control::ObjectiveStepControl, profiler_cach
     return obj_cur + lower, obj_cur + upper
 end
 
-function get_max_x_step(profiler_cache::ProfilerCache, step_control::ObjectiveStepControl)
-  profile_lb, profile_ub = profiler_cache.profile_range
-  x_cur = profiler_cache.x_cur
-  bound_step = !isleft(profiler_cache) ? profile_ub - x_cur : x_cur - profile_lb
-  previous_step = get_step_prev(profiler_cache)
+function get_max_x_step(branch_cache::ProfileBranchCache, step_control::ObjectiveStepControl)
+  profile_lb, profile_ub = branch_cache.profile_range
+  x_cur = branch_cache.x_cur
+  bound_step = !isleft(branch_cache) ? profile_ub - x_cur : x_cur - profile_lb
+  previous_step = get_step_prev(branch_cache)
   growth_limited_step = step_control.max_x_step_growth * previous_step
   max_x_step = min(bound_step, step_control.max_x_step, growth_limited_step)
   max(max_x_step, zero(max_x_step))
 end
 
-function get_step_prev(profiler_cache)
-  x_cur = profiler_cache.x_cur
-  x_prev = get_x_prev(profiler_cache)
+function get_step_prev(branch_cache)
+  x_cur = branch_cache.x_cur
+  x_prev = get_x_prev(branch_cache)
   return abs(x_cur - x_prev)
 end
 
@@ -475,11 +475,11 @@ clamp_within_bounds(x::Number, lb::Number, ub::Number) = clamp(x, lb, ub)
 clamp_within_bounds(x::Number, lb::Nothing, ub::Number) = clamp(x, -Inf, ub)
 clamp_within_bounds(x::Number, lb::Number, ub::Nothing) = clamp(x, lb, Inf)
 
-function clamp_profile_proposal!(pars::AbstractVector, profiler_cache::ProfilerCache)
-  optprob = get_optprob(profiler_cache)
+function clamp_profile_proposal!(pars::AbstractVector, branch_cache::ProfileBranchCache)
+  optprob = get_optprob(branch_cache)
   clamp_within_bounds!(pars, optprob.lb, optprob.ub)
-  idx = get_profile_idx(profiler_cache)
-  pars[idx] = clamp_within_bounds(pars[idx], profiler_cache.profile_range)
+  idx = get_profile_idx(branch_cache)
+  pars[idx] = clamp_within_bounds(pars[idx], branch_cache.profile_range)
   return pars
 end
 
