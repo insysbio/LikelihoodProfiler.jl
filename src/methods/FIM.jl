@@ -24,21 +24,27 @@ Any strictly positive value is allowed (not only `1` or `2`), which can be usefu
 - `clamp_to_bounds::Bool`: Clip estimated interval endpoints to profile bounds.
 - `cov_factor::Real`: Multiplicative factor applied to `inv(H)` to obtain covariance (`Σ = cov_factor * inv(H)`).
 - `resolution::Int`: Number of points per branch (left/right) used to sample the quadratic approximation.
+- `optimizer`: Optional optimizer used when `solve` is called with `reoptimize_init=true`. Defaults to `nothing`.
+- `optimizer_opts`: Options passed to the optimizer. Defaults to `NamedTuple()`.
 """
-Base.@kwdef struct QuadraticApproxProfiler <: AbstractProfilerMethod
+Base.@kwdef struct QuadraticApproxProfiler{opType, optsType} <: AbstractProfilerMethod
   inversion::Symbol = :cholesky
   clamp_to_bounds::Bool = true
   cov_factor::Float64 = 1.0
   resolution::Int = 50
+  optimizer::opType = nothing
+  optimizer_opts::optsType = NamedTuple()
 
-  function QuadraticApproxProfiler(inversion::Symbol, clamp_to_bounds::Bool, cov_factor::Real, resolution::Int)
+  function QuadraticApproxProfiler(inversion::Symbol, clamp_to_bounds::Bool, cov_factor::Real, resolution::Int,
+    optimizer=nothing, optimizer_opts=NamedTuple())
     inversion in (:cholesky, :pinv) ||
       throw(ArgumentError("`inversion` must be one of :cholesky, :pinv (got $inversion)."))
 
     cov_factor > 0 || throw(ArgumentError("`cov_factor` must be strictly positive (got $cov_factor)."))
     resolution > 0 || throw(ArgumentError("`resolution` must be a positive integer (got $resolution)."))
 
-    new(inversion, clamp_to_bounds, float(cov_factor), resolution)
+    new{typeof(optimizer), typeof(optimizer_opts)}(inversion, clamp_to_bounds, float(cov_factor), resolution,
+      optimizer, optimizer_opts)
   end
 end
 
@@ -46,6 +52,8 @@ get_inversion(fp::QuadraticApproxProfiler) = fp.inversion
 get_clamp_to_bounds(fp::QuadraticApproxProfiler) = fp.clamp_to_bounds
 get_cov_factor(fp::QuadraticApproxProfiler) = fp.cov_factor
 get_resolution(fp::QuadraticApproxProfiler) = fp.resolution
+get_optimizer(fp::QuadraticApproxProfiler) = fp.optimizer
+get_optimizer_opts(fp::QuadraticApproxProfiler) = fp.optimizer_opts
 
 
 function __solve(plprob::ProfileLikelihoodProblem, method::QuadraticApproxProfiler;
