@@ -13,7 +13,7 @@ debugpy==1.8.13
 decorator==5.2.1
 executing==2.2.0
 fides==0.7.8
-fonttools==4.56.0
+fonttools==4.61.0
 gitdb==4.0.12
 GitPython==3.1.44
 h5py==3.13.0
