@@ -198,6 +198,11 @@ check_prob_alg(plprob::ProfileLikelihoodProblem, method::AbstractProfilerMethod)
 
 check_prob_alg(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, method::AbstractProfilerMethod) = nothing
 
+function check_prob_alg(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, method::CICOProfiler)
+  !hasthreshold(plprob) && throw(ArgumentError("`CICOProfiler` doesn't support profiling with infinite `threshold`. Use other profile methods."))
+  return nothing
+end
+
 check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::OptimizationProfiler) = 
   throw(ArgumentError("`OptimizationProfiler` currently doesn't support function profiling. Please consider using other profiling algorithms."))
 

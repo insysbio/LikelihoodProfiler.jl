@@ -4,9 +4,6 @@ using LikelihoodProfiler, CICOBase
 
 function LikelihoodProfiler.solve(plprob::ProfileLikelihoodProblem, method::CICOProfiler, idx::Int, dir::Int; verbose=false, kwargs...)
   
-  # TODO add check_prob_method()
-  !LikelihoodProfiler.hasthreshold(plprob) && throw(ArgumentError("`CICOProfiler` doesn't support profiling with infinite `threshold`. Use other profile methods."))
-  
   verbose && @info "Computing initial values."
   optprob = plprob.optprob
   optpars = plprob.optpars
