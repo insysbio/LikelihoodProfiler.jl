@@ -173,10 +173,12 @@ function profiler_update_cache!(profiler_cache::ProfilerCache)
     profiler_cache.retcode = :Failure
   elseif iter > maxiters
     profiler_cache.retcode = :MaxIters
+  elseif hasthreshold(plprob) && isfinite(obj_cur) && (obj_cur ≥ obj_level)
+    # A successful step can cross the cutoff while landing on a profile bound.
+    # Keep the crossing so endpoint interpolation can use the final bracket.
+    profiler_cache.retcode = :Identifiable
   elseif !(profile_range[1] < x_cur < profile_range[2])
     profiler_cache.retcode = :NonIdentifiable
-  elseif hasthreshold(plprob) && isfinite(obj_cur) && (obj_cur ≥ obj_level)
-    profiler_cache.retcode = :Identifiable
   else
     # continue profiling
     profiler_cache.retcode = :Default
