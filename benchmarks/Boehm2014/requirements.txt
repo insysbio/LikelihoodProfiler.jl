@@ -54,7 +54,7 @@ referencing==0.36.2
 rpds-py==0.23.1
 scipy==1.15.2
 seaborn==0.13.2
-setuptools==76.1.0
+setuptools==78.1.1
 setuptools-scm==8.2.1
 six==1.17.0
 smmap==5.0.2
