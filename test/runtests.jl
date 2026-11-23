@@ -28,3 +28,7 @@ end
 @testset "FIM profiler" begin
   include("test_fim_profiler.jl")
 end
+
+@testset "Cutoff crossing at profile bounds" begin
+  include("test_bound_crossing.jl")
+end
