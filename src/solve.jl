@@ -137,7 +137,7 @@ function SciMLBase.init(plprob::ProfileLikelihoodProblem, target::AbstractProfil
         throw(ArgumentError("`idx` must be within 1:$n"))
   =#
   θ0 = plprob.optpars
-  x0 = evaluate_target_f(target, idx, θ0)
+  x0 = evaluate_target_f(target, idx, θ0, plprob.optprob.p)
   _obj0 = isnothing(obj0) ? evaluate_obj(plprob.optprob, θ0) : obj0
 
   τ  = plprob.threshold
@@ -200,6 +200,13 @@ check_prob_alg(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, 
 
 function check_prob_alg(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, method::CICOProfiler)
   !hasthreshold(plprob) && throw(ArgumentError("`CICOProfiler` doesn't support profiling with infinite `threshold`. Use other profile methods."))
+  !isnothing(plprob.optprob.f.cons) && throw(ArgumentError("`CICOProfiler` doesn't yet support problems with nonlinear constraints."))
+  return nothing
+end
+
+function check_prob_alg(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, method::CICOProfiler2)
+  !hasthreshold(plprob) && throw(ArgumentError("`CICOProfiler2` doesn't support profiling with infinite `threshold`. Use other profile methods."))
+  !isnothing(plprob.optprob.f.cons) && throw(ArgumentError("`CICOProfiler2` doesn't yet support problems with nonlinear constraints. Parameter bounds are supported."))
   return nothing
 end
 
@@ -208,6 +215,7 @@ check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method:
 
 function check_prob_alg(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, method::OptimizationProfiler)
   optf = plprob.optprob.f
+  !isnothing(optf.cons) && throw(ArgumentError("`OptimizationProfiler` doesn't yet support problems with nonlinear constraints."))
   opt_alg = method.optimizer
 
   SciMLBase.requiresgradient(opt_alg) && !hasgrad(optf) &&
@@ -220,6 +228,7 @@ end
 
 function check_prob_alg(plprob::ProfileLikelihoodProblem, target::ParameterTarget, method::IntegrationProfiler)
   optf = plprob.optprob.f
+  !isnothing(optf.cons) && throw(ArgumentError("`IntegrationProfiler` doesn't yet support problems with nonlinear constraints."))
 
   if get_matrix_type(method) == :hessian
     !hashess(optf) && throw(ArgumentError(OPTF_HESS_ERROR))
@@ -250,6 +259,7 @@ check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method:
 
 function check_prob_alg(plprob::ProfileLikelihoodProblem, target::FunctionTarget, method::IntegrationProfiler)
   optf = plprob.optprob.f
+  !isnothing(optf.cons) && throw(ArgumentError("`IntegrationProfiler` doesn't yet support problems with nonlinear constraints."))
   profile_fs = get_profile_fs(target)
 
   if get_matrix_type(method) == :hessian
