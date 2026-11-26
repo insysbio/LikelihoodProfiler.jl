@@ -151,6 +151,15 @@ get_obj_prev(pc::ProfileBranchCache) = pc.sol.obj[end-1]
 isleft(pc::ProfileBranchCache) = get_profile_dir(pc) == -1
 isidentifiable(pc::ProfileBranchCache) = pc.retcode == :Identifiable
 
+evaluate_obj(cache::ProfileBranchCache, u=cache.pars_cur) =
+    evaluate_obj(get_plprob(cache), u)
+    
+function evaluate_target_f(cache::ProfileBranchCache, u=cache.pars_cur)
+    plprob = get_plprob(cache)
+    return evaluate_target_f(
+        plprob.target, get_profile_idx(cache), u, plprob.optprob.p
+    )
+end
 
 profiler_save_values!(branch_cache::ProfileBranchCache) =
     profiler_save_values!(branch_cache.sol, branch_cache)
@@ -161,9 +170,7 @@ function profiler_update_cache!(branch_cache::ProfileBranchCache)
   @unpack x_cur, profile_range, iter, maxiters, 
   obj_cur = branch_cache
   solver_retcode = get_solver_retcode(branch_cache)
-
-  dir = get_profile_dir(branch_cache)
-  obj_level = get_obj_level(branch_cache)
+  
   plprob = get_plprob(branch_cache)
   if SciMLBase.successful_retcode(solver_retcode)
     profiler_save_values!(branch_cache)
@@ -173,16 +180,30 @@ function profiler_update_cache!(branch_cache::ProfileBranchCache)
     branch_cache.retcode = :Failure
   elseif iter > maxiters
     branch_cache.retcode = :MaxIters
-  elseif !(profile_range[1] < x_cur < profile_range[2])
-    branch_cache.retcode = :NonIdentifiable
-  elseif hasthreshold(plprob) && isfinite(obj_cur) && (obj_cur ≥ obj_level)
+  elseif hasthreshold(plprob) && isfinite(obj_cur) && reached_threshold(branch_cache)
     branch_cache.retcode = :Identifiable
+  elseif reached_profile_bound(branch_cache)
+    branch_cache.retcode = :NonIdentifiable
   else
     # continue profiling
     branch_cache.retcode = :Default
   end
 
   return nothing
+end
+
+reached_threshold(branch_cache::ProfileBranchCache) = reached_threshold(branch_cache, branch_cache.method_cache)
+
+function reached_threshold(branch_cache::ProfileBranchCache, ::AbstractProfilerMethodCache)
+   @unpack obj_cur = branch_cache
+   obj_level = get_obj_level(branch_cache)
+   return obj_cur ≥ obj_level
+end
+
+reached_profile_bound(pc::ProfileBranchCache) = reached_profile_bound(pc, pc.method_cache)
+
+function reached_profile_bound(pc::ProfileBranchCache, ::AbstractProfilerMethodCache)
+    return !(pc.profile_range[1] < pc.x_cur < pc.profile_range[2])
 end
 
 ###################################### PROFILER VERBOSE ##################################

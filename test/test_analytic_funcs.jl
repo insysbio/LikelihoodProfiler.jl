@@ -6,7 +6,7 @@ const atol = step/2
 
 include(joinpath(@__DIR__, "../models/AnalyticFuncs/analytic_funcs.jl"))
 
-function test_parameter_target(method, funcs_dict; kwargs...)
+function test_parameter_target(method, funcs_dict; solve_kwargs=NamedTuple(), kwargs...)
   for (_fname,_f) in funcs_dict 
     @testset "$(_fname)" begin
       if !haskey(_f, :grad!) && !haskey(_f, :hess!)
@@ -23,20 +23,20 @@ function test_parameter_target(method, funcs_dict; kwargs...)
       profile_upper = last.(_f[:profile_range])
       plprob = ProfileLikelihoodProblem(optprob, _f[:optim]; profile_lower, profile_upper, threshold=_f[:threshold])
 
-      sol = solve(plprob, method)
+      sol = solve(plprob, method; solve_kwargs...)
       for i in eachindex(_f[:optim])
         ret = retcodes(sol[i])
         ci = endpoints(sol[i])
         @test _f[:retcode][i][1] == ret[1] 
         @test _f[:retcode][i][2] == ret[2] 
-        _f[:retcode][i][1] == :Identifiable && (@test isapprox(ci[1], _f[:ci][i][1]; kwargs...))
-        _f[:retcode][i][2] == :Identifiable && (@test isapprox(ci[2], _f[:ci][i][2]; kwargs...))
+        _f[:retcode][i][1] == :Identifiable && (@test ci[1] !== nothing && isapprox(ci[1], _f[:ci][i][1]; kwargs...))
+        _f[:retcode][i][2] == :Identifiable && (@test ci[2] !== nothing && isapprox(ci[2], _f[:ci][i][2]; kwargs...))
       end
     end
   end
 end
 
-function test_function_target(method, funcs_dict; kwargs...)
+function test_function_target(method, funcs_dict; solve_kwargs=NamedTuple(), kwargs...)
   f = funcs_dict[:f_2p]
   optf = OptimizationFunction(f[:func], AutoForwardDiff())
   optprob = OptimizationProblem(optf, f[:optim])
@@ -52,7 +52,7 @@ function test_function_target(method, funcs_dict; kwargs...)
     threshold = f[:threshold]
   )
 
-  sol = solve(plprob, method)
+  sol = solve(plprob, method; solve_kwargs...)
 
   expected_cis = (
     (7 - sqrt(8.0), 7 + sqrt(8.0)),
@@ -83,7 +83,7 @@ function test_function_target(method, funcs_dict; kwargs...)
     threshold = f_im[:threshold]
   )
 
-  sol_im = solve(plprob_im, method)
+  sol_im = solve(plprob_im, method; solve_kwargs...)
 
   ret_first = retcodes(sol_im[1])
   ci_first = endpoints(sol_im[1])
@@ -111,6 +111,21 @@ end
 
   method = CICOProfiler(optimizer=:LN_NELDERMEAD)
   test_function_target(method, funcs_dict; atol)
+
+end
+
+@testset "Analytic funcs. ParameterTarget with CICOProfiler2" begin
+
+  method = LikelihoodProfiler.CICOProfiler2(optimizer=LBFGSB(), optimizer_opts=(maxiters=200,))
+  # Bound repeated whole-problem solves if CICO returns an unresolved point.
+  test_parameter_target(method, funcs_dict; atol, solve_kwargs=(maxiters=2,))
+
+end
+
+@testset "Analytic funcs. FunctionTarget with CICOProfiler2" begin
+
+  method = LikelihoodProfiler.CICOProfiler2(optimizer=LBFGSB(), optimizer_opts=(maxiters=200,))
+  test_function_target(method, funcs_dict; atol, solve_kwargs=(maxiters=2,))
 
 end
 

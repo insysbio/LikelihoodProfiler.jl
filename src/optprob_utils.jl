@@ -104,7 +104,7 @@ function build_optprob_constrained(plprob::ProfileLikelihoodProblem, idx)
 
   x0 = evaluate_target_f(plprob.target, idx, optpars)
   optf_constrained = build_optf_constrained(plprob, idx)
-  return OptimizationProblem(optf_constrained, copy(optpars);
+  return OptimizationProblem(optf_constrained, copy(optpars), optprob.p;
      lb=optprob.lb, ub=optprob.ub, lcons=[x0], ucons=[x0])
 end
 

@@ -5,6 +5,7 @@ using ComponentArrays
 using SimpleUnPack: @unpack
 using Reexport
 using Optimization
+using OptimizationAuglag: AugLag
 import SciMLBase
 @reexport import SciMLBase: OptimizationFunction, OptimizationProblem, remake, solve, solve!, init
 @reexport using ADTypes
@@ -28,6 +29,7 @@ include("problem_interface.jl")
 include("profile_methods.jl")
 include("methods/FIM.jl")
 include("caches.jl")
+include("methods/CICO.jl")
 include("solve.jl")
 include("profile_solution.jl")
 include("utils.jl")

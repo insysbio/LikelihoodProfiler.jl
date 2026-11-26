@@ -109,6 +109,8 @@ function get_idx_profile_ub(t::AbstractProfileTarget, idx)
 end
 
 get_profile_fs(ft::FunctionTarget) = ft.fs
+get_profile_f(t::FunctionTarget, idx) = get_profile_fs(t)[idx]
+get_profile_f(t::ParameterTarget, idx) = (x, p) -> x[idx]
 get_profile_labels(t::AbstractProfileTarget) = t.labels
 
 ############################### CONSTRUCTORS ###############################

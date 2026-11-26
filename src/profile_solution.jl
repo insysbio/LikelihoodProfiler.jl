@@ -146,7 +146,11 @@ end
 
 function profiler_finalize_solution!(branch_cache::ProfileBranchCache, sol::ProfileCurve)
 
-  ep = (isidentifiable(branch_cache) && length(sol.x) ≥ 2) ? float(interpolate_endpoint(sol)) : nothing
+  ep = if isidentifiable(branch_cache)
+    estimate_endpoint(branch_cache, branch_cache.method_cache)
+  else
+    nothing
+  end
   retcode = branch_cache.retcode
   stats = branch_cache.stats
 
@@ -167,6 +171,12 @@ function profiler_finalize_solution!(branch_cache::ProfileBranchCache, sol::Prof
   )
   branch_cache.sol = remake(sol; retcodes = new_retcodes, endpoints = new_endpoints, stats = new_stats)
   return nothing
+end
+
+function estimate_endpoint(branch_cache::ProfileBranchCache,
+                           ::AbstractProfilerMethodCache)
+    sol = branch_cache.sol
+    return length(sol.x) ≥ 2 ? float(interpolate_endpoint(sol)) : nothing
 end
 
 function merge_profile_curves(left_profile::ProfileCurve, right_profile::ProfileCurve)

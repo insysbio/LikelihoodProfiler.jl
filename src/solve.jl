@@ -138,7 +138,7 @@ function SciMLBase.init(plprob::ProfileLikelihoodProblem, target::AbstractProfil
   =#
   θ0 = plprob.optpars
   x0 = evaluate_target_f(target, idx, θ0, plprob.optprob.p)
-  _obj0 = isnothing(obj0) ? evaluate_obj(plprob.optprob, θ0) : obj0
+  _obj0 = isnothing(obj0) ? evaluate_obj(plprob, θ0) : obj0
 
   τ  = plprob.threshold
   obj_level = _obj0 + τ
@@ -207,6 +207,14 @@ end
 function check_prob_alg(plprob::ProfileLikelihoodProblem, target::AbstractProfileTarget, method::CICOProfiler2)
   !hasthreshold(plprob) && throw(ArgumentError("`CICOProfiler2` doesn't support profiling with infinite `threshold`. Use other profile methods."))
   !isnothing(plprob.optprob.f.cons) && throw(ArgumentError("`CICOProfiler2` doesn't yet support problems with nonlinear constraints. Parameter bounds are supported."))
+  optf = plprob.optprob.f
+  !hasgrad(optf) && throw(ArgumentError(
+    "CICO AugLag requires a likelihood gradient. Supply `grad` or an AD backend on the original objective."))
+  # Missing target derivatives currently use the likelihood's AD backend.
+  if target isa FunctionTarget && optf.adtype isa SciMLBase.NoAD
+    any(f -> isnothing(f.grad), get_profile_fs(target)) && throw(ArgumentError(
+      "CICO AugLag requires a target gradient. Supply target `grad` or an AD backend on the original objective."))
+  end
   return nothing
 end
 
